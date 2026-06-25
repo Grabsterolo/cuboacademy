@@ -162,8 +162,8 @@ export default function HomePage() {
       setTimeout(() => {
         setWordIndex(i => (i + 1) % ROTATING_WORDS.length)
         setWordVisible(true)
-      }, 320)
-    }, 2500)
+      }, 520)
+    }, 4000)
     return () => clearInterval(interval)
   }, [])
 
@@ -212,20 +212,27 @@ export default function HomePage() {
         }
         .rotating-word {
           display: inline-block;
+          position: relative;
           overflow: hidden;
           vertical-align: bottom;
-          height: 1.06em;
-          line-height: 1.06;
         }
-        .rotating-word span {
+        .rotating-word-ghost {
+          visibility: hidden;
           display: inline-block;
-          transition: opacity .3s ease, transform .3s ease;
         }
-        .rotating-word span.out {
+        .rotating-word-visible {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          display: inline-block;
+          transition: opacity .5s ease, transform .5s ease;
+        }
+        .rotating-word-visible.out {
           opacity: 0;
           transform: translateY(-100%);
         }
-        .rotating-word span.in {
+        .rotating-word-visible.in {
           opacity: 1;
           transform: translateY(0);
         }
@@ -249,7 +256,8 @@ export default function HomePage() {
               El conocimiento que<br />transforma{' '}
               <em style={{ fontStyle: 'normal', color: 'var(--jade-light)' }}>
                 <span className="rotating-word">
-                  <span className={wordVisible ? 'in' : 'out'}>
+                  <span className="rotating-word-ghost">organizaciones</span>
+                  <span className={`rotating-word-visible ${wordVisible ? 'in' : 'out'}`}>
                     {ROTATING_WORDS[wordIndex]}
                   </span>
                 </span>
