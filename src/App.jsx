@@ -4,6 +4,7 @@ import Navbar from './components/shared/Navbar'
 import Footer from './components/shared/Footer'
 import ProtectedRoute from './components/shared/ProtectedRoute'
 import HomePage from './pages/public/HomePage'
+import DashboardRouter from './pages/dashboard/DashboardRouter'
 
 export default function App() {
   return (
@@ -19,9 +20,7 @@ export default function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <div style={{ padding: '8rem 5%', textAlign: 'center', fontFamily: 'var(--serif)', fontSize: '2rem', color: 'var(--carbon)' }}>
-                  Dashboard — próximamente
-                </div>
+                <DashboardRouter />
               </ProtectedRoute>
             }
           />
