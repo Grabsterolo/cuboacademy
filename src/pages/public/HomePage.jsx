@@ -92,7 +92,7 @@ const COURSES = [
     hours: '20 horas',
     level: 'Avanzado',
     modules: '10 módulos',
-    instructor: 'Laura Vargas',
+    instructor: 'Sofía Mendoza',
     initials: 'LV',
     color: 'var(--jade-dark)',
     featured: false,
@@ -110,7 +110,7 @@ const HOW_STEPS = [
 const INSTRUCTORS = [
   { name: 'María Rojas', role: 'Datos & Analytics', bio: '12 años implementando soluciones BI en banca y retail.', initials: 'MR', bg: 'var(--jade)' },
   { name: 'Carlos Arias', role: 'Gestión de Procesos', bio: 'Especialista en BPM con más de 80 proyectos de mejora.', initials: 'CA', bg: '#C96E4B' },
-  { name: 'Laura Vargas', role: 'Liderazgo & Cambio', bio: 'Coach ejecutiva. Acompañó transformaciones en más de 30 empresas.', initials: 'LV', bg: 'var(--jade-dark)' },
+  { name: 'Sofía Mendoza', role: 'Liderazgo & Cambio', bio: 'Coach ejecutiva. Acompañó transformaciones en más de 30 empresas.', initials: 'LV', bg: 'var(--jade-dark)' },
   { name: 'Jorge Peñaranda', role: 'Estrategia de Datos', bio: 'Ex-director de inteligencia de negocios en Fortune 500.', initials: 'JP', bg: '#104447' },
 ]
 
