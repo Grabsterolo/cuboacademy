@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -7,6 +7,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [modal, setModal] = useState(null)
   const [tab, setTab] = useState('login')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchRef = useRef(null)
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState('')
   const [formSuccess, setFormSuccess] = useState('')
@@ -38,6 +41,17 @@ export default function Navbar() {
   useEffect(() => {
     document.body.style.overflow = modal ? 'hidden' : ''
   }, [modal])
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false)
+        setSearchQuery('')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   function openModal(t) {
     setTab(t)
@@ -118,6 +132,7 @@ export default function Navbar() {
         .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--jade); display: flex; align-items: center; justify-content: center; color: white; font-size: .7rem; font-weight: 700; flex-shrink: 0; }
         .btn-signout { background: none; border: none; color: var(--text-2); font-size: .8rem; font-weight: 500; cursor: pointer; padding: .3rem .5rem; border-radius: 5px; transition: color .2s; }
         .btn-signout:hover { color: var(--terra); }
+        .search-area-item:hover { color: var(--jade) !important; }
       `}</style>
 
       <nav style={{
@@ -142,12 +157,109 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <ul style={{ display: 'flex', alignItems: 'center', gap: '2rem', listStyle: 'none' }}>
-          <li><Link to="/cursos" className="nav-link">Cursos</Link></li>
-          <li><Link to="/#diferenciador" className="nav-link">Diferencial</Link></li>
-          <li><Link to="/#instructores" className="nav-link">Instructores</Link></li>
-          <li><Link to="/#como-funciona" className="nav-link">Cómo funciona</Link></li>
-        </ul>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          <ul style={{ display: 'flex', alignItems: 'center', gap: '2rem', listStyle: 'none', margin: 0, padding: 0 }}>
+            <li><Link to="/cursos" className="nav-link">Cursos</Link></li>
+            <li><Link to="/instructores" className="nav-link">Instructores</Link></li>
+          </ul>
+
+          <div ref={searchRef} style={{ position: 'relative' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '.5rem',
+                padding: searchOpen ? '.4rem .75rem' : '.4rem .6rem',
+                background: searchOpen ? 'white' : 'var(--cream)',
+                border: `1px solid ${searchOpen ? 'var(--jade)' : 'var(--border)'}`,
+                borderRadius: 20,
+                width: searchOpen ? 220 : 36,
+                transition: 'width .3s ease, border-color .2s, background .2s',
+                overflow: 'hidden',
+                cursor: searchOpen ? 'text' : 'pointer',
+              }}
+              onClick={() => !searchOpen && setSearchOpen(true)}
+            >
+              <svg
+                width="15" height="15" viewBox="0 0 24 24" fill="none"
+                stroke={searchOpen ? 'var(--jade)' : 'var(--text-2)'}
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ flexShrink: 0, transition: 'stroke .2s' }}
+              >
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                type="text"
+                placeholder="Buscar curso o tema..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  fontSize: '.83rem',
+                  color: 'var(--carbon)',
+                  fontFamily: 'var(--sans)',
+                  width: '100%',
+                  opacity: searchOpen ? 1 : 0,
+                  pointerEvents: searchOpen ? 'auto' : 'none',
+                  transition: 'opacity .2s',
+                }}
+                autoFocus={searchOpen}
+              />
+              {searchOpen && searchQuery && (
+                <button
+                  onClick={e => { e.stopPropagation(); setSearchQuery('') }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: 'var(--text-2)', flexShrink: 0 }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {searchOpen && searchQuery.length > 1 && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 280,
+                background: 'white',
+                border: '1px solid var(--border)',
+                borderRadius: 12,
+                boxShadow: '0 8px 32px rgba(23,26,28,.12)',
+                overflow: 'hidden',
+                zIndex: 200,
+              }}>
+                <div style={{
+                  padding: '1rem 1.1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '.6rem',
+                  color: 'var(--text-2)',
+                  fontSize: '.82rem',
+                  fontFamily: 'var(--sans)',
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  Próximamente podrás buscar cursos aquí
+                </div>
+                <div style={{ borderTop: '1px solid var(--border)', padding: '.75rem 1.1rem' }}>
+                  <div style={{ fontSize: '.75rem', color: '#B5B2AB', marginBottom: '.5rem', letterSpacing: '.04em', textTransform: 'uppercase', fontWeight: 600 }}>Áreas disponibles</div>
+                  {['Gestión de Procesos', 'Datos & Analytics', 'Liderazgo Consultivo'].map(area => (
+                    <div key={area} style={{ padding: '.4rem 0', fontSize: '.83rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer' }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block', flexShrink: 0 }} />
+                      {area}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
           {user ? (
