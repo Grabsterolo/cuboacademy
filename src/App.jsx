@@ -5,6 +5,7 @@ import Footer from './components/shared/Footer'
 import ProtectedRoute from './components/shared/ProtectedRoute'
 import HomePage from './pages/public/HomePage'
 import DashboardRouter from './pages/dashboard/DashboardRouter'
+import UsersPage from './pages/dashboard/admin/UsersPage'
 
 function AppShell() {
   const location = useLocation()
@@ -23,6 +24,14 @@ function AppShell() {
             element={
               <ProtectedRoute>
                 <DashboardRouter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/usuarios"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UsersPage />
               </ProtectedRoute>
             }
           />
