@@ -196,6 +196,33 @@ export default function HomePage() {
         .btn-course:hover { background: var(--jade); color: white; border-color: var(--jade); }
         .metric-card { transition: background .25s; }
         .metric-card:hover { background: rgba(255,255,255,.09) !important; }
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+          .courses-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .inst-grid { grid-template-columns: repeat(2,1fr) !important; }
+        }
+        @media (max-width: 768px) {
+          .hero-section { padding: 6rem 5% 3.5rem !important; min-height: unset !important; }
+          .hero-grid { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
+          .hero-metrics { flex-direction: row !important; gap: .75rem !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+          .hero-metrics .metric-card { padding: 1rem 1.2rem !important; flex: 0 0 auto; min-width: 160px; }
+          .section-pad { padding: 3.5rem 5% !important; }
+          .tracks-grid { grid-template-columns: 1fr !important; }
+          .diff-grid { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
+          .courses-grid { grid-template-columns: 1fr !important; }
+          .courses-header-bar { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
+          .how-grid { grid-template-columns: repeat(2,1fr) !important; gap: 2rem 1rem !important; }
+          .how-connector { display: none !important; }
+          .inst-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .test-grid { grid-template-columns: 1fr !important; }
+          .cta-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+          .cta-right { align-items: flex-start !important; }
+        }
+        @media (max-width: 480px) {
+          .how-grid { grid-template-columns: 1fr !important; }
+          .hero-metrics { flex-direction: column !important; }
+          .hero-metrics .metric-card { min-width: unset; }
+        }
         @keyframes orb1 {
           0%,100% { transform: translate(0,0) scale(1); }
           33% { transform: translate(60px,-40px) scale(1.08); }
@@ -239,14 +266,14 @@ export default function HomePage() {
       `}</style>
 
       {/* ── HERO ── */}
-      <section style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '8rem 5% 5rem' }}>
+      <section className="hero-section" style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '8rem 5% 5rem' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)', backgroundSize: '48px 48px', zIndex: 0 }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, overflow: 'hidden' }}>
           <div style={{ position: 'absolute', width: 700, height: 700, borderRadius: '50%', background: 'rgba(22,125,120,.18)', filter: 'blur(90px)', top: '-10%', left: '-5%', animation: 'orb1 14s ease-in-out infinite' }} />
           <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'rgba(22,125,120,.13)', filter: 'blur(70px)', top: '30%', right: '5%', animation: 'orb2 18s ease-in-out infinite', animationDelay: '-6s' }} />
           <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'rgba(90,191,186,.08)', filter: 'blur(60px)', bottom: '0%', left: '40%', animation: 'orb3 22s ease-in-out infinite', animationDelay: '-11s' }} />
         </div>
-        <div style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '4rem', alignItems: 'center', width: '100%', maxWidth: 1200, margin: '0 auto' }}>
+        <div className="hero-grid" style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '4rem', alignItems: 'center', width: '100%', maxWidth: 1200, margin: '0 auto' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(90,191,186,.75)', marginBottom: '1.4rem' }}>
               <span style={{ width: 16, height: 1, background: 'rgba(232,243,242,.4)', display: 'inline-block' }} />
@@ -275,7 +302,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="hero-metrics" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {[
               { val: '40+', accent: true, label: 'Cursos activos', desc: 'En tres áreas de especialización' },
               { val: '2K+', accent: false, label: 'Estudiantes', desc: 'Profesionales activos en la región' },
@@ -311,14 +338,14 @@ export default function HomePage() {
       </div>
 
       {/* ── TRACKS ── */}
-      <section style={{ padding: '5.5rem 5%' }}>
+      <section className="section-pad" style={{ padding: '5.5rem 5%' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="reveal" style={{ marginBottom: '3rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Áreas de formación</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)', marginBottom: '.85rem' }}>Tres pilares, un propósito</h2>
             <p style={{ fontSize: '.95rem', color: 'var(--text-2)', lineHeight: 1.75, fontWeight: 300, maxWidth: 500 }}>Cada área fue elegida porque es donde las organizaciones más necesitan profesionales capaces de generar cambios reales.</p>
           </div>
-          <div className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+          <div className="reveal tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
             {TRACKS.map((t) => (
               <div key={t.name} className="track-card" style={{ background: 'white', padding: '2.4rem 2rem' }}>
                 <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.3rem' }}>
@@ -334,8 +361,8 @@ export default function HomePage() {
       </section>
 
       {/* ── DIFERENCIADOR ── */}
-      <section style={{ padding: '5.5rem 5%', background: 'white' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>
+      <section className="section-pad" style={{ padding: '5.5rem 5%', background: 'white' }}>
+        <div className="diff-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>
           <div className="reveal">
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>¿Por qué Cubo Academy?</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)', marginBottom: '2rem' }}>Formación desde<br />la trinchera real</h2>
@@ -395,9 +422,9 @@ export default function HomePage() {
       </section>
 
       {/* ── CURSOS ── */}
-      <section style={{ padding: '5.5rem 5%' }}>
+      <section className="section-pad" style={{ padding: '5.5rem 5%' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+          <div className="reveal courses-header-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
             <div>
               <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Catálogo</div>
               <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Cursos destacados</h2>
@@ -406,7 +433,7 @@ export default function HomePage() {
               Ver catálogo completo →
             </Link>
           </div>
-          <div className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
+          <div className="reveal courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
             {COURSES.map((c) => (
               <div key={c.title} className="course-card" style={{ background: c.featured ? 'var(--jade-soft)' : 'white', border: `1px solid ${c.featured ? 'rgba(22,125,120,.2)' : 'var(--border)'}`, borderRadius: 12, overflow: 'hidden' }}>
                 <div style={{ height: 144, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: c.bg }}>
@@ -439,14 +466,14 @@ export default function HomePage() {
       </section>
 
       {/* ── CÓMO FUNCIONA ── */}
-      <section style={{ padding: '5.5rem 5%', background: 'white' }}>
+      <section className="section-pad" style={{ padding: '5.5rem 5%', background: 'white' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="reveal" style={{ marginBottom: '3rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>El proceso</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Simple de empezar, poderoso en el fondo</h2>
           </div>
-          <div className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0, position: 'relative' }}>
-            <div style={{ position: 'absolute', top: 25, left: '12.5%', right: '12.5%', height: 1, background: 'linear-gradient(90deg,transparent,var(--border) 20%,var(--border) 80%,transparent)' }} />
+          <div className="reveal how-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0, position: 'relative' }}>
+            <div className="how-connector" style={{ position: 'absolute', top: 25, left: '12.5%', right: '12.5%', height: 1, background: 'linear-gradient(90deg,transparent,var(--border) 20%,var(--border) 80%,transparent)' }} />
             {HOW_STEPS.map((s) => (
               <div key={s.num} style={{ textAlign: 'center', padding: '0 1.25rem' }}>
                 <div style={{ width: 50, height: 50, border: '1.5px solid var(--border)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--jade)', margin: '0 auto 1.2rem', background: 'white', position: 'relative', zIndex: 1 }}>{s.num}</div>
@@ -459,13 +486,13 @@ export default function HomePage() {
       </section>
 
       {/* ── INSTRUCTORES ── */}
-      <section style={{ padding: '5.5rem 5%' }}>
+      <section className="section-pad" style={{ padding: '5.5rem 5%' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="reveal" style={{ marginBottom: '3rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>El equipo docente</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Consultores que también enseñan</h2>
           </div>
-          <div className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.15rem' }}>
+          <div className="reveal inst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.15rem' }}>
             {INSTRUCTORS.map((inst) => (
               <div key={inst.name} className="inst-card" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
                 <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto .9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'white', background: inst.bg }}>{inst.initials}</div>
@@ -479,13 +506,13 @@ export default function HomePage() {
       </section>
 
       {/* ── TESTIMONIOS ── */}
-      <section style={{ padding: '5.5rem 5%', background: 'white' }}>
+      <section className="section-pad" style={{ padding: '5.5rem 5%', background: 'white' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="reveal" style={{ marginBottom: '3rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Lo que dicen</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Resultados que hablan solos</h2>
           </div>
-          <div className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.15rem' }}>
+          <div className="reveal test-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.15rem' }}>
             {TESTIMONIALS.map((t) => (
               <div key={t.name} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem' }}>
                 <div style={{ color: 'var(--terra)', fontSize: '.8rem', letterSpacing: '.1em', marginBottom: '.85rem' }}>★★★★★</div>
@@ -507,7 +534,7 @@ export default function HomePage() {
       <section style={{ background: 'var(--jade-dark)', padding: '5.5rem 5%', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -80, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(22,125,120,.2)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: -60, left: '5%', width: 240, height: 240, borderRadius: '50%', background: 'rgba(22,125,120,.12)', pointerEvents: 'none' }} />
-        <div className="reveal" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '3rem', position: 'relative', zIndex: 1 }}>
+        <div className="reveal cta-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '3rem', position: 'relative', zIndex: 1 }}>
           <div>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(232,243,242,.5)', marginBottom: '.7rem' }}>Empieza hoy</div>
             <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-.02em', color: 'white', marginBottom: '.85rem' }}>
@@ -517,7 +544,7 @@ export default function HomePage() {
               Únete a miles de profesionales que transforman sus organizaciones con conocimiento consultivo real.
             </p>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.9rem', flexShrink: 0 }}>
+          <div className="cta-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.9rem', flexShrink: 0 }}>
             <Link to="/registro" style={{ padding: '1rem 2.2rem', background: 'var(--terra)', color: 'var(--carbon)', borderRadius: 9, fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(201,110,75,.35)' }}>
               Crear cuenta gratis
             </Link>
