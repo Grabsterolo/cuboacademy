@@ -6,6 +6,7 @@ import ProtectedRoute from './components/shared/ProtectedRoute'
 import HomePage from './pages/public/HomePage'
 import DashboardRouter from './pages/dashboard/DashboardRouter'
 import UsersPage from './pages/dashboard/admin/UsersPage'
+import CategoriesPage from './pages/dashboard/admin/CategoriesPage'
 
 function AppShell() {
   const location = useLocation()
@@ -32,6 +33,14 @@ function AppShell() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/categorias"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <CategoriesPage />
               </ProtectedRoute>
             }
           />

@@ -63,7 +63,7 @@ export default function UsersPage() {
   async function loadUsers() {
     setLoading(true)
     const { data } = await supabase
-      .from('profiles')
+      .from('users_view')
       .select('id, full_name, email, role, created_at')
       .order('created_at', { ascending: false })
     if (data) setUsers(data)
