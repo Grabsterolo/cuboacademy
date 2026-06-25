@@ -1,0 +1,248 @@
+import { useEffect, useState } from 'react'
+import { supabase } from '../../../lib/supabase'
+import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import { useAuth } from '../../../context/AuthContext'
+
+const navItems = [
+  {
+    label: 'Panel general', path: '/dashboard',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
+  },
+  {
+    label: 'Usuarios', path: '/dashboard/usuarios',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  },
+  {
+    label: 'Cursos', path: '/dashboard/cursos',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+  },
+  {
+    label: 'Categorías', path: '/dashboard/categorias',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+  },
+  {
+    label: 'Órdenes', path: '/dashboard/ordenes',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+  },
+  {
+    label: 'Certificados', path: '/dashboard/certificados',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>,
+  },
+  {
+    label: 'Reportes', path: '/dashboard/reportes',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  },
+  {
+    label: 'Configuración', path: '/dashboard/configuracion',
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+  },
+]
+
+const ROLE_BADGE = {
+  admin:      { label: 'Admin',       bg: 'rgba(22,125,120,.12)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
+  instructor: { label: 'Instructor',  bg: 'rgba(59,130,246,.1)',   color: '#3B7EF6',       border: '1px solid rgba(59,130,246,.25)' },
+  student:    { label: 'Estudiante',  bg: 'rgba(113,128,126,.1)',  color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
+}
+
+function Skel({ w = '100%', h = 18, r = 6, mb = 0 }) {
+  return <div style={{ width: w, height: h, borderRadius: r, background: 'var(--border)', marginBottom: mb }} />
+}
+
+export default function GeneralPage() {
+  const { profile, user } = useAuth()
+  const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'admin').split(' ')[0]
+
+  const [metrics, setMetrics] = useState(null)
+  const [breakdown, setBreakdown] = useState(null)
+  const [recentUsers, setRecentUsers] = useState(null)
+  const [categoriesList, setCategoriesList] = useState(null)
+
+  useEffect(() => {
+    async function load() {
+      const [
+        { count: totalUsers },
+        { count: students },
+        { count: instructors },
+        { count: admins },
+        { count: categories },
+        { count: courses },
+        { data: recent },
+        { data: cats },
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'instructor'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'admin'),
+        supabase.from('categories').select('*', { count: 'exact', head: true }),
+        supabase.from('courses').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+        supabase.from('profiles').select('id, full_name, role, created_at').order('created_at', { ascending: false }).limit(5),
+        supabase.from('categories').select('id, name, slug').order('name'),
+      ])
+
+      setMetrics({ totalUsers: totalUsers ?? 0, students: students ?? 0, categories: categories ?? 0, courses: courses ?? 0 })
+      setBreakdown({ students: students ?? 0, instructors: instructors ?? 0, admins: admins ?? 0 })
+      setRecentUsers(recent || [])
+      setCategoriesList(cats || [])
+    }
+    load()
+  }, [])
+
+  const METRIC_CARDS = metrics ? [
+    {
+      label: 'Total usuarios', value: metrics.totalUsers,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    },
+    {
+      label: 'Estudiantes activos', value: metrics.students,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+    },
+    {
+      label: 'Categorías', value: metrics.categories,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+    },
+    {
+      label: 'Cursos publicados', value: metrics.courses,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+    },
+  ] : null
+
+  const BREAKDOWN_ITEMS = breakdown ? [
+    { label: 'Estudiantes', value: breakdown.students, bg: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
+    { label: 'Instructores', value: breakdown.instructors, bg: 'rgba(59,130,246,.1)', color: '#3B7EF6', border: '1px solid rgba(59,130,246,.25)' },
+    { label: 'Admins', value: breakdown.admins, bg: 'rgba(22,125,120,.12)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' },
+  ] : null
+
+  return (
+    <DashboardLayout navItems={navItems}>
+      <style>{`
+        .gp-skel { animation: gp-pulse 1.4s ease-in-out infinite; }
+        @keyframes gp-pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+      `}</style>
+
+      <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '2rem' }}>
+          <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Panel administrativo</p>
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>
+            Hola, {firstName}
+          </h1>
+        </div>
+
+        {/* Metric cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+          {METRIC_CARDS ? METRIC_CARDS.map(m => (
+            <div key={m.label} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
+              <div style={{ width: 38, height: 38, background: 'var(--jade-soft)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {m.icon}
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{m.value}</div>
+                <div style={{ fontSize: '.74rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 400 }}>{m.label}</div>
+              </div>
+            </div>
+          )) : [0,1,2,3].map(i => (
+            <div key={i} className="gp-skel" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
+              <Skel w={38} h={38} r={9} mb={10} />
+              <Skel w="50%" h={28} r={6} mb={6} />
+              <Skel w="70%" h={14} r={4} />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', alignItems: 'start' }}>
+
+          {/* Left column */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+            {/* Breakdown */}
+            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
+              <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Desglose de usuarios</div>
+              {BREAKDOWN_ITEMS ? (
+                <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
+                  {BREAKDOWN_ITEMS.map(b => (
+                    <div key={b.label} style={{ flex: '1 1 80px', background: b.bg, border: b.border, borderRadius: 10, padding: '.75rem 1rem', textAlign: 'center' }}>
+                      <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: b.color, lineHeight: 1 }}>{b.value}</div>
+                      <div style={{ fontSize: '.72rem', color: b.color, marginTop: '.3rem', fontWeight: 600 }}>{b.label}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="gp-skel" style={{ display: 'flex', gap: '.75rem' }}>
+                  {[0,1,2].map(i => <div key={i} style={{ flex: 1, height: 72, background: 'var(--border)', borderRadius: 10 }} />)}
+                </div>
+              )}
+            </div>
+
+            {/* Categories list */}
+            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
+              <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Categorías</div>
+              {categoriesList === null ? (
+                <div className="gp-skel" style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+                  {[0,1,2].map(i => <Skel key={i} h={18} r={5} />)}
+                </div>
+              ) : categoriesList.length === 0 ? (
+                <p style={{ fontSize: '.83rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>Sin categorías aún.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
+                  {categoriesList.map(cat => (
+                    <div key={cat.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.55rem 0', borderBottom: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: '.86rem', fontWeight: 500, color: 'var(--carbon)', fontFamily: 'var(--sans)' }}>{cat.name}</span>
+                      <span style={{ fontFamily: 'monospace', fontSize: '.7rem', background: 'var(--cream)', border: '1px solid var(--border)', color: 'var(--text-2)', borderRadius: 4, padding: '2px 7px' }}>/{cat.slug}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right column — recent users */}
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
+            <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Últimos registros</div>
+            {recentUsers === null ? (
+              <div className="gp-skel" style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                {[0,1,2,3,4].map(i => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--border)', flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <Skel w="60%" h={14} r={4} mb={5} />
+                      <Skel w="40%" h={11} r={4} />
+                    </div>
+                    <Skel w={60} h={22} r={20} />
+                  </div>
+                ))}
+              </div>
+            ) : recentUsers.length === 0 ? (
+              <p style={{ fontSize: '.83rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>Sin usuarios aún.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
+                {recentUsers.map((u, i) => {
+                  const badge = ROLE_BADGE[u.role] || ROLE_BADGE.student
+                  return (
+                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.65rem 0', borderBottom: i < recentUsers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                        {(u.full_name || '?')[0].toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '.86rem', fontWeight: 500, color: 'var(--carbon)', fontFamily: 'var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {u.full_name || '—'}
+                        </div>
+                        <div style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.1rem' }}>
+                          {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap', background: badge.bg, color: badge.color, border: badge.border }}>
+                        {badge.label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </DashboardLayout>
+  )
+}

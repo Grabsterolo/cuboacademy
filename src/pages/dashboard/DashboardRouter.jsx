@@ -1,7 +1,7 @@
 import { useAuth } from '../../context/AuthContext'
 import StudentDashboard from './StudentDashboard'
 import InstructorDashboard from './InstructorDashboard'
-import AdminDashboard from './AdminDashboard'
+import GeneralPage from './admin/GeneralPage'
 
 export default function DashboardRouter() {
   const { profile, loading } = useAuth()
@@ -12,7 +12,7 @@ export default function DashboardRouter() {
     </div>
   )
 
-  if (profile?.role === 'admin') return <AdminDashboard />
+  if (profile?.role === 'admin') return <GeneralPage />
   if (profile?.role === 'instructor') return <InstructorDashboard />
   return <StudentDashboard />
 }
