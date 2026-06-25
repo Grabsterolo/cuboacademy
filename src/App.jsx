@@ -7,6 +7,10 @@ import HomePage from './pages/public/HomePage'
 import DashboardRouter from './pages/dashboard/DashboardRouter'
 import UsersPage from './pages/dashboard/admin/UsersPage'
 import CategoriesPage from './pages/dashboard/admin/CategoriesPage'
+import CoursesPage from './pages/dashboard/admin/CoursesPage'
+import OrdersPage from './pages/dashboard/admin/OrdersPage'
+import CertificatesPage from './pages/dashboard/admin/CertificatesPage'
+import ReportsPage from './pages/dashboard/admin/ReportsPage'
 
 function AppShell() {
   const location = useLocation()
@@ -41,6 +45,38 @@ function AppShell() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <CategoriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/cursos"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <CoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/ordenes"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/certificados"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <CertificatesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/reportes"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <ReportsPage />
               </ProtectedRoute>
             }
           />
