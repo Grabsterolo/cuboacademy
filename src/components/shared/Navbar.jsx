@@ -290,7 +290,7 @@ export default function Navbar() {
 
       {modal === 'auth' && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeModal() }}>
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.5rem', width: '100%', maxWidth: 400, minHeight: 420, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.5rem', width: 440, minHeight: 520, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
             <button onClick={closeModal} style={{ position: 'absolute', top: '1.1rem', right: '1.1rem', background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: 5, borderRadius: 6 }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
