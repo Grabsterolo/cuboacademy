@@ -96,7 +96,7 @@ export default function Navbar() {
     if (regPassword.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
     setFormError('')
     setFormLoading(true)
-    const { error } = await signUp({ email: regEmail, password: regPassword, fullName: regName, role: regRole })
+    const { error } = await signUp({ email: regEmail, password: regPassword, fullName: regName, role: 'student' })
     setFormLoading(false)
     if (error) { setFormError(error.message); return }
     setFormSuccess('¡Cuenta creada! Revisa tu correo para confirmar tu registro.')
@@ -345,14 +345,7 @@ export default function Navbar() {
                   <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>Correo electrónico</label>
                   <input type="email" className="form-inp" placeholder="tucorreo@empresa.com" required value={regEmail} onChange={e => setRegEmail(e.target.value)} />
                 </div>
-                <div style={{ marginBottom: '.9rem' }}>
-                  <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>Tipo de cuenta</label>
-                  <select className="form-sel" value={regRole} onChange={e => setRegRole(e.target.value)}>
-                    <option value="student">Estudiante</option>
-                    <option value="instructor">Instructor</option>
-                  </select>
-                </div>
-                <div style={{ marginBottom: '.9rem' }}>
+<div style={{ marginBottom: '.9rem' }}>
                   <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>Contraseña</label>
                   <input type="password" className="form-inp" placeholder="Mínimo 8 caracteres" required minLength={8} value={regPassword} onChange={e => setRegPassword(e.target.value)} />
                 </div>
