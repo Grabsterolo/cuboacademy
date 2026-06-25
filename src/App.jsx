@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/shared/Navbar'
 import Footer from './components/shared/Footer'
 import HomePage from './pages/public/HomePage'
@@ -6,6 +7,7 @@ import HomePage from './pages/public/HomePage'
 export default function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <Navbar />
       <main style={{ paddingTop: 66 }}>
         <Routes>
@@ -15,6 +17,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      </AuthProvider>
     </BrowserRouter>
   )
 }
