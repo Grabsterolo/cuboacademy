@@ -27,6 +27,7 @@ const TABS = [
   { label: 'Todos',        value: null },
   { label: 'Estudiantes',  value: 'student' },
   { label: 'Instructores', value: 'instructor' },
+  { label: 'Admins',       value: 'admin' },
 ]
 
 function LabelField({ children }) {
@@ -43,6 +44,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState(null)
   const [roleChanging, setRoleChanging] = useState(null)
+  const [roleError, setRoleError] = useState('')
 
   // Modal
   const [showModal, setShowModal] = useState(false)
@@ -72,14 +74,18 @@ export default function UsersPage() {
     setLoading(false)
   }
 
-  async function handleRoleChange(userId, newRole) {
+  async function handleRoleChange(userId, newRole, prevRole) {
     setRoleChanging(userId)
+    setRoleError('')
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
     const { error } = await supabase
       .from('profiles')
       .update({ role: newRole })
       .eq('id', userId)
-    if (!error) {
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
+    if (error) {
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: prevRole } : u))
+      setRoleError('No se pudo cambiar el rol. Intenta de nuevo.')
+      setTimeout(() => setRoleError(''), 4000)
     }
     setRoleChanging(null)
   }
@@ -151,9 +157,9 @@ export default function UsersPage() {
     <DashboardLayout navItems={navItems}>
       <style>{`
         .users-table tr:hover td { background: #fafafa; }
-        .role-select { padding: .35rem .6rem; font-size: .8rem; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--carbon); cursor: pointer; font-family: var(--sans); transition: border-color .15s; outline: none; }
+        .role-select { width: 140px; padding: .35rem .6rem; font-size: .8rem; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--carbon); cursor: pointer; font-family: var(--sans); transition: border-color .15s, opacity .15s; outline: none; }
         .role-select:focus { border-color: var(--jade); }
-        .role-select:disabled { opacity: .5; cursor: not-allowed; }
+        .role-select:disabled { opacity: .45; cursor: not-allowed; }
         .tab-btn { padding: .38rem .9rem; border-radius: 6px; border: none; cursor: pointer; font-size: .82rem; font-weight: 500; font-family: var(--sans); transition: background .15s, color .15s; }
         .form-inp-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; transition: border-color .2s, background .2s; font-family: var(--sans); }
         .form-inp-u:focus { border-color: var(--jade); background: white; }
@@ -203,6 +209,13 @@ export default function UsersPage() {
           </div>
         </div>
 
+        {/* Role change error toast */}
+        {roleError && (
+          <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 8, padding: '.6rem 1rem', fontSize: '.83rem', marginBottom: '1rem', fontFamily: 'var(--sans)' }}>
+            {roleError}
+          </div>
+        )}
+
         {/* Table */}
         <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
           {loading ? (
@@ -245,7 +258,7 @@ export default function UsersPage() {
                       </td>
                       <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
                         <select className="role-select" value={u.role} disabled={roleChanging === u.id}
-                          onChange={e => handleRoleChange(u.id, e.target.value)}>
+                          onChange={e => handleRoleChange(u.id, e.target.value, u.role)}>
                           <option value="student">Estudiante</option>
                           <option value="instructor">Instructor</option>
                           <option value="admin">Admin</option>
