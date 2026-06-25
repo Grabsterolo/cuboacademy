@@ -105,6 +105,7 @@ export default function UsersPage() {
       email: newEmail,
       password: newPassword,
       options: {
+        emailRedirectTo: null,
         data: { full_name: newName, role: newRole },
       },
     })
@@ -112,7 +113,7 @@ export default function UsersPage() {
     if (error) {
       // Restaurar sesión del admin aunque haya error
       if (adminSession) await supabase.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token })
-      setFormError(error.message)
+      setFormError(error?.message || 'Error al crear el usuario.')
       setFormLoading(false)
       return
     }
