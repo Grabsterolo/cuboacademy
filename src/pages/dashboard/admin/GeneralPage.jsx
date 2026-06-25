@@ -52,64 +52,37 @@ export default function GeneralPage() {
   const { profile, user } = useAuth()
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'admin').split(' ')[0]
 
-  const [metrics, setMetrics] = useState(null)
-  const [breakdown, setBreakdown] = useState(null)
-  const [recentUsers, setRecentUsers] = useState(null)
-  const [categoriesList, setCategoriesList] = useState(null)
+  const [{ stats, loading }, setData] = useState({ stats: null, loading: true })
 
   useEffect(() => {
-    async function load() {
-      const [
-        { count: totalUsers },
-        { count: students },
-        { count: instructors },
-        { count: admins },
-        { count: categories },
-        { count: courses },
-        { data: recent },
-        { data: cats },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'instructor'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'admin'),
-        supabase.from('categories').select('*', { count: 'exact', head: true }),
-        supabase.from('courses').select('*', { count: 'exact', head: true }).eq('status', 'published'),
-        supabase.from('profiles').select('id, full_name, role, created_at').order('created_at', { ascending: false }).limit(5),
-        supabase.from('categories').select('id, name, slug').order('name'),
-      ])
-
-      setMetrics({ totalUsers: totalUsers ?? 0, students: students ?? 0, categories: categories ?? 0, courses: courses ?? 0 })
-      setBreakdown({ students: students ?? 0, instructors: instructors ?? 0, admins: admins ?? 0 })
-      setRecentUsers(recent || [])
-      setCategoriesList(cats || [])
-    }
-    load()
+    supabase.rpc('get_admin_stats').then(({ data }) => {
+      setData({ stats: data ?? null, loading: false })
+    })
   }, [])
 
-  const METRIC_CARDS = metrics ? [
+  const METRIC_CARDS = stats ? [
     {
-      label: 'Total usuarios', value: metrics.totalUsers,
+      label: 'Total usuarios', value: stats.total_usuarios,
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
     },
     {
-      label: 'Estudiantes activos', value: metrics.students,
+      label: 'Estudiantes activos', value: stats.estudiantes,
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
     },
     {
-      label: 'Categorías', value: metrics.categories,
+      label: 'Categorías', value: stats.categorias,
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
     },
     {
-      label: 'Cursos publicados', value: metrics.courses,
+      label: 'Cursos publicados', value: stats.cursos_publicados,
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
     },
   ] : null
 
-  const BREAKDOWN_ITEMS = breakdown ? [
-    { label: 'Estudiantes', value: breakdown.students, bg: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
-    { label: 'Instructores', value: breakdown.instructors, bg: 'rgba(59,130,246,.1)', color: '#3B7EF6', border: '1px solid rgba(59,130,246,.25)' },
-    { label: 'Admins', value: breakdown.admins, bg: 'rgba(22,125,120,.12)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' },
+  const BREAKDOWN_ITEMS = stats ? [
+    { label: 'Estudiantes', value: stats.estudiantes, bg: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
+    { label: 'Instructores', value: stats.instructores, bg: 'rgba(59,130,246,.1)', color: '#3B7EF6', border: '1px solid rgba(59,130,246,.25)' },
+    { label: 'Admins', value: stats.admins, bg: 'rgba(22,125,120,.12)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' },
   ] : null
 
   return (
@@ -177,21 +150,16 @@ export default function GeneralPage() {
             {/* Categories list */}
             <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
               <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Categorías</div>
-              {categoriesList === null ? (
+              {loading ? (
                 <div className="gp-skel" style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
                   {[0,1,2].map(i => <Skel key={i} h={18} r={5} />)}
                 </div>
-              ) : categoriesList.length === 0 ? (
+              ) : !stats?.categorias ? (
                 <p style={{ fontSize: '.83rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>Sin categorías aún.</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-                  {categoriesList.map(cat => (
-                    <div key={cat.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.55rem 0', borderBottom: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: '.86rem', fontWeight: 500, color: 'var(--carbon)', fontFamily: 'var(--sans)' }}>{cat.name}</span>
-                      <span style={{ fontFamily: 'monospace', fontSize: '.7rem', background: 'var(--cream)', border: '1px solid var(--border)', color: 'var(--text-2)', borderRadius: 4, padding: '2px 7px' }}>/{cat.slug}</span>
-                    </div>
-                  ))}
-                </div>
+                <p style={{ fontSize: '.83rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
+                  {stats.categorias} categoría{stats.categorias !== 1 ? 's' : ''} registrada{stats.categorias !== 1 ? 's' : ''}.
+                </p>
               )}
             </div>
           </div>
@@ -199,7 +167,7 @@ export default function GeneralPage() {
           {/* Right column — recent users */}
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
             <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Últimos registros</div>
-            {recentUsers === null ? (
+            {loading ? (
               <div className="gp-skel" style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
                 {[0,1,2,3,4].map(i => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
@@ -212,14 +180,14 @@ export default function GeneralPage() {
                   </div>
                 ))}
               </div>
-            ) : recentUsers.length === 0 ? (
+            ) : !(stats?.usuarios_recientes?.length) ? (
               <p style={{ fontSize: '.83rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>Sin usuarios aún.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem' }}>
-                {recentUsers.map((u, i) => {
+                {stats.usuarios_recientes.map((u, i) => {
                   const badge = ROLE_BADGE[u.role] || ROLE_BADGE.student
                   return (
-                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.65rem 0', borderBottom: i < recentUsers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                    <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.65rem 0', borderBottom: i < stats.usuarios_recientes.length - 1 ? '1px solid var(--border)' : 'none' }}>
                       <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
                         {(u.full_name || '?')[0].toUpperCase()}
                       </div>
