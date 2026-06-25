@@ -251,11 +251,10 @@ export default function Navbar() {
         <div className="nav-desktop-auth">
           {user ? (
             <>
-              <div className="user-chip">
+              <Link to="/dashboard" className="user-chip" style={{ textDecoration: 'none', cursor: 'pointer' }}>
                 <div className="avatar">{displayName[0].toUpperCase()}</div>
                 <span style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--carbon)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</span>
-              </div>
-              <Link to="/dashboard" className="btn-outline-nav" style={{ textDecoration: 'none', display: 'inline-block' }}>Mi área</Link>
+              </Link>
               <button className="btn-signout" onClick={handleSignOut}>Salir</button>
             </>
           ) : (
