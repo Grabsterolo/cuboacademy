@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 
 export default function Navbar() {
   const { user, profile, signIn, signUp, signOut } = useAuth()
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [regPassword, setRegPassword] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [categories, setCategories] = useState([])
   const searchRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
@@ -42,6 +44,12 @@ export default function Navbar() {
   useEffect(() => {
     document.body.style.overflow = (modal || menuOpen) ? 'hidden' : ''
   }, [modal, menuOpen])
+
+  useEffect(() => {
+    supabase.from('categories').select('*').order('name').then(({ data }) => {
+      if (data) setCategories(data)
+    })
+  }, [])
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -227,10 +235,10 @@ export default function Navbar() {
                 </div>
                 <div style={{ borderTop: '1px solid var(--border)', padding: '.75rem 1.1rem' }}>
                   <div style={{ fontSize: '.75rem', color: '#B5B2AB', marginBottom: '.5rem', letterSpacing: '.04em', textTransform: 'uppercase', fontWeight: 600 }}>Áreas disponibles</div>
-                  {['Gestión de Procesos', 'Datos & Analytics', 'Liderazgo Consultivo'].map(area => (
-                    <div key={area} style={{ padding: '.4rem 0', fontSize: '.83rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer' }}>
+                  {categories.map(cat => (
+                    <div key={cat.id} style={{ padding: '.4rem 0', fontSize: '.83rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer' }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block', flexShrink: 0 }} />
-                      {area}
+                      {cat.name}
                     </div>
                   ))}
                 </div>

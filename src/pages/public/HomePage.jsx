@@ -1,43 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
 
-const TRACKS = [
-  {
-    name: 'Gestión de Procesos',
-    desc: 'Modelado BPMN, mejora continua, automatización y rediseño de operaciones. Aprende a analizar, optimizar y documentar procesos desde una perspectiva consultiva.',
-    count: '14 cursos disponibles',
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/>
-        <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M2 12h2"/>
-      </svg>
-    ),
-  },
-  {
-    name: 'Datos & Analytics',
-    desc: 'Power BI, SQL, storytelling con datos y cultura analítica. De la captura al insight, formación práctica para tomar decisiones basadas en evidencia.',
-    count: '18 cursos disponibles',
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round">
-        <line x1="18" y1="20" x2="18" y2="10"/>
-        <line x1="12" y1="20" x2="12" y2="4"/>
-        <line x1="6" y1="20" x2="6" y2="14"/>
-      </svg>
-    ),
-  },
-  {
-    name: 'Liderazgo Consultivo',
-    desc: 'Gestión del cambio, comunicación ejecutiva y facilitación de alto impacto. El liderazgo que las organizaciones modernas realmente necesitan.',
-    count: '12 cursos disponibles',
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round">
-        <circle cx="12" cy="12" r="10"/>
-        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
-      </svg>
-    ),
-  },
-]
+const CATEGORY_ICON = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+    <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+  </svg>
+)
 
 const DIFF_ITEMS = [
   {
@@ -148,7 +118,14 @@ export default function HomePage() {
   const [scrolled, setScrolled] = useState(false)
   const [wordIndex, setWordIndex] = useState(0)
   const [wordVisible, setWordVisible] = useState(true)
+  const [tracks, setTracks] = useState(null)
   useReveal()
+
+  useEffect(() => {
+    supabase.from('categories').select('*').order('name').then(({ data }) => {
+      setTracks(data || [])
+    })
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -345,18 +322,34 @@ export default function HomePage() {
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)', marginBottom: '.85rem' }}>Tres pilares, un propósito</h2>
             <p style={{ fontSize: '.95rem', color: 'var(--text-2)', lineHeight: 1.75, fontWeight: 300, maxWidth: 500 }}>Cada área fue elegida porque es donde las organizaciones más necesitan profesionales capaces de generar cambios reales.</p>
           </div>
-          <div className="reveal tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-            {TRACKS.map((t) => (
-              <div key={t.name} className="track-card" style={{ background: 'white', padding: '2.4rem 2rem' }}>
-                <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.3rem' }}>
-                  {t.icon}
+          {tracks === null ? (
+            <div className="tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{ background: 'white', padding: '2.4rem 2rem' }}>
+                  <div style={{ width: 44, height: 44, background: 'var(--border)', borderRadius: 10, marginBottom: '1.3rem' }} />
+                  <div style={{ height: 20, background: 'var(--border)', borderRadius: 6, marginBottom: '.6rem', width: '70%' }} />
+                  <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, marginBottom: '.4rem' }} />
+                  <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, width: '85%' }} />
                 </div>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.18rem', fontWeight: 700, marginBottom: '.6rem', color: 'var(--carbon)' }}>{t.name}</div>
-                <div style={{ fontSize: '.845rem', color: 'var(--text-2)', lineHeight: 1.7, fontWeight: 300 }}>{t.desc}</div>
-                <div style={{ marginTop: '1.4rem', fontSize: '.72rem', color: 'var(--jade)', fontWeight: 600, letterSpacing: '.05em' }}>{t.count}</div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : tracks.length === 0 ? (
+            <div style={{ padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)', background: 'white', border: '1px solid var(--border)', borderRadius: 14 }}>
+              Las áreas de formación estarán disponibles pronto.
+            </div>
+          ) : (
+            <div className="reveal tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+              {tracks.map((t) => (
+                <div key={t.id} className="track-card" style={{ background: 'white', padding: '2.4rem 2rem' }}>
+                  <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.3rem' }}>
+                    {CATEGORY_ICON}
+                  </div>
+                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.18rem', fontWeight: 700, marginBottom: '.6rem', color: 'var(--carbon)' }}>{t.name}</div>
+                  {t.description && <div style={{ fontSize: '.845rem', color: 'var(--text-2)', lineHeight: 1.7, fontWeight: 300 }}>{t.description}</div>}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
