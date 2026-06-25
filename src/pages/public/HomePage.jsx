@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const TRACKS = [
@@ -142,14 +142,29 @@ function useReveal() {
   }, [])
 }
 
+const ROTATING_WORDS = ['organizaciones', 'equipos', 'líderes', 'empresas']
+
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false)
+  const [wordIndex, setWordIndex] = useState(0)
+  const [wordVisible, setWordVisible] = useState(true)
   useReveal()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWordVisible(false)
+      setTimeout(() => {
+        setWordIndex(i => (i + 1) % ROTATING_WORDS.length)
+        setWordVisible(true)
+      }, 320)
+    }, 2500)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -181,12 +196,49 @@ export default function HomePage() {
         .btn-course:hover { background: var(--jade); color: white; border-color: var(--jade); }
         .metric-card { transition: background .25s; }
         .metric-card:hover { background: rgba(255,255,255,.09) !important; }
+        @keyframes orb1 {
+          0%,100% { transform: translate(0,0) scale(1); }
+          33% { transform: translate(60px,-40px) scale(1.08); }
+          66% { transform: translate(-30px,50px) scale(.95); }
+        }
+        @keyframes orb2 {
+          0%,100% { transform: translate(0,0) scale(1); }
+          40% { transform: translate(-70px,30px) scale(1.12); }
+          70% { transform: translate(40px,-60px) scale(.92); }
+        }
+        @keyframes orb3 {
+          0%,100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(50px,60px) scale(1.06); }
+        }
+        .rotating-word {
+          display: inline-block;
+          overflow: hidden;
+          vertical-align: bottom;
+          height: 1.06em;
+          line-height: 1.06;
+        }
+        .rotating-word span {
+          display: inline-block;
+          transition: opacity .3s ease, transform .3s ease;
+        }
+        .rotating-word span.out {
+          opacity: 0;
+          transform: translateY(-100%);
+        }
+        .rotating-word span.in {
+          opacity: 1;
+          transform: translateY(0);
+        }
       `}</style>
 
       {/* ── HERO ── */}
       <section style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '8rem 5% 5rem' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)', backgroundSize: '48px 48px', zIndex: 0 }} />
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'radial-gradient(ellipse 60% 55% at 30% 50%,rgba(22,125,120,.25) 0%,transparent 65%),radial-gradient(ellipse 40% 40% at 85% 30%,rgba(22,125,120,.12) 0%,transparent 60%)' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', width: 700, height: 700, borderRadius: '50%', background: 'rgba(22,125,120,.18)', filter: 'blur(90px)', top: '-10%', left: '-5%', animation: 'orb1 14s ease-in-out infinite' }} />
+          <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'rgba(22,125,120,.13)', filter: 'blur(70px)', top: '30%', right: '5%', animation: 'orb2 18s ease-in-out infinite', animationDelay: '-6s' }} />
+          <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'rgba(90,191,186,.08)', filter: 'blur(60px)', bottom: '0%', left: '40%', animation: 'orb3 22s ease-in-out infinite', animationDelay: '-11s' }} />
+        </div>
         <div style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '4rem', alignItems: 'center', width: '100%', maxWidth: 1200, margin: '0 auto' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(90,191,186,.75)', marginBottom: '1.4rem' }}>
@@ -194,7 +246,14 @@ export default function HomePage() {
               Formación diseñada por consultores
             </div>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2.6rem,4.2vw,4rem)', fontWeight: 700, lineHeight: 1.06, letterSpacing: '-.025em', color: 'white', marginBottom: '1.4rem' }}>
-              El conocimiento que<br />transforma <em style={{ fontStyle: 'normal', color: 'var(--jade-light)' }}>organizaciones</em>
+              El conocimiento que<br />transforma{' '}
+              <em style={{ fontStyle: 'normal', color: 'var(--jade-light)' }}>
+                <span className="rotating-word">
+                  <span className={wordVisible ? 'in' : 'out'}>
+                    {ROTATING_WORDS[wordIndex]}
+                  </span>
+                </span>
+              </em>
             </h1>
             <p style={{ fontSize: '1rem', color: 'rgba(248,246,241,.65)', lineHeight: 1.75, maxWidth: 480, marginBottom: '2.5rem', fontWeight: 300 }}>
               Cubo Academy convierte experiencia consultiva real en cursos de alto impacto. Procesos, datos y liderazgo — metodología que ya funciona en empresas reales.
