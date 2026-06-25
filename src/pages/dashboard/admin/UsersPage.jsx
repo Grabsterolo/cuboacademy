@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 
+// NOTA: Para que la creación de usuarios no requiera confirmación de correo,
+// ir a Supabase Dashboard → Authentication → Providers → Email
+// y desactivar "Confirm email".
+
 const navItems = [
   { label: 'Panel general', path: '/dashboard', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> },
   { label: 'Usuarios', path: '/dashboard/usuarios', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
@@ -23,6 +27,14 @@ const TABS = [
   { label: 'Instructores', value: 'instructor' },
 ]
 
+function LabelField({ children }) {
+  return (
+    <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
+      {children}
+    </label>
+  )
+}
+
 export default function UsersPage() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -30,7 +42,23 @@ export default function UsersPage() {
   const [activeTab, setActiveTab] = useState(null)
   const [roleChanging, setRoleChanging] = useState(null)
 
+  // Modal
+  const [showModal, setShowModal] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [newEmail, setNewEmail] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [newRole, setNewRole] = useState('student')
+  const [formLoading, setFormLoading] = useState(false)
+  const [formError, setFormError] = useState('')
+  const [formSuccess, setFormSuccess] = useState(false)
+
   useEffect(() => { loadUsers() }, [])
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') closeModal() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
 
   async function loadUsers() {
     setLoading(true)
@@ -54,6 +82,59 @@ export default function UsersPage() {
     setRoleChanging(null)
   }
 
+  function closeModal() {
+    setShowModal(false)
+    setFormError('')
+    setFormSuccess(false)
+    setNewName('')
+    setNewEmail('')
+    setNewPassword('')
+    setNewRole('student')
+  }
+
+  async function handleCreateUser(e) {
+    e.preventDefault()
+    if (newPassword.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
+    setFormError('')
+    setFormLoading(true)
+
+    // Guardar sesión actual del admin para restaurarla tras el signUp
+    const { data: { session: adminSession } } = await supabase.auth.getSession()
+
+    const { data, error } = await supabase.auth.signUp({
+      email: newEmail,
+      password: newPassword,
+      options: {
+        data: { full_name: newName, role: newRole },
+      },
+    })
+
+    if (error) {
+      // Restaurar sesión del admin aunque haya error
+      if (adminSession) await supabase.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token })
+      setFormError(error.message)
+      setFormLoading(false)
+      return
+    }
+
+    // Actualizar perfil con rol y nombre correctos (por si el trigger tiene delay)
+    if (data.user) {
+      await supabase.from('profiles').update({ role: newRole, full_name: newName }).eq('id', data.user.id)
+    }
+
+    // Restaurar sesión del admin
+    if (adminSession) {
+      await supabase.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token })
+    }
+
+    setFormLoading(false)
+    setFormSuccess(true)
+    setTimeout(() => {
+      closeModal()
+      loadUsers()
+    }, 1400)
+  }
+
   const filtered = users.filter(u => {
     const matchesTab = !activeTab || u.role === activeTab
     const q = search.toLowerCase()
@@ -71,13 +152,32 @@ export default function UsersPage() {
         .role-select:focus { border-color: var(--jade); }
         .role-select:disabled { opacity: .5; cursor: not-allowed; }
         .tab-btn { padding: .38rem .9rem; border-radius: 6px; border: none; cursor: pointer; font-size: .82rem; font-weight: 500; font-family: var(--sans); transition: background .15s, color .15s; }
+        .form-inp-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; transition: border-color .2s, background .2s; font-family: var(--sans); }
+        .form-inp-u:focus { border-color: var(--jade); background: white; }
+        .form-sel-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; cursor: pointer; font-family: var(--sans); transition: border-color .2s; }
+        .form-sel-u:focus { border-color: var(--jade); }
+        .btn-create { display: flex; align-items: center; gap: .4rem; padding: .5rem 1.1rem; background: var(--jade); color: white; border: none; border-radius: 8px; font-size: .855rem; font-weight: 600; font-family: var(--sans); cursor: pointer; transition: background .2s; -webkit-tap-highlight-color: transparent; }
+        .btn-create:hover { background: var(--jade-hover); }
+        .btn-submit-u { width: 100%; padding: .875rem; background: var(--jade); color: white; border: none; border-radius: 8px; font-size: .93rem; font-weight: 700; cursor: pointer; font-family: var(--sans); transition: background .2s, opacity .2s; margin-top: .25rem; }
+        .btn-submit-u:hover { background: var(--jade-hover); }
+        .btn-submit-u:disabled { opacity: .6; cursor: not-allowed; }
+        .users-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(23,26,28,.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
       `}</style>
+
       <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
 
         {/* Header */}
-        <div style={{ marginBottom: '2rem' }}>
-          <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Gestión</p>
-          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Usuarios</h1>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem' }}>
+          <div>
+            <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Gestión</p>
+            <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Usuarios</h1>
+          </div>
+          <button className="btn-create" onClick={() => setShowModal(true)}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nuevo usuario
+          </button>
         </div>
 
         {/* Toolbar */}
@@ -137,9 +237,7 @@ export default function UsersPage() {
                       </td>
                       <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
                         <span style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>
-                          {u.created_at
-                            ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })
-                            : '—'}
+                          {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                         </span>
                       </td>
                       <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
@@ -163,6 +261,63 @@ export default function UsersPage() {
           )}
         </div>
       </div>
+
+      {/* Modal crear usuario */}
+      {showModal && (
+        <div className="users-overlay" onClick={e => { if (e.target === e.currentTarget) closeModal() }}>
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', width: '100%', maxWidth: 420, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
+            <button onClick={closeModal} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: 6, borderRadius: 6, minWidth: 32, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+
+            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.6rem' }}>Crear usuario</h2>
+
+            {formSuccess ? (
+              <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)' }}>Usuario creado correctamente</p>
+              </div>
+            ) : (
+              <form onSubmit={handleCreateUser}>
+                {formError && (
+                  <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 7, padding: '.6rem .9rem', fontSize: '.8rem', marginBottom: '.9rem' }}>
+                    {formError}
+                  </div>
+                )}
+                <div style={{ marginBottom: '.85rem' }}>
+                  <LabelField>Nombre completo</LabelField>
+                  <input type="text" className="form-inp-u" placeholder="Nombre del usuario" required value={newName} onChange={e => setNewName(e.target.value)} />
+                </div>
+                <div style={{ marginBottom: '.85rem' }}>
+                  <LabelField>Correo electrónico</LabelField>
+                  <input type="email" className="form-inp-u" placeholder="correo@ejemplo.com" required value={newEmail} onChange={e => setNewEmail(e.target.value)} />
+                </div>
+                <div style={{ marginBottom: '.85rem' }}>
+                  <LabelField>Contraseña</LabelField>
+                  <input type="password" className="form-inp-u" placeholder="Mínimo 8 caracteres" required minLength={8} value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                </div>
+                <div style={{ marginBottom: '1.1rem' }}>
+                  <LabelField>Rol</LabelField>
+                  <select className="form-sel-u" value={newRole} onChange={e => setNewRole(e.target.value)}>
+                    <option value="student">Estudiante</option>
+                    <option value="instructor">Instructor</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+                <button type="submit" className="btn-submit-u" disabled={formLoading}>
+                  {formLoading ? 'Creando usuario…' : 'Crear usuario'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   )
 }
