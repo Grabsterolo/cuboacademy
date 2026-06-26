@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 
@@ -59,6 +59,7 @@ function nextOrder(items) {
 
 export default function CourseStructurePage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [course, setCourse] = useState(null)
   const [modules, setModules] = useState([])
   const [loading, setLoading] = useState(true)
@@ -82,6 +83,8 @@ export default function CourseStructurePage() {
   const [lesVideo, setLesVideo] = useState('')
   const [lesDuration, setLesDuration] = useState('')
   const [lesPreview, setLesPreview] = useState(false)
+  const [lesPdfUrl, setLesPdfUrl] = useState('')
+  const [lesLinkUrl, setLesLinkUrl] = useState('')
   const [lesSaving, setLesSaving] = useState(false)
   const [lesError, setLesError] = useState('')
   const [confirmDelLes, setConfirmDelLes] = useState(null)
@@ -164,14 +167,15 @@ export default function CourseStructurePage() {
 
   async function handleDeleteMod(modId) {
     setConfirmDelMod(null)
-    // Delete lessons first, then module
+    const lessonIds = (modules.find(m => m.id === modId)?.lessons || []).map(l => l.id)
+    if (lessonIds.length > 0) await supabase.from('resources').delete().in('lesson_id', lessonIds)
     await supabase.from('lessons').delete().eq('module_id', modId)
     await supabase.from('modules').delete().eq('id', modId)
     setModules(ms => ms.filter(m => m.id !== modId))
   }
 
   // ── Lesson modal ──
-  function openLesModal(moduleId, les = null) {
+  async function openLesModal(moduleId, les = null) {
     setLesModuleId(moduleId)
     setEditingLes(les)
     setLesTitle(les?.title || '')
@@ -180,9 +184,25 @@ export default function CourseStructurePage() {
     setLesDuration(les?.duration_mins != null ? String(les.duration_mins) : '')
     setLesPreview(les?.is_free_preview ?? false)
     setLesError('')
+    if (les) {
+      const { data: resources } = await supabase.from('resources').select('file_url, file_type').eq('lesson_id', les.id)
+      setLesPdfUrl(resources?.find(r => r.file_type === 'pdf')?.file_url || '')
+      setLesLinkUrl(resources?.find(r => r.file_type === 'link')?.file_url || '')
+    } else {
+      setLesPdfUrl('')
+      setLesLinkUrl('')
+    }
     setShowLesModal(true)
   }
-  function closeLesModal() { setShowLesModal(false); setEditingLes(null); setLesError('') }
+  function closeLesModal() { setShowLesModal(false); setEditingLes(null); setLesError(''); setLesPdfUrl(''); setLesLinkUrl('') }
+
+  async function saveResources(lessonId) {
+    await supabase.from('resources').delete().eq('lesson_id', lessonId)
+    const toInsert = []
+    if (lesPdfUrl.trim()) toInsert.push({ lesson_id: lessonId, title: `${lesTitle.trim()} — PDF`, file_url: lesPdfUrl.trim(), file_type: 'pdf' })
+    if (lesLinkUrl.trim()) toInsert.push({ lesson_id: lessonId, title: `${lesTitle.trim()} — Link`, file_url: lesLinkUrl.trim(), file_type: 'link' })
+    if (toInsert.length > 0) await supabase.from('resources').insert(toInsert)
+  }
 
   async function handleSaveLes(e) {
     e.preventDefault()
@@ -200,12 +220,12 @@ export default function CourseStructurePage() {
         is_free_preview: lesPreview,
       }
       const { error } = await supabase.from('lessons').update(payload).eq('id', editingLes.id)
-      setLesSaving(false)
-      if (error) { setLesError(error.message); return }
+      if (error) { setLesSaving(false); setLesError(error.message); return }
       setModules(ms => ms.map(m => m.id === lesModuleId
         ? { ...m, lessons: m.lessons.map(l => l.id === editingLes.id ? { ...l, ...payload } : l) }
         : m
       ))
+      await saveResources(editingLes.id)
     } else {
       const order_index = nextOrder(module?.lessons || [])
       const payload = {
@@ -218,15 +238,17 @@ export default function CourseStructurePage() {
         order_index,
       }
       const { data, error } = await supabase.from('lessons').insert(payload).select('*').single()
-      setLesSaving(false)
-      if (error) { setLesError(error.message); return }
+      if (error) { setLesSaving(false); setLesError(error.message); return }
       setModules(ms => ms.map(m => m.id === lesModuleId ? { ...m, lessons: [...m.lessons, data] } : m))
+      await saveResources(data.id)
     }
+    setLesSaving(false)
     closeLesModal()
   }
 
   async function handleDeleteLes(moduleId, lesId) {
     setConfirmDelLes(null)
+    await supabase.from('resources').delete().eq('lesson_id', lesId)
     await supabase.from('lessons').delete().eq('id', lesId)
     setModules(ms => ms.map(m => m.id === moduleId ? { ...m, lessons: m.lessons.filter(l => l.id !== lesId) } : m))
   }
@@ -252,16 +274,26 @@ export default function CourseStructurePage() {
       <div className="csp-pad" style={{ padding: '2.5rem 2.5rem 3rem', maxWidth: 820 }}>
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
-          <Link to="/dashboard/cursos" style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.85rem', textDecoration: 'none' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--jade)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-            Cursos
-          </Link>
-          <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Estructura del curso</p>
-          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.4rem,3vw,1.9rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.2 }}>
-            {loading ? '…' : course?.title || 'Curso'}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <Link to="/dashboard/cursos" style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.85rem', textDecoration: 'none' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--jade)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Cursos
+              </Link>
+              <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Estructura del curso</p>
+              <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.4rem,3vw,1.9rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.2 }}>
+                {loading ? '…' : course?.title || 'Curso'}
+              </h1>
+            </div>
+            <button onClick={() => navigate('/dashboard/cursos')}
+              style={{ padding: '.65rem 1.25rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, transition: 'background .2s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--jade-dark)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'var(--jade)'}>
+              Guardar y volver a cursos
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -441,6 +473,16 @@ export default function CourseStructurePage() {
                   <input type="checkbox" checked={lesPreview} onChange={e => setLesPreview(e.target.checked)} />
                   <span className="toggle-slider-csp" />
                 </label>
+              </div>
+              {/* Recursos adicionales */}
+              <div style={{ marginBottom: '.9rem', padding: '1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8 }}>
+                <div style={{ fontSize: '.7rem', fontWeight: 700, color: '#9B9894', marginBottom: '.75rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>Recursos adicionales</div>
+                <Field label="URL del PDF o archivo">
+                  <input className="csp-inp" type="url" placeholder="https://..." value={lesPdfUrl} onChange={e => setLesPdfUrl(e.target.value)} style={INP} onFocus={onFocus} onBlur={onBlur} />
+                </Field>
+                <Field label="Link externo">
+                  <input className="csp-inp" type="url" placeholder="https://..." value={lesLinkUrl} onChange={e => setLesLinkUrl(e.target.value)} style={{ ...INP, marginBottom: 0 }} onFocus={onFocus} onBlur={onBlur} />
+                </Field>
               </div>
               <button type="submit" disabled={lesSaving}
                 style={{ width: '100%', padding: '.8rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.9rem', fontWeight: 700, cursor: lesSaving ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: lesSaving ? .65 : 1 }}>
