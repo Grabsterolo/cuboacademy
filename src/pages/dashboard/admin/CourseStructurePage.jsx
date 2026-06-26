@@ -177,8 +177,8 @@ export default function CourseStructurePage() {
     setLesTitle(les?.title || '')
     setLesDesc(les?.description || '')
     setLesVideo(les?.video_url || '')
-    setLesDuration(les?.duration_minutes != null ? String(les.duration_minutes) : '')
-    setLesPreview(les?.is_preview ?? false)
+    setLesDuration(les?.duration_mins != null ? String(les.duration_mins) : '')
+    setLesPreview(les?.is_free_preview ?? false)
     setLesError('')
     setShowLesModal(true)
   }
@@ -196,8 +196,8 @@ export default function CourseStructurePage() {
         title: lesTitle.trim(),
         description: lesDesc.trim() || null,
         video_url: lesVideo.trim() || null,
-        duration_minutes: lesDuration !== '' ? parseInt(lesDuration) : null,
-        is_preview: lesPreview,
+        duration_mins: lesDuration !== '' ? parseInt(lesDuration) : null,
+        is_free_preview: lesPreview,
       }
       const { error } = await supabase.from('lessons').update(payload).eq('id', editingLes.id)
       setLesSaving(false)
@@ -213,8 +213,8 @@ export default function CourseStructurePage() {
         title: lesTitle.trim(),
         description: lesDesc.trim() || null,
         video_url: lesVideo.trim() || null,
-        duration_minutes: lesDuration !== '' ? parseInt(lesDuration) : null,
-        is_preview: lesPreview,
+        duration_mins: lesDuration !== '' ? parseInt(lesDuration) : null,
+        is_free_preview: lesPreview,
         order_index,
       }
       const { data, error } = await supabase.from('lessons').insert(payload).select('*').single()
@@ -330,10 +330,10 @@ export default function CourseStructurePage() {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: '.845rem', fontWeight: 500, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{les.title}</div>
                             <div style={{ display: 'flex', gap: '.75rem', marginTop: '.15rem' }}>
-                              {les.duration_minutes != null && (
-                                <span style={{ fontSize: '.68rem', color: 'var(--text-2)' }}>{les.duration_minutes} min</span>
+                              {les.duration_mins != null && (
+                                <span style={{ fontSize: '.68rem', color: 'var(--text-2)' }}>{les.duration_mins} min</span>
                               )}
-                              {les.is_preview && (
+                              {les.is_free_preview && (
                                 <span style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', padding: '1px 6px', borderRadius: 10 }}>Preview</span>
                               )}
                             </div>

@@ -85,7 +85,7 @@ export default function CourseFormPage() {
       setDescription(data.description || '')
       setInstructorId(data.instructor_id || '')
       setCategoryId(data.category_id || '')
-      setThumbnailUrl(data.thumbnail_url || '')
+      setThumbnailUrl(data.cover_image_url || '')
       setPromoVideoUrl(data.promo_video_url || '')
       setPrice(data.price != null ? String(data.price) : '')
       setDurationHours(data.duration_hours != null ? String(data.duration_hours) : '')
@@ -120,7 +120,7 @@ export default function CourseFormPage() {
       description: description.trim() || null,
       instructor_id: instructorId || null,
       category_id: categoryId || null,
-      thumbnail_url: thumbnailUrl.trim() || null,
+      cover_image_url: thumbnailUrl.trim() || null,
       promo_video_url: promoVideoUrl.trim() || null,
       price: price !== '' ? parseFloat(price) : null,
       duration_hours: durationHours !== '' ? parseInt(durationHours) : null,

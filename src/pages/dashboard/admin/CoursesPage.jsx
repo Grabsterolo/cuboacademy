@@ -85,7 +85,7 @@ export default function CoursesPage() {
     setLoading(true)
     const { data } = await supabase
       .from('courses')
-      .select('id, title, slug, thumbnail_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
+      .select('id, title, slug, cover_image_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
       .order('created_at', { ascending: false })
     if (data) setCourses(data)
     setLoading(false)
@@ -201,8 +201,8 @@ export default function CoursesPage() {
                       {/* Curso */}
                       <td style={{ padding: '.8rem 1rem', minWidth: 220 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-                          {c.thumbnail_url ? (
-                            <img src={c.thumbnail_url} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0 }} />
+                          {c.cover_image_url ? (
+                            <img src={c.cover_image_url} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0 }} />
                           ) : (
                             <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
