@@ -11,6 +11,7 @@ import CoursesPage from './pages/dashboard/admin/CoursesPage'
 import OrdersPage from './pages/dashboard/admin/OrdersPage'
 import CertificatesPage from './pages/dashboard/admin/CertificatesPage'
 import ReportsPage from './pages/dashboard/admin/ReportsPage'
+import SettingsPage from './pages/dashboard/admin/SettingsPage'
 
 function AppShell() {
   const location = useLocation()
@@ -77,6 +78,14 @@ function AppShell() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <ReportsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/configuracion"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />
