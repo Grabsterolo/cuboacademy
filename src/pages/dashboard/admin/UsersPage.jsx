@@ -2,10 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 
-// NOTA: Para que la creación de usuarios no requiera confirmación de correo,
-// ir a Supabase Dashboard → Authentication → Providers → Email
-// y desactivar "Confirm email".
-
 const navItems = [
   { label: 'Panel general', path: '/dashboard', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> },
   { label: 'Usuarios', path: '/dashboard/usuarios', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
@@ -43,23 +39,32 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState(null)
-  const [roleChanging, setRoleChanging] = useState(null)
-  const [roleError, setRoleError] = useState('')
+  const [toast, setToast] = useState('')
 
-  // Modal
-  const [showModal, setShowModal] = useState(false)
+  // Create modal
+  const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [newRole, setNewRole] = useState('student')
-  const [formLoading, setFormLoading] = useState(false)
-  const [formError, setFormError] = useState('')
-  const [formSuccess, setFormSuccess] = useState(false)
+  const [createLoading, setCreateLoading] = useState(false)
+  const [createError, setCreateError] = useState('')
+  const [createSuccess, setCreateSuccess] = useState(false)
+
+  // Edit modal
+  const [editTarget, setEditTarget] = useState(null)
+  const [editName, setEditName] = useState('')
+  const [editRole, setEditRole] = useState('student')
+  const [editActive, setEditActive] = useState(true)
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState('')
 
   useEffect(() => { loadUsers() }, [])
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') closeModal() }
+    const onKey = (e) => {
+      if (e.key === 'Escape') { closeCreate(); closeEdit() }
+    }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
@@ -68,32 +73,22 @@ export default function UsersPage() {
     setLoading(true)
     const { data } = await supabase
       .from('users_view')
-      .select('id, full_name, email, role, created_at')
+      .select('id, full_name, email, role, created_at, is_active')
       .order('created_at', { ascending: false })
     if (data) setUsers(data)
     setLoading(false)
   }
 
-  async function handleRoleChange(userId, newRole, prevRole) {
-    setRoleChanging(userId)
-    setRoleError('')
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
-    const { error } = await supabase
-      .from('profiles')
-      .update({ role: newRole })
-      .eq('id', userId)
-    if (error) {
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: prevRole } : u))
-      setRoleError('No se pudo cambiar el rol. Intenta de nuevo.')
-      setTimeout(() => setRoleError(''), 4000)
-    }
-    setRoleChanging(null)
+  function showToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3500)
   }
 
-  function closeModal() {
-    setShowModal(false)
-    setFormError('')
-    setFormSuccess(false)
+  // ── Create user ──
+  function closeCreate() {
+    setShowCreate(false)
+    setCreateError('')
+    setCreateSuccess(false)
     setNewName('')
     setNewEmail('')
     setNewPassword('')
@@ -102,46 +97,79 @@ export default function UsersPage() {
 
   async function handleCreateUser(e) {
     e.preventDefault()
-    if (newPassword.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
-    setFormError('')
-    setFormLoading(true)
+    if (newPassword.length < 8) { setCreateError('La contraseña debe tener al menos 8 caracteres.'); return }
+    setCreateError('')
+    setCreateLoading(true)
 
-    // Guardar sesión actual del admin para restaurarla tras el signUp
     const { data: { session: adminSession } } = await supabase.auth.getSession()
 
     const { data, error } = await supabase.auth.signUp({
       email: newEmail,
       password: newPassword,
-      options: {
-        emailRedirectTo: null,
-        data: { full_name: newName, role: newRole },
-      },
+      options: { emailRedirectTo: null, data: { full_name: newName, role: newRole } },
     })
 
     if (error) {
-      // Restaurar sesión del admin aunque haya error
       if (adminSession) await supabase.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token })
-      setFormError(error?.message || 'Error al crear el usuario.')
-      setFormLoading(false)
+      setCreateError(error?.message || 'Error al crear el usuario.')
+      setCreateLoading(false)
       return
     }
 
-    // Actualizar perfil con rol y nombre correctos (por si el trigger tiene delay)
     if (data.user) {
       await supabase.from('profiles').update({ role: newRole, full_name: newName }).eq('id', data.user.id)
     }
 
-    // Restaurar sesión del admin
     if (adminSession) {
       await supabase.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token })
     }
 
-    setFormLoading(false)
-    setFormSuccess(true)
-    setTimeout(() => {
-      closeModal()
-      loadUsers()
-    }, 1400)
+    setCreateLoading(false)
+    setCreateSuccess(true)
+    setTimeout(() => { closeCreate(); loadUsers() }, 1400)
+  }
+
+  // ── Edit user ──
+  function openEdit(u) {
+    setEditTarget(u)
+    setEditName(u.full_name || '')
+    setEditRole(u.role || 'student')
+    setEditActive(u.is_active !== false)
+    setEditError('')
+  }
+
+  function closeEdit() {
+    setEditTarget(null)
+    setEditError('')
+  }
+
+  async function handleSaveEdit(e) {
+    e.preventDefault()
+    if (!editTarget) return
+    setEditLoading(true)
+    setEditError('')
+
+    const prev = users.find(u => u.id === editTarget.id)
+    setUsers(us => us.map(u => u.id === editTarget.id
+      ? { ...u, full_name: editName, role: editRole, is_active: editActive }
+      : u
+    ))
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: editName, role: editRole, is_active: editActive })
+      .eq('id', editTarget.id)
+
+    setEditLoading(false)
+
+    if (error) {
+      setUsers(us => us.map(u => u.id === editTarget.id ? prev : u))
+      setEditError(error?.message || 'Error al guardar.')
+      return
+    }
+
+    showToast('Usuario actualizado correctamente.')
+    closeEdit()
   }
 
   const filtered = users.filter(u => {
@@ -157,9 +185,6 @@ export default function UsersPage() {
     <DashboardLayout navItems={navItems}>
       <style>{`
         .users-table tr:hover td { background: #fafafa; }
-        .role-select { width: 140px; padding: .35rem .6rem; font-size: .8rem; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--carbon); cursor: pointer; font-family: var(--sans); transition: border-color .15s, opacity .15s; outline: none; }
-        .role-select:focus { border-color: var(--jade); }
-        .role-select:disabled { opacity: .45; cursor: not-allowed; }
         .tab-btn { padding: .38rem .9rem; border-radius: 6px; border: none; cursor: pointer; font-size: .82rem; font-weight: 500; font-family: var(--sans); transition: background .15s, color .15s; }
         .form-inp-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; transition: border-color .2s, background .2s; font-family: var(--sans); }
         .form-inp-u:focus { border-color: var(--jade); background: white; }
@@ -171,6 +196,15 @@ export default function UsersPage() {
         .btn-submit-u:hover { background: var(--jade-hover); }
         .btn-submit-u:disabled { opacity: .6; cursor: not-allowed; }
         .users-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(23,26,28,.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; min-width: 30px; min-height: 30px; }
+        .icon-btn:hover { background: var(--jade-soft); color: var(--jade); }
+        .toggle-track-u { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+        .toggle-track-u input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .toggle-slider-u { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: background .2s; }
+        .toggle-slider-u::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+        .toggle-track-u input:checked + .toggle-slider-u { background: var(--jade); }
+        .toggle-track-u input:checked + .toggle-slider-u::after { transform: translateX(18px); }
+        .users-toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--carbon); color: white; padding: .65rem 1.25rem; border-radius: 8px; font-size: .84rem; font-family: var(--sans); font-weight: 500; z-index: 400; white-space: nowrap; box-shadow: 0 4px 20px rgba(23,26,28,.2); pointer-events: none; }
         @media (max-width: 768px) {
           .users-pad { padding: 1.25rem 1rem 2rem !important; }
           .users-header { flex-direction: column !important; align-items: flex-start !important; }
@@ -191,7 +225,7 @@ export default function UsersPage() {
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Gestión</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Usuarios</h1>
           </div>
-          <button className="btn-create" onClick={() => setShowModal(true)}>
+          <button className="btn-create" onClick={() => setShowCreate(true)}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
@@ -219,13 +253,6 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {/* Role change error toast */}
-        {roleError && (
-          <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 8, padding: '.6rem 1rem', fontSize: '.83rem', marginBottom: '1rem', fontFamily: 'var(--sans)' }}>
-            {roleError}
-          </div>
-        )}
-
         {/* Table */}
         <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
           {loading ? (
@@ -237,45 +264,66 @@ export default function UsersPage() {
               <table className="users-table" style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--sans)' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--cream)' }}>
-                    {['Usuario', 'Correo', 'Rol', 'Registro', 'Acciones'].map(h => (
+                    {['Usuario', 'Correo', 'Estado', 'Registro', ''].map(h => (
                       <th key={h} style={{ padding: '.75rem 1.1rem', textAlign: 'left', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((u, i) => (
-                    <tr key={u.id} style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                      <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
-                          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
-                            {(u.full_name || u.email || '?')[0].toUpperCase()}
+                  {filtered.map((u, i) => {
+                    const roleStyle = ROLE_STYLE[u.role] || ROLE_STYLE.student
+                    return (
+                      <tr key={u.id} style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                        {/* Usuario */}
+                        <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
+                            <div style={{ width: 34, height: 34, borderRadius: '50%', background: u.is_active !== false ? 'var(--jade)' : '#C8C5BF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                              {(u.full_name || u.email || '?')[0].toUpperCase()}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '.875rem', fontWeight: 500, color: 'var(--carbon)' }}>{u.full_name || '—'}</div>
+                              <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 20, marginTop: 2, display: 'inline-block', ...roleStyle }}>
+                                {ROLE_LABELS[u.role] || u.role}
+                              </span>
+                            </div>
                           </div>
-                          <span style={{ fontSize: '.875rem', fontWeight: 500, color: 'var(--carbon)' }}>{u.full_name || '—'}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '.85rem 1.1rem' }}>
-                        <span style={{ fontSize: '.845rem', color: 'var(--text-2)' }}>{u.email || '—'}</span>
-                      </td>
-                      <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontSize: '.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, letterSpacing: '.04em', ...(ROLE_STYLE[u.role] || ROLE_STYLE.student) }}>
-                          {ROLE_LABELS[u.role] || u.role}
-                        </span>
-                      </td>
-                      <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>
-                          {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
-                        <select className="role-select" value={u.role} disabled={roleChanging === u.id}
-                          onChange={e => handleRoleChange(u.id, e.target.value, u.role)}>
-                          <option value="student">Estudiante</option>
-                          <option value="instructor">Instructor</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        {/* Correo */}
+                        <td style={{ padding: '.85rem 1.1rem' }}>
+                          <span style={{ fontSize: '.845rem', color: 'var(--text-2)' }}>{u.email || '—'}</span>
+                        </td>
+                        {/* Estado */}
+                        <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
+                          {u.is_active !== false ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', fontSize: '.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.22)' }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block' }} />
+                              Activo
+                            </span>
+                          ) : (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', fontSize: '.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C8C5BF', display: 'inline-block' }} />
+                              Inactivo
+                            </span>
+                          )}
+                        </td>
+                        {/* Registro */}
+                        <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>
+                            {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                          </span>
+                        </td>
+                        {/* Editar */}
+                        <td style={{ padding: '.85rem 1.1rem' }}>
+                          <button className="icon-btn" onClick={() => openEdit(u)} title="Editar usuario">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -288,33 +336,27 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Modal crear usuario */}
-      {showModal && (
-        <div className="users-overlay" onClick={e => { if (e.target === e.currentTarget) closeModal() }}>
+      {/* ── Modal: crear usuario ── */}
+      {showCreate && (
+        <div className="users-overlay" onClick={e => { if (e.target === e.currentTarget) closeCreate() }}>
           <div className="users-modal" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', width: '100%', maxWidth: 420, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
-            <button onClick={closeModal} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: 6, borderRadius: 6, minWidth: 32, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={closeCreate} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: 6, borderRadius: 6, minWidth: 32, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
-
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.6rem' }}>Crear usuario</h2>
-
-            {formSuccess ? (
+            {createSuccess ? (
               <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
                 <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)' }}>Usuario creado correctamente</p>
               </div>
             ) : (
               <form onSubmit={handleCreateUser}>
-                {formError && (
-                  <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 7, padding: '.6rem .9rem', fontSize: '.8rem', marginBottom: '.9rem' }}>
-                    {formError}
-                  </div>
+                {createError && (
+                  <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 7, padding: '.6rem .9rem', fontSize: '.8rem', marginBottom: '.9rem' }}>{createError}</div>
                 )}
                 <div style={{ marginBottom: '.85rem' }}>
                   <LabelField>Nombre completo</LabelField>
@@ -336,14 +378,75 @@ export default function UsersPage() {
                     <option value="admin">Administrador</option>
                   </select>
                 </div>
-                <button type="submit" className="btn-submit-u" disabled={formLoading}>
-                  {formLoading ? 'Creando usuario…' : 'Crear usuario'}
+                <button type="submit" className="btn-submit-u" disabled={createLoading}>
+                  {createLoading ? 'Creando usuario…' : 'Crear usuario'}
                 </button>
               </form>
             )}
           </div>
         </div>
       )}
+
+      {/* ── Modal: editar usuario ── */}
+      {editTarget && (
+        <div className="users-overlay" onClick={e => { if (e.target === e.currentTarget) closeEdit() }}>
+          <div className="users-modal" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', width: '100%', maxWidth: 420, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
+            <button onClick={closeEdit} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: 6, borderRadius: 6, minWidth: 32, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+
+            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.6rem' }}>Editar usuario</h2>
+
+            <form onSubmit={handleSaveEdit}>
+              {editError && (
+                <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 7, padding: '.6rem .9rem', fontSize: '.8rem', marginBottom: '.9rem' }}>{editError}</div>
+              )}
+
+              {/* Correo — solo lectura */}
+              <div style={{ marginBottom: '.85rem', padding: '.65rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 7 }}>
+                <div style={{ fontSize: '.68rem', fontWeight: 600, color: '#B5B2AB', letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '.2rem' }}>Correo</div>
+                <div style={{ fontSize: '.9rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>{editTarget.email}</div>
+              </div>
+
+              <div style={{ marginBottom: '.85rem' }}>
+                <LabelField>Nombre completo</LabelField>
+                <input type="text" className="form-inp-u" placeholder="Nombre del usuario" required value={editName} onChange={e => setEditName(e.target.value)} />
+              </div>
+
+              <div style={{ marginBottom: '.85rem' }}>
+                <LabelField>Rol</LabelField>
+                <select className="form-sel-u" value={editRole} onChange={e => setEditRole(e.target.value)}>
+                  <option value="student">Estudiante</option>
+                  <option value="instructor">Instructor</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.75rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 7 }}>
+                  <div>
+                    <div style={{ fontSize: '.875rem', fontWeight: 600, color: 'var(--carbon)', fontFamily: 'var(--sans)' }}>Usuario activo</div>
+                    <div style={{ fontSize: '.75rem', color: 'var(--text-2)', marginTop: '.1rem' }}>Puede iniciar sesión en la plataforma</div>
+                  </div>
+                  <label className="toggle-track-u">
+                    <input type="checkbox" checked={editActive} onChange={e => setEditActive(e.target.checked)} />
+                    <span className="toggle-slider-u" />
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" className="btn-submit-u" disabled={editLoading}>
+                {editLoading ? 'Guardando…' : 'Guardar cambios'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && <div className="users-toast">{toast}</div>}
     </DashboardLayout>
   )
 }
