@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
+import { useSettings } from '../../context/SettingsContext'
 
 const navItems = [
   {
@@ -23,6 +24,7 @@ const navItems = [
 
 export default function StudentDashboard() {
   const { profile, user } = useAuth()
+  const { settings } = useSettings()
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'estudiante').split(' ')[0]
 
   return (
@@ -47,7 +49,7 @@ export default function StudentDashboard() {
             Todavía no tienes cursos
           </h2>
           <p style={{ fontSize: '.85rem', color: 'var(--text-2)', lineHeight: 1.65, marginBottom: '1.5rem', fontWeight: 300 }}>
-            Explora el catálogo y empieza a aprender con formación diseñada por consultores activos.
+            {settings.welcome_message || 'Explora el catálogo y empieza a aprender con formación diseñada por consultores activos.'}
           </p>
           <Link to="/cursos" style={{ display: 'inline-block', padding: '.75rem 1.75rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 600 }}>
             Explorar catálogo

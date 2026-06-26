@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useSettings } from '../../context/SettingsContext'
 
 const CATEGORY_ICON = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -115,6 +116,7 @@ function useReveal() {
 const ROTATING_WORDS = ['organizaciones', 'equipos', 'líderes', 'empresas']
 
 export default function HomePage() {
+  const { settings } = useSettings()
   const [scrolled, setScrolled] = useState(false)
   const [wordIndex, setWordIndex] = useState(0)
   const [wordVisible, setWordVisible] = useState(true)
@@ -257,7 +259,7 @@ export default function HomePage() {
               Formación diseñada por consultores
             </div>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2.6rem,4.2vw,4rem)', fontWeight: 700, lineHeight: 1.06, letterSpacing: '-.025em', color: 'white', marginBottom: '1.4rem' }}>
-              El conocimiento que<br />transforma{' '}
+              {settings.hero_title ? settings.hero_title : <>El conocimiento que<br />transforma</>}{' '}
               <em style={{ fontStyle: 'normal', color: 'var(--jade-light)' }}>
                 <span className="rotating-word">
                   <span className="rotating-word-ghost">organizaciones</span>
@@ -268,7 +270,7 @@ export default function HomePage() {
               </em>
             </h1>
             <p style={{ fontSize: '1rem', color: 'rgba(248,246,241,.65)', lineHeight: 1.75, maxWidth: 480, marginBottom: '2.5rem', fontWeight: 300 }}>
-              Cubo Academy convierte experiencia consultiva real en cursos de alto impacto. Procesos, datos y liderazgo — metodología que ya funciona en empresas reales.
+              {settings.hero_subtitle || 'Cubo Academy convierte experiencia consultiva real en cursos de alto impacto. Procesos, datos y liderazgo — metodología que ya funciona en empresas reales.'}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem', flexWrap: 'wrap' }}>
               <Link to="/cursos" style={{ padding: '.9rem 2rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 600, boxShadow: '0 4px 20px rgba(22,125,120,.4)' }}>

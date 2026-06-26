@@ -22,6 +22,12 @@ const DEFAULTS = {
   allow_public_registration: 'true',
   require_email_confirmation: 'false',
   allowed_registration_roles: 'student',
+  hero_title: '',
+  hero_subtitle: '',
+  contact_email: '',
+  social_instagram: '',
+  social_linkedin: '',
+  social_youtube: '',
 }
 
 function LabelField({ children, hint }) {
@@ -49,6 +55,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [saving2, setSaving2] = useState(false)
+  const [saveSuccess2, setSaveSuccess2] = useState(false)
+  const [saveError2, setSaveError2] = useState('')
 
   useEffect(() => {
     supabase.from('platform_settings').select('*').then(({ data }) => {
@@ -89,6 +98,31 @@ export default function SettingsPage() {
       if (settings.platform_name) document.title = settings.platform_name
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
+    }
+  }
+
+  async function handleSaveContent(e) {
+    e.preventDefault()
+    setSaving2(true)
+    setSaveError2('')
+    setSaveSuccess2(false)
+
+    const rows = ['hero_title', 'hero_subtitle', 'contact_email', 'social_instagram', 'social_linkedin', 'social_youtube'].map(key => ({
+      key,
+      value: settings[key] ?? '',
+    }))
+
+    const { error } = await supabase
+      .from('platform_settings')
+      .upsert(rows, { onConflict: 'key' })
+
+    setSaving2(false)
+    if (error) {
+      setSaveError2(error?.message || 'Error al guardar.')
+    } else {
+      setContextSettings(prev => ({ ...prev, ...rows.reduce((acc, r) => ({ ...acc, [r.key]: r.value }), {}) }))
+      setSaveSuccess2(true)
+      setTimeout(() => setSaveSuccess2(false), 3000)
     }
   }
 
@@ -262,6 +296,74 @@ export default function SettingsPage() {
               </div>
 
             </div>
+          </div>
+
+          {/* ── Sección 3: Contenido y contacto ── */}
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem 2rem' }}>
+            <SectionTitle>Contenido y contacto</SectionTitle>
+
+            {loadingInit ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                {[160, 100, 120, 80, 80, 80].map((w, i) => (
+                  <div key={i} style={{ height: 42, background: 'var(--border)', borderRadius: 7, width: w }} />
+                ))}
+              </div>
+            ) : (
+              <form onSubmit={handleSaveContent} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                <div>
+                  <LabelField hint="Texto principal del hero en la página de inicio">Título del hero</LabelField>
+                  <input className="sett-inp" style={inp} type="text" value={settings.hero_title}
+                    onChange={e => set('hero_title', e.target.value)} placeholder="El conocimiento que transforma" />
+                </div>
+                <div>
+                  <LabelField hint="Párrafo descriptivo debajo del título">Subtítulo del hero</LabelField>
+                  <textarea className="sett-inp" style={{ ...inp, resize: 'vertical', minHeight: 80 }}
+                    value={settings.hero_subtitle}
+                    onChange={e => set('hero_subtitle', e.target.value)}
+                    placeholder="Cubo Academy convierte experiencia consultiva real en cursos de alto impacto…" />
+                </div>
+                <div>
+                  <LabelField>Email de contacto</LabelField>
+                  <input className="sett-inp" style={inp} type="email" value={settings.contact_email}
+                    onChange={e => set('contact_email', e.target.value)} placeholder="contacto@cuboacademy.com" />
+                </div>
+                <div>
+                  <LabelField>Instagram URL</LabelField>
+                  <input className="sett-inp" style={inp} type="text" value={settings.social_instagram}
+                    onChange={e => set('social_instagram', e.target.value)} placeholder="https://instagram.com/..." />
+                </div>
+                <div>
+                  <LabelField>LinkedIn URL</LabelField>
+                  <input className="sett-inp" style={inp} type="text" value={settings.social_linkedin}
+                    onChange={e => set('social_linkedin', e.target.value)} placeholder="https://linkedin.com/company/..." />
+                </div>
+                <div>
+                  <LabelField>YouTube URL</LabelField>
+                  <input className="sett-inp" style={inp} type="text" value={settings.social_youtube}
+                    onChange={e => set('social_youtube', e.target.value)} placeholder="https://youtube.com/@..." />
+                </div>
+
+                {saveError2 && (
+                  <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 7, padding: '.55rem .9rem', fontSize: '.8rem' }}>
+                    {saveError2}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '.25rem' }}>
+                  <button type="submit" className="btn-save-sett" disabled={saving2}>
+                    {saving2 ? 'Guardando…' : 'Guardar cambios'}
+                  </button>
+                  {saveSuccess2 && (
+                    <span style={{ fontSize: '.83rem', color: 'var(--jade)', fontFamily: 'var(--sans)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '.35rem' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Guardado
+                    </span>
+                  )}
+                </div>
+              </form>
+            )}
           </div>
 
         </div>
