@@ -184,7 +184,6 @@ export default function UsersPage() {
   return (
     <DashboardLayout navItems={navItems}>
       <style>{`
-        .users-table tr:hover td { background: #fafafa; }
         .tab-btn { padding: .38rem .9rem; border-radius: 6px; border: none; cursor: pointer; font-size: .82rem; font-weight: 500; font-family: var(--sans); transition: background .15s, color .15s; }
         .form-inp-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; transition: border-color .2s, background .2s; font-family: var(--sans); }
         .form-inp-u:focus { border-color: var(--jade); background: white; }
@@ -253,87 +252,66 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-          {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>Cargando usuarios…</div>
-          ) : filtered.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>No se encontraron usuarios.</div>
-          ) : (
-            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <table className="users-table" style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--sans)' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--cream)' }}>
-                    {['Usuario', 'Correo', 'Estado', 'Registro', ''].map(h => (
-                      <th key={h} style={{ padding: '.75rem 1.1rem', textAlign: 'left', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((u, i) => {
-                    const roleStyle = ROLE_STYLE[u.role] || ROLE_STYLE.student
-                    return (
-                      <tr key={u.id} style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                        {/* Usuario */}
-                        <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
-                            <div style={{ width: 34, height: 34, borderRadius: '50%', background: u.is_active !== false ? 'var(--jade)' : '#C8C5BF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
-                              {(u.full_name || u.email || '?')[0].toUpperCase()}
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '.875rem', fontWeight: 500, color: 'var(--carbon)' }}>{u.full_name || '—'}</div>
-                              <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 20, marginTop: 2, display: 'inline-block', ...roleStyle }}>
-                                {ROLE_LABELS[u.role] || u.role}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                        {/* Correo */}
-                        <td style={{ padding: '.85rem 1.1rem' }}>
-                          <span style={{ fontSize: '.845rem', color: 'var(--text-2)' }}>{u.email || '—'}</span>
-                        </td>
-                        {/* Estado */}
-                        <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
-                          {u.is_active !== false ? (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', fontSize: '.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.22)' }}>
-                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block' }} />
-                              Activo
-                            </span>
-                          ) : (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', fontSize: '.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' }}>
-                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C8C5BF', display: 'inline-block' }} />
-                              Inactivo
-                            </span>
-                          )}
-                        </td>
-                        {/* Registro */}
-                        <td style={{ padding: '.85rem 1.1rem', whiteSpace: 'nowrap' }}>
-                          <span style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>
-                            {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                          </span>
-                        </td>
-                        {/* Editar */}
-                        <td style={{ padding: '.85rem 1.1rem' }}>
-                          <button className="icon-btn" onClick={() => openEdit(u)} title="Editar usuario">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+        {/* Cards */}
+        {loading ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>Cargando usuarios…</div>
+        ) : filtered.length === 0 ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>No se encontraron usuarios.</div>
+        ) : (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
+              {filtered.map(u => {
+                const roleStyle = ROLE_STYLE[u.role] || ROLE_STYLE.student
+                const isActive = u.is_active !== false
+                return (
+                  <div key={u.id} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '.75rem', transition: 'box-shadow .18s' }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 18px rgba(23,26,28,.08)'}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+
+                    {/* Top row: avatar + name + edit btn */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '.75rem' }}>
+                      <div style={{ width: 42, height: 42, borderRadius: '50%', background: isActive ? 'var(--jade)' : '#C8C5BF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.85rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                        {(u.full_name || u.email || '?')[0].toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--carbon)', fontFamily: 'var(--serif)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.full_name || '—'}</div>
+                        <div style={{ fontSize: '.75rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>{u.email || '—'}</div>
+                      </div>
+                      <button className="icon-btn" onClick={() => openEdit(u)} title="Editar usuario" style={{ flexShrink: 0 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Badges row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, ...roleStyle }}>{ROLE_LABELS[u.role] || u.role}</span>
+                      {isActive ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.22)' }}>
+                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block' }} />Activo
+                        </span>
+                      ) : (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' }}>
+                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8C5BF', display: 'inline-block' }} />Inactivo
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Date */}
+                    <div style={{ fontSize: '.72rem', color: '#B5B2AB', borderTop: '1px solid var(--border)', paddingTop: '.6rem' }}>
+                      Registro: {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          )}
-          {!loading && filtered.length > 0 && (
-            <div style={{ padding: '.65rem 1.1rem', borderTop: '1px solid var(--border)', fontSize: '.75rem', color: 'var(--text-2)' }}>
+            <div style={{ marginTop: '1.25rem', fontSize: '.75rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
               {filtered.length} usuario{filtered.length !== 1 ? 's' : ''}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {/* ── Modal: crear usuario ── */}
