@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
@@ -20,9 +20,9 @@ const STATUS_META = {
   archived:  { label: 'Archivado', bg: 'rgba(217,169,88,.12)', color: '#A87F2A',       border: '1px solid rgba(217,169,88,.3)' },
 }
 const LEVEL_META = {
-  beginner:     { label: 'Básico',      bg: 'rgba(59,130,246,.1)',  color: '#3B7EF6', border: '1px solid rgba(59,130,246,.25)' },
-  intermediate: { label: 'Intermedio',  bg: 'rgba(139,92,246,.1)',  color: '#7C3AED', border: '1px solid rgba(139,92,246,.25)' },
-  advanced:     { label: 'Avanzado',    bg: 'rgba(239,68,68,.1)',   color: '#DC2626', border: '1px solid rgba(239,68,68,.25)' },
+  beginner:     { label: 'Básico',     bg: 'rgba(59,130,246,.1)',  color: '#3B7EF6', border: '1px solid rgba(59,130,246,.25)' },
+  intermediate: { label: 'Intermedio', bg: 'rgba(139,92,246,.1)',  color: '#7C3AED', border: '1px solid rgba(139,92,246,.25)' },
+  advanced:     { label: 'Avanzado',   bg: 'rgba(239,68,68,.1)',   color: '#DC2626', border: '1px solid rgba(239,68,68,.25)' },
 }
 const STATUS_TABS = [
   { label: 'Todos',     value: null },
@@ -31,23 +31,10 @@ const STATUS_TABS = [
   { label: 'Archivado', value: 'archived' },
 ]
 
-function StatusBadge({ status }) {
-  const m = STATUS_META[status] || STATUS_META.draft
-  return (
-    <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 20, background: m.bg, color: m.color, border: m.border, whiteSpace: 'nowrap' }}>
-      {m.label}
-    </span>
-  )
-}
-
 function LevelBadge({ level }) {
   const m = LEVEL_META[level]
   if (!m) return null
-  return (
-    <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 20, background: m.bg, color: m.color, border: m.border, whiteSpace: 'nowrap' }}>
-      {m.label}
-    </span>
-  )
+  return <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: m.bg, color: m.color, border: m.border, whiteSpace: 'nowrap' }}>{m.label}</span>
 }
 
 function IconBtn({ onClick, title, danger, children }) {
@@ -67,18 +54,14 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(null)
   const [search, setSearch] = useState('')
-  const [statusMenu, setStatusMenu] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
-  const menuRef = useRef(null)
 
   useEffect(() => { loadCourses() }, [])
 
   useEffect(() => {
-    function onKey(e) { if (e.key === 'Escape') { setStatusMenu(null); setConfirmDelete(null) } }
-    function onClickOut(e) { if (menuRef.current && !menuRef.current.contains(e.target)) setStatusMenu(null) }
+    function onKey(e) { if (e.key === 'Escape') setConfirmDelete(null) }
     document.addEventListener('keydown', onKey)
-    document.addEventListener('mousedown', onClickOut)
-    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onClickOut) }
+    return () => document.removeEventListener('keydown', onKey)
   }, [])
 
   async function loadCourses() {
@@ -92,7 +75,6 @@ export default function CoursesPage() {
   }
 
   async function handleStatusChange(id, newStatus) {
-    setStatusMenu(null)
     const prev = courses.find(c => c.id === id)
     setCourses(cs => cs.map(c => c.id === id ? { ...c, status: newStatus } : c))
     const { error } = await supabase.from('courses').update({ status: newStatus }).eq('id', id)
@@ -119,12 +101,19 @@ export default function CoursesPage() {
   return (
     <DashboardLayout navItems={navItems}>
       <style>{`
-        .courses-table tr:hover td { background: #fafafa; }
         .cp-tab { padding: .38rem .9rem; border-radius: 6px; border: none; cursor: pointer; font-size: .82rem; font-weight: 500; font-family: var(--sans); transition: background .15s, color .15s; white-space: nowrap; }
-        .status-menu { position: absolute; top: calc(100% + 4px); right: 0; background: white; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(23,26,28,.12); z-index: 50; min-width: 130px; padding: 4px; }
-        .status-menu button { width: 100%; text-align: left; padding: .45rem .7rem; border: none; background: none; cursor: pointer; font-size: .82rem; font-family: var(--sans); border-radius: 5px; color: var(--carbon); }
-        .status-menu button:hover { background: var(--jade-soft); color: var(--jade); }
-        @media (max-width: 768px) { .cp-pad { padding: 1.25rem 1rem 2rem !important; } .cp-toolbar { flex-direction: column !important; align-items: stretch !important; } .cp-search { max-width: 100% !important; } .cp-tabs { overflow-x: auto !important; scrollbar-width: none; } .cp-tabs::-webkit-scrollbar { display: none; } }
+        .cp-course-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .18s; }
+        .cp-course-card:hover { box-shadow: 0 4px 18px rgba(23,26,28,.08); }
+        .cp-status-sel { width: 130px; padding: .35rem .6rem; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--carbon); font-size: .78rem; font-weight: 500; font-family: var(--sans); outline: none; cursor: pointer; }
+        .cp-status-sel:focus { border-color: var(--jade); }
+        @media (max-width: 768px) {
+          .cp-pad { padding: 1.25rem 1rem 2rem !important; }
+          .cp-toolbar { flex-direction: column !important; align-items: stretch !important; }
+          .cp-search { max-width: 100% !important; }
+          .cp-tabs { overflow-x: auto !important; scrollbar-width: none; }
+          .cp-tabs::-webkit-scrollbar { display: none; }
+          .cp-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       <div className="cp-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -164,84 +153,88 @@ export default function CoursesPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-          {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>Cargando cursos…</div>
-          ) : courses.length === 0 ? (
-            /* Empty state */
-            <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
-              <div style={{ width: 60, height: 60, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-                </svg>
-              </div>
-              <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.45rem' }}>Todavía no hay cursos</h2>
-              <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.5rem', maxWidth: 320, margin: '0 auto 1.5rem', lineHeight: 1.6 }}>Crea el primer curso de la plataforma y empieza a construir el catálogo.</p>
-              <button onClick={() => navigate('/dashboard/cursos/nuevo')}
-                style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 600, cursor: 'pointer' }}>
-                Crear primer curso
-              </button>
+        {/* Content */}
+        {loading ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>Cargando cursos…</div>
+        ) : courses.length === 0 ? (
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
+            <div style={{ width: 60, height: 60, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
             </div>
-          ) : filtered.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>No se encontraron cursos.</div>
-          ) : (
-            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <table className="courses-table" style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--sans)' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--cream)' }}>
-                    {['Curso', 'Instructor', 'Categoría', 'Nivel', 'Estado', 'Precio', ''].map(h => (
-                      <th key={h} style={{ padding: '.75rem 1rem', textAlign: 'left', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((c, i) => (
-                    <tr key={c.id} style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                      {/* Curso */}
-                      <td style={{ padding: '.8rem 1rem', minWidth: 220 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-                          {c.cover_image_url ? (
-                            <img src={c.cover_image_url} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0 }} />
-                          ) : (
-                            <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-                              </svg>
-                            </div>
-                          )}
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: '.875rem', fontWeight: 600, color: 'var(--carbon)', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>{c.title}</div>
-                            {c.slug && <div style={{ fontSize: '.7rem', color: 'var(--text-2)', marginTop: 2 }}>{c.slug}</div>}
+            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.45rem' }}>Todavía no hay cursos</h2>
+            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.5rem', maxWidth: 320, margin: '0 auto 1.5rem', lineHeight: 1.6 }}>Crea el primer curso de la plataforma y empieza a construir el catálogo.</p>
+            <button onClick={() => navigate('/dashboard/cursos/nuevo')}
+              style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 600, cursor: 'pointer' }}>
+              Crear primer curso
+            </button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>No se encontraron cursos.</div>
+        ) : (
+          <>
+            <div className="cp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+              {filtered.map(c => {
+                const sm = STATUS_META[c.status] || STATUS_META.draft
+                return (
+                  <div key={c.id} className="cp-course-card">
+                    {/* Cover image */}
+                    {c.cover_image_url ? (
+                      <img src={c.cover_image_url} alt="" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block', borderBottom: '1px solid var(--border)' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: 140, background: 'var(--jade-soft)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                      </div>
+                    )}
+
+                    {/* Body */}
+                    <div style={{ padding: '1.1rem 1.2rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+                      {/* Title */}
+                      <div>
+                        <div style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.3 }}>{c.title}</div>
+                        {c.slug && <div style={{ fontSize: '.68rem', color: 'var(--text-2)', marginTop: 2 }}>{c.slug}</div>}
+                      </div>
+
+                      {/* Meta row */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
+                        {c.profiles?.full_name && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.78rem', color: 'var(--text-2)' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            {c.profiles.full_name}
                           </div>
-                        </div>
-                      </td>
-                      {/* Instructor */}
-                      <td style={{ padding: '.8rem 1rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontSize: '.845rem', color: 'var(--text-2)' }}>{c.profiles?.full_name || '—'}</span>
-                      </td>
-                      {/* Categoría */}
-                      <td style={{ padding: '.8rem 1rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontSize: '.845rem', color: 'var(--text-2)' }}>{c.categories?.name || '—'}</span>
-                      </td>
-                      {/* Nivel */}
-                      <td style={{ padding: '.8rem 1rem' }}>
+                        )}
+                        {c.categories?.name && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.78rem', color: 'var(--text-2)' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/></svg>
+                            {c.categories.name}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Badges row */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flexWrap: 'wrap' }}>
                         <LevelBadge level={c.level} />
-                      </td>
-                      {/* Estado */}
-                      <td style={{ padding: '.8rem 1rem' }}>
-                        <StatusBadge status={c.status} />
-                      </td>
-                      {/* Precio */}
-                      <td style={{ padding: '.8rem 1rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontSize: '.875rem', fontWeight: 500, color: 'var(--carbon)' }}>
-                          {c.price != null ? `$${Number(c.price).toFixed(2)}` : '—'}
+                        <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: sm.bg, color: sm.color, border: sm.border }}>{sm.label}</span>
+                      </div>
+
+                      {/* Footer: price + status select + actions */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '.6rem', borderTop: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', fontFamily: 'var(--serif)' }}>
+                          {c.price != null ? `$${Number(c.price).toFixed(2)}` : 'Gratis'}
                         </span>
-                      </td>
-                      {/* Acciones */}
-                      <td style={{ padding: '.8rem 1rem' }}>
-                        <div ref={statusMenu === c.id ? menuRef : null} style={{ display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>
-                          {/* Editar */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                          {/* Inline status select */}
+                          <select className="cp-status-sel" value={c.status || 'draft'}
+                            onChange={e => handleStatusChange(c.id, e.target.value)}>
+                            <option value="draft">Borrador</option>
+                            <option value="published">Publicado</option>
+                            <option value="archived">Archivado</option>
+                          </select>
+
+                          {/* Edit */}
                           <IconBtn title="Editar curso" onClick={() => navigate(`/dashboard/cursos/${c.id}/editar`)}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -249,36 +242,14 @@ export default function CoursesPage() {
                             </svg>
                           </IconBtn>
 
-                          {/* Cambiar estado */}
-                          <div style={{ position: 'relative' }}>
-                            <IconBtn title="Cambiar estado" onClick={() => setStatusMenu(statusMenu === c.id ? null : c.id)}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                              </svg>
-                            </IconBtn>
-                            {statusMenu === c.id && (
-                              <div className="status-menu">
-                                {Object.entries(STATUS_META).map(([key, meta]) => (
-                                  <button key={key} onClick={() => handleStatusChange(c.id, key)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '.5rem', fontWeight: c.status === key ? 600 : 400, color: c.status === key ? 'var(--jade)' : 'var(--carbon)' }}>
-                                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: meta.color, flexShrink: 0 }} />
-                                    {meta.label}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Eliminar */}
+                          {/* Delete */}
                           {confirmDelete === c.id ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'white', border: '1px solid var(--border)', borderRadius: 7, padding: '3px 8px', position: 'absolute', right: 0, top: '100%', zIndex: 20, boxShadow: '0 4px 12px rgba(23,26,28,.1)', whiteSpace: 'nowrap' }}>
-                              <span style={{ fontSize: '.75rem', color: 'var(--carbon)', fontFamily: 'var(--sans)' }}>¿Eliminar?</span>
-                              <button onClick={() => handleDelete(c.id)} style={{ fontSize: '.72rem', fontWeight: 700, color: '#DC2626', background: 'rgba(239,68,68,.09)', border: 'none', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sí</button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <button onClick={() => handleDelete(c.id)} style={{ fontSize: '.72rem', fontWeight: 700, color: '#DC2626', background: 'rgba(239,68,68,.09)', border: 'none', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sí</button>
                               <button onClick={() => setConfirmDelete(null)} style={{ fontSize: '.72rem', color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' }}>No</button>
                             </div>
                           ) : (
-                            <IconBtn title="Eliminar curso" danger onClick={() => { setStatusMenu(null); setConfirmDelete(c.id) }}>
+                            <IconBtn title="Eliminar curso" danger onClick={() => setConfirmDelete(c.id)}>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                                 <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
@@ -286,19 +257,17 @@ export default function CoursesPage() {
                             </IconBtn>
                           )}
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          )}
-          {!loading && filtered.length > 0 && (
-            <div style={{ padding: '.65rem 1rem', borderTop: '1px solid var(--border)', fontSize: '.75rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
+            <div style={{ marginTop: '1.25rem', fontSize: '.75rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
               {filtered.length} curso{filtered.length !== 1 ? 's' : ''}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </DashboardLayout>
   )
