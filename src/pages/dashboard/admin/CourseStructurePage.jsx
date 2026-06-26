@@ -79,7 +79,9 @@ export default function CourseStructurePage() {
   const [lesModuleId, setLesModuleId] = useState(null)
   const [lesTitle, setLesTitle] = useState('')
   const [lesDesc, setLesDesc] = useState('')
-  const [lesVideo, setLesVideo] = useState('')
+  const [lesLinks, setLesLinks] = useState([])
+  const [lesLinkDraft, setLesLinkDraft] = useState({ url: '', label: '' })
+  const [showLinkForm, setShowLinkForm] = useState(false)
   const [lesDuration, setLesDuration] = useState('')
   const [lesPreview, setLesPreview] = useState(false)
   const [lesSaving, setLesSaving] = useState(false)
@@ -96,6 +98,7 @@ export default function CourseStructurePage() {
   const [resTitle, setResTitle] = useState('')
   const [resUrl, setResUrl] = useState('')
   const [resAdding, setResAdding] = useState(false)
+  const [resUploading, setResUploading] = useState(false)
   const [resError, setResError] = useState('')
 
   // Quiz modal
@@ -210,22 +213,37 @@ export default function CourseStructurePage() {
   function openLesModal(moduleId, les = null) {
     setLesModuleId(moduleId); setEditingLes(les)
     setLesTitle(les?.title || ''); setLesDesc(les?.description || '')
-    setLesVideo(les?.video_url || '')
+    const raw = les?.video_url || null
+    if (!raw) {
+      setLesLinks([])
+    } else {
+      try {
+        const parsed = JSON.parse(raw)
+        setLesLinks(Array.isArray(parsed) ? parsed : [{ url: raw, label: 'Video' }])
+      } catch {
+        setLesLinks([{ url: raw, label: 'Video' }])
+      }
+    }
+    setLesLinkDraft({ url: '', label: '' }); setShowLinkForm(false)
     setLesDuration(les?.duration_mins != null ? String(les.duration_mins) : '')
     setLesPreview(les?.is_free_preview ?? false)
     setLesError(''); setShowLesModal(true)
   }
-  function closeLesModal() { setShowLesModal(false); setEditingLes(null); setLesError('') }
+  function closeLesModal() {
+    setShowLesModal(false); setEditingLes(null); setLesError('')
+    setLesLinks([]); setLesLinkDraft({ url: '', label: '' }); setShowLinkForm(false)
+  }
 
   async function handleSaveLes(e) {
     e.preventDefault()
     if (!lesTitle.trim()) { setLesError('El título es obligatorio.'); return }
     setLesSaving(true); setLesError('')
     const module = modules.find(m => m.id === lesModuleId)
+    const videoUrl = lesLinks.length > 0 ? JSON.stringify(lesLinks) : null
     if (editingLes) {
       const payload = {
         title: lesTitle.trim(), description: lesDesc.trim() || null,
-        video_url: lesVideo.trim() || null,
+        video_url: videoUrl,
         duration_mins: lesDuration !== '' ? parseInt(lesDuration) : null,
         is_free_preview: lesPreview,
       }
@@ -240,7 +258,7 @@ export default function CourseStructurePage() {
       const order_index = nextOrder(module?.lessons || [])
       const payload = {
         module_id: lesModuleId, title: lesTitle.trim(), description: lesDesc.trim() || null,
-        video_url: lesVideo.trim() || null,
+        video_url: videoUrl,
         duration_mins: lesDuration !== '' ? parseInt(lesDuration) : null,
         is_free_preview: lesPreview, order_index,
       }
@@ -297,6 +315,17 @@ export default function CourseStructurePage() {
     patchLesMeta(resLessonId, { resources: newList.map(r => ({ id: r.id })) })
   }
 
+  async function handleResFileUpload(file) {
+    if (!file) return
+    setResUploading(true); setResError('')
+    const fileName = `${Date.now()}-${file.name}`
+    const { error } = await supabase.storage.from('course-resources').upload(fileName, file)
+    if (error) { setResError(error.message); setResUploading(false); return }
+    const { data: { publicUrl } } = supabase.storage.from('course-resources').getPublicUrl(fileName)
+    setResUrl(publicUrl)
+    setResUploading(false)
+  }
+
   // ── Quiz modal ──
   async function openQuizModal(les) {
     setQuizLessonId(les.id); setQuizLessonTitle(les.title)
@@ -334,10 +363,20 @@ export default function CourseStructurePage() {
     setQSaving(false)
     if (error) { setQError(error.message); return }
     const newQ = { ...data, answers: [] }
+    if (qType === 'true_false') {
+      const [{ data: aV }, { data: aF }] = await Promise.all([
+        supabase.from('answers').insert({ question_id: data.id, text: 'Verdadero', is_correct: true }).select('*').single(),
+        supabase.from('answers').insert({ question_id: data.id, text: 'Falso', is_correct: false }).select('*').single(),
+      ])
+      if (aV) newQ.answers.push(aV)
+      if (aF) newQ.answers.push(aF)
+    }
     setQuestions(qs => [...qs, newQ])
-    if (qType !== 'open') {
+    if (qType !== 'open' && qType !== 'true_false') {
       setExpandedQ(prev => new Set([...prev, data.id]))
       setAddingAnswerTo(data.id)
+    } else if (qType === 'true_false') {
+      setExpandedQ(prev => new Set([...prev, data.id]))
     }
     setQText('')
   }
@@ -589,8 +628,57 @@ export default function CourseStructurePage() {
                 <textarea className="csp-inp" placeholder="Descripción breve (opcional)" value={lesDesc} onChange={e => setLesDesc(e.target.value)} rows={2}
                   style={{ ...INP, resize: 'vertical' }} onFocus={onFocus} onBlur={onBlur} />
               </Field>
-              <Field label="URL del video">
-                <input className="csp-inp" type="url" placeholder="https://vimeo.com/... o https://youtube.com/..." value={lesVideo} onChange={e => setLesVideo(e.target.value)} style={INP} onFocus={onFocus} onBlur={onBlur} />
+              <Field label="Videos">
+                {lesLinks.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.45rem', marginBottom: '.6rem' }}>
+                    {lesLinks.map((lnk, i) => (
+                      <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', borderRadius: 6, padding: '4px 6px 4px 10px', maxWidth: '100%' }}>
+                        <span style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--jade)', flexShrink: 0 }}>{lnk.label || 'Video'}</span>
+                        <span style={{ fontSize: '.72rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>{lnk.url}</span>
+                        <button type="button" onClick={() => setLesLinks(ls => ls.filter((_, j) => j !== i))}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-2)', padding: '0 2px', fontSize: '1rem', lineHeight: 1, flexShrink: 0 }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showLinkForm ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '.5rem', alignItems: 'end' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 600, color: '#9B9894', marginBottom: '.3rem', letterSpacing: '.04em', textTransform: 'uppercase' }}>URL *</label>
+                      <input className="csp-inp" type="url" placeholder="https://vimeo.com/... o https://youtube.com/..."
+                        value={lesLinkDraft.url} onChange={e => setLesLinkDraft(d => ({ ...d, url: e.target.value }))}
+                        style={INP} onFocus={onFocus} onBlur={onBlur} autoFocus />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 600, color: '#9B9894', marginBottom: '.3rem', letterSpacing: '.04em', textTransform: 'uppercase' }}>Etiqueta</label>
+                      <input className="csp-inp" type="text" placeholder="YouTube, Vimeo…"
+                        value={lesLinkDraft.label} onChange={e => setLesLinkDraft(d => ({ ...d, label: e.target.value }))}
+                        style={{ ...INP, width: 140 }} onFocus={onFocus} onBlur={onBlur} />
+                    </div>
+                    <div style={{ display: 'flex', gap: '.4rem', gridColumn: '1 / -1' }}>
+                      <button type="button"
+                        onClick={() => {
+                          if (!lesLinkDraft.url.trim()) return
+                          setLesLinks(ls => [...ls, { url: lesLinkDraft.url.trim(), label: lesLinkDraft.label.trim() || 'Video' }])
+                          setLesLinkDraft({ url: '', label: '' }); setShowLinkForm(false)
+                        }}
+                        style={{ padding: '.45rem 1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 6, fontSize: '.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                        Agregar
+                      </button>
+                      <button type="button" onClick={() => { setShowLinkForm(false); setLesLinkDraft({ url: '', label: '' }) }}
+                        style={{ padding: '.45rem .85rem', background: 'none', border: '1px solid var(--border)', borderRadius: 6, fontSize: '.8rem', color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => setShowLinkForm(true)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', fontSize: '.78rem', fontWeight: 600, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', borderRadius: 6, padding: '.35rem .75rem', cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'background .15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--jade-light)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'var(--jade-soft)'}>
+                    {PLUS_ICON} Agregar enlace
+                  </button>
+                )}
               </Field>
               <Field label="Duración (minutos)">
                 <input className="csp-inp" type="number" min="0" step="1" placeholder="0" value={lesDuration} onChange={e => setLesDuration(e.target.value)} style={INP} onFocus={onFocus} onBlur={onBlur} />
@@ -667,6 +755,18 @@ export default function CourseStructurePage() {
                     </Field>
                     <Field label="URL *">
                       <input className="csp-inp" type="url" placeholder="https://..." value={resUrl} onChange={e => setResUrl(e.target.value)} style={INP} onFocus={onFocus} onBlur={onBlur} />
+                      {resType !== 'link' && (
+                        <div style={{ marginTop: '.5rem' }}>
+                          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', fontSize: '.78rem', fontWeight: 600, color: resUploading ? 'var(--text-2)' : 'var(--jade)', background: resUploading ? 'rgba(0,0,0,.04)' : 'var(--jade-soft)', border: '1px solid var(--jade-light)', borderRadius: 6, padding: '.35rem .75rem', cursor: resUploading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', transition: 'background .15s' }}
+                            onMouseEnter={e => !resUploading && (e.currentTarget.style.background = 'var(--jade-light)')}
+                            onMouseLeave={e => !resUploading && (e.currentTarget.style.background = 'var(--jade-soft)')}>
+                            {resUploading ? '⏳ Subiendo…' : <>{PLUS_ICON} Subir archivo</>}
+                            <input type="file" accept={resType === 'pdf' ? 'application/pdf' : '*'} disabled={resUploading}
+                              style={{ display: 'none' }}
+                              onChange={e => handleResFileUpload(e.target.files?.[0])} />
+                          </label>
+                        </div>
+                      )}
                     </Field>
                     <button type="submit" disabled={resAdding}
                       style={{ width: '100%', padding: '.75rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 700, cursor: resAdding ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: resAdding ? .65 : 1 }}>
