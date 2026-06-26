@@ -45,7 +45,7 @@ const QUIZ_ICON  = <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
 const CLOSE_SVG  = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 
 const MODAL_OVERLAY = { position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(23,26,28,.5)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
-const MODAL_BOX    = { background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem', width: '100%', maxWidth: 440, boxShadow: '0 24px 60px rgba(23,26,28,.18)', position: 'relative' }
+const MODAL_BOX    = { background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem', width: '100%', maxWidth: 680, boxShadow: '0 24px 60px rgba(23,26,28,.18)', position: 'relative' }
 const CLOSE_BTN    = { position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: 5, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }
 
 const RES_TYPE_LABELS = { template: 'Plantilla', pdf: 'PDF', link: 'Link' }
@@ -575,7 +575,7 @@ export default function CourseStructurePage() {
       {/* ── Lesson modal ── */}
       {showLesModal && (
         <div style={MODAL_OVERLAY} onClick={e => { if (e.target === e.currentTarget) closeLesModal() }}>
-          <div style={{ ...MODAL_BOX, maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ ...MODAL_BOX, maxWidth: 680, maxHeight: '90vh', overflowY: 'auto' }}>
             <button onClick={closeLesModal} style={CLOSE_BTN}>{CLOSE_SVG}</button>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.25rem' }}>
               {editingLes ? 'Editar lección' : 'Nueva lección'}
