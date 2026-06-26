@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useSettings } from '../../context/SettingsContext'
 import { supabase } from '../../lib/supabase'
 
 export default function Navbar() {
   const { user, profile, signIn, signUp, signOut } = useAuth()
+  const { settings } = useSettings()
+  const allowRegistration = settings.allow_public_registration !== 'false'
+  const allowInstructor = settings.allowed_registration_roles === 'student_instructor'
+  const platformName = settings.platform_name || 'Cubo Academy'
+  const nameSpaceIdx = platformName.indexOf(' ')
+  const namePart1 = nameSpaceIdx > -1 ? platformName.slice(0, nameSpaceIdx) + ' ' : platformName
+  const namePart2 = nameSpaceIdx > -1 ? platformName.slice(nameSpaceIdx + 1) : ''
   const [scrolled, setScrolled] = useState(false)
   const [modal, setModal] = useState(null)
   const [tab, setTab] = useState('login')
@@ -104,7 +112,7 @@ export default function Navbar() {
     if (regPassword.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
     setFormError('')
     setFormLoading(true)
-    const { error } = await signUp({ email: regEmail, password: regPassword, fullName: regName, role: 'student' })
+    const { error } = await signUp({ email: regEmail, password: regPassword, fullName: regName, role: regRole })
     setFormLoading(false)
     if (error) { setFormError(error.message); return }
     setFormSuccess('¡Cuenta creada! Revisa tu correo para confirmar tu registro.')
@@ -181,8 +189,8 @@ export default function Navbar() {
             <rect x="11.5" y="11.5" width="9" height="9" rx="1" fill="#167D78"/>
           </svg>
           <span style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700 }}>
-            <span style={{ color: 'var(--carbon)' }}>Cubo </span>
-            <span style={{ color: 'var(--jade)' }}>Academy</span>
+            <span style={{ color: 'var(--carbon)' }}>{namePart1}</span>
+            {namePart2 && <span style={{ color: 'var(--jade)' }}>{namePart2}</span>}
           </span>
         </Link>
 
@@ -260,7 +268,7 @@ export default function Navbar() {
           ) : (
             <>
               <button className="btn-outline-nav" onClick={() => openModal('login')}>Iniciar sesión</button>
-              <button className="btn-primary-nav" onClick={() => openModal('register')}>Registrarse</button>
+              {allowRegistration && <button className="btn-primary-nav" onClick={() => openModal('register')}>Registrarse</button>}
             </>
           )}
         </div>
@@ -301,7 +309,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <button className="btn-mobile-full" style={{ background: 'var(--jade)', color: 'white' }} onClick={() => openModal('register')}>Registrarse gratis</button>
+              {allowRegistration && <button className="btn-mobile-full" style={{ background: 'var(--jade)', color: 'white' }} onClick={() => openModal('register')}>Registrarse gratis</button>}
               <button className="btn-mobile-full" style={{ background: 'transparent', color: 'var(--carbon)', border: '1px solid var(--border)' }} onClick={() => openModal('login')}>Iniciar sesión</button>
             </>
           )}
@@ -318,12 +326,12 @@ export default function Navbar() {
               </svg>
             </button>
             <div style={{ textAlign: 'center', marginBottom: '1.75rem', fontFamily: 'var(--serif)', fontSize: '1.15rem', fontWeight: 700 }}>
-              <span style={{ color: 'var(--carbon)' }}>Cubo </span>
-              <span style={{ color: 'var(--jade)' }}>Academy</span>
+              <span style={{ color: 'var(--carbon)' }}>{namePart1}</span>
+              {namePart2 && <span style={{ color: 'var(--jade)' }}>{namePart2}</span>}
             </div>
             <div style={{ display: 'flex', background: 'var(--cream)', borderRadius: 8, padding: 3, gap: 3, marginBottom: '1.75rem', border: '1px solid var(--border)' }}>
               <button className={`m-tab${tab === 'login' ? ' active' : ''}`} onClick={() => { setTab('login'); setFormError(''); setFormSuccess('') }}>Iniciar sesión</button>
-              <button className={`m-tab${tab === 'register' ? ' active' : ''}`} onClick={() => { setTab('register'); setFormError(''); setFormSuccess('') }}>Registrarse</button>
+              {allowRegistration && <button className={`m-tab${tab === 'register' ? ' active' : ''}`} onClick={() => { setTab('register'); setFormError(''); setFormSuccess('') }}>Registrarse</button>}
             </div>
             {formError && <div className="form-error">{formError}</div>}
             {formSuccess && <div className="form-success">{formSuccess}</div>}
@@ -352,7 +360,16 @@ export default function Navbar() {
                   <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>Correo electrónico</label>
                   <input type="email" className="form-inp" placeholder="tucorreo@empresa.com" required value={regEmail} onChange={e => setRegEmail(e.target.value)} />
                 </div>
-<div style={{ marginBottom: '.9rem' }}>
+{allowInstructor && (
+                  <div style={{ marginBottom: '.9rem' }}>
+                    <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>Quiero registrarme como</label>
+                    <select className="form-sel" value={regRole} onChange={e => setRegRole(e.target.value)}>
+                      <option value="student">Estudiante</option>
+                      <option value="instructor">Instructor</option>
+                    </select>
+                  </div>
+                )}
+                <div style={{ marginBottom: '.9rem' }}>
                   <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>Contraseña</label>
                   <input type="password" className="form-inp" placeholder="Mínimo 8 caracteres" required minLength={8} value={regPassword} onChange={e => setRegPassword(e.target.value)} />
                 </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import { useSettings } from '../../../context/SettingsContext'
 
 const navItems = [
   { label: 'Panel general',  path: '/dashboard',              icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> },
@@ -42,6 +43,7 @@ function SectionTitle({ children }) {
 }
 
 export default function SettingsPage() {
+  const { setSettings: setContextSettings } = useSettings()
   const [settings, setSettings] = useState(DEFAULTS)
   const [loadingInit, setLoadingInit] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -82,6 +84,9 @@ export default function SettingsPage() {
     if (error) {
       setSaveError(error?.message || 'Error al guardar.')
     } else {
+      setContextSettings(prev => ({ ...prev, ...rows.reduce((acc, r) => ({ ...acc, [r.key]: r.value }), {}) }))
+      if (settings.primary_color) document.documentElement.style.setProperty('--jade', settings.primary_color)
+      if (settings.platform_name) document.title = settings.platform_name
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     }
@@ -91,11 +96,13 @@ export default function SettingsPage() {
     const value = checked ? 'true' : 'false'
     set(key, value)
     await supabase.from('platform_settings').upsert([{ key, value }], { onConflict: 'key' })
+    setContextSettings(prev => ({ ...prev, [key]: value }))
   }
 
   async function handleSelectSetting(key, value) {
     set(key, value)
     await supabase.from('platform_settings').upsert([{ key, value }], { onConflict: 'key' })
+    setContextSettings(prev => ({ ...prev, [key]: value }))
   }
 
   const inp = {

@@ -1,9 +1,15 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useSettings } from '../../context/SettingsContext'
 
 export default function DashboardLayout({ navItems, children }) {
   const { user, profile, signOut } = useAuth()
+  const { settings } = useSettings()
   const navigate = useNavigate()
+  const platformName = settings.platform_name || 'Cubo Academy'
+  const nameSpaceIdx = platformName.indexOf(' ')
+  const namePart1 = nameSpaceIdx > -1 ? platformName.slice(0, nameSpaceIdx) + ' ' : platformName
+  const namePart2 = nameSpaceIdx > -1 ? platformName.slice(nameSpaceIdx + 1) : ''
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuario'
   const roleLabel = profile?.role === 'instructor' ? 'Instructor' : profile?.role === 'admin' ? 'Administrador' : 'Estudiante'
 
@@ -66,8 +72,8 @@ export default function DashboardLayout({ navItems, children }) {
                 <rect x="11.5" y="11.5" width="9" height="9" rx="1" fill="#167D78"/>
               </svg>
               <span style={{ fontFamily: 'var(--serif)', fontSize: '.92rem', fontWeight: 700 }}>
-                <span style={{ color: 'var(--carbon)' }}>Cubo </span>
-                <span style={{ color: 'var(--jade)' }}>Academy</span>
+                <span style={{ color: 'var(--carbon)' }}>{namePart1}</span>
+                {namePart2 && <span style={{ color: 'var(--jade)' }}>{namePart2}</span>}
               </span>
             </Link>
             <div style={{ height: 1, background: 'var(--border)', margin: '1.1rem 0 .25rem' }} />

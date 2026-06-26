@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { SettingsProvider } from './context/SettingsContext'
 import Navbar from './components/shared/Navbar'
 import Footer from './components/shared/Footer'
 import ProtectedRoute from './components/shared/ProtectedRoute'
@@ -99,9 +100,11 @@ function AppShell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppShell />
-      </AuthProvider>
+      <SettingsProvider>
+        <AuthProvider>
+          <AppShell />
+        </AuthProvider>
+      </SettingsProvider>
     </BrowserRouter>
   )
 }
