@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
@@ -55,7 +55,10 @@ export default function CourseFormPage() {
   const [description, setDescription] = useState('')
   const [instructorId, setInstructorId] = useState('')
   const [categoryId, setCategoryId] = useState('')
-  const [thumbnailUrl, setThumbnailUrl] = useState('')
+  const [coverImageUrl, setCoverImageUrl] = useState('')
+  const [imgUploading, setImgUploading] = useState(false)
+  const [imgError, setImgError] = useState('')
+  const fileInputRef = useRef(null)
   const [promoVideoUrl, setPromoVideoUrl] = useState('')
   const [price, setPrice] = useState('')
   const [durationHours, setDurationHours] = useState('')
@@ -85,7 +88,7 @@ export default function CourseFormPage() {
       setDescription(data.description || '')
       setInstructorId(data.instructor_id || '')
       setCategoryId(data.category_id || '')
-      setThumbnailUrl(data.cover_image_url || '')
+      setCoverImageUrl(data.cover_image_url || '')
       setPromoVideoUrl(data.promo_video_url || '')
       setPrice(data.price != null ? String(data.price) : '')
       setDurationHours(data.duration_hours != null ? String(data.duration_hours) : '')
@@ -108,6 +111,21 @@ export default function CourseFormPage() {
   function onFocusInp(e) { e.target.style.borderColor = 'var(--jade)'; e.target.style.background = 'white' }
   function onBlurInp(e)  { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'var(--cream)' }
 
+  async function handleImageUpload(file) {
+    if (!file) return
+    const allowed = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowed.includes(file.type)) { setImgError('Solo se aceptan JPG, PNG o WebP.'); return }
+    if (file.size > 5 * 1024 * 1024) { setImgError('La imagen no puede superar 5 MB.'); return }
+    setImgError('')
+    setImgUploading(true)
+    const fileName = `${Date.now()}-${file.name}`
+    const { error: upErr } = await supabase.storage.from('course-images').upload(fileName, file)
+    if (upErr) { setImgError(upErr.message); setImgUploading(false); return }
+    const { data: { publicUrl } } = supabase.storage.from('course-images').getPublicUrl(fileName)
+    setCoverImageUrl(publicUrl)
+    setImgUploading(false)
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!title.trim()) { setError('El título es obligatorio.'); return }
@@ -121,7 +139,7 @@ export default function CourseFormPage() {
       description: description.trim() || null,
       instructor_id: instructorId,
       category_id: categoryId || null,
-      cover_image_url: thumbnailUrl.trim() || null,
+      cover_image_url: coverImageUrl.trim() || null,
       promo_video_url: promoVideoUrl.trim() || null,
       price: price !== '' ? parseFloat(price) : null,
       duration_hours: durationHours !== '' ? parseInt(durationHours) : null,
@@ -154,6 +172,8 @@ export default function CourseFormPage() {
     <DashboardLayout navItems={navItems}>
       <style>{`
         .cfp-inp:focus { border-color: var(--jade) !important; background: white !important; }
+        .cfp-drop:hover { border-color: var(--jade) !important; background: var(--jade-soft) !important; }
+        @keyframes cfpPulse { 0% { transform: translateX(-100%) scaleX(.4); } 100% { transform: translateX(250%) scaleX(.4); } }
         @media (max-width: 768px) { .cfp-pad { padding: 1.25rem 1rem 2rem !important; } .cfp-grid { grid-template-columns: 1fr !important; } }
       `}</style>
       <div className="cfp-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -215,15 +235,47 @@ export default function CourseFormPage() {
               {/* Media */}
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.25rem' }}>Multimedia</h2>
-                <Field label="Imagen de portada (URL)">
-                  <input className="cfp-inp" type="url" placeholder="https://..." value={thumbnailUrl} onChange={e => setThumbnailUrl(e.target.value)} style={INP} onFocus={onFocusInp} onBlur={onBlurInp} />
+                <Field label="Imagen de portada">
+                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }}
+                    onChange={e => { handleImageUpload(e.target.files[0]); e.target.value = '' }} />
+                  {imgError && (
+                    <div style={{ fontSize: '.75rem', color: '#c0392b', background: '#fef2f0', border: '1px solid #f5c6bb', borderRadius: 6, padding: '.4rem .7rem', marginBottom: '.5rem' }}>{imgError}</div>
+                  )}
+                  {coverImageUrl ? (
+                    <div style={{ position: 'relative' }}>
+                      <img src={coverImageUrl} alt="Portada"
+                        style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)', display: 'block' }} />
+                      <button type="button" onClick={() => setCoverImageUrl('')}
+                        style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', background: 'rgba(23,26,28,.65)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="cfp-drop"
+                      onClick={() => !imgUploading && fileInputRef.current?.click()}
+                      onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--jade)'; e.currentTarget.style.background = 'var(--jade-soft)' }}
+                      onDragLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--cream)' }}
+                      onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--cream)'; handleImageUpload(e.dataTransfer.files[0]) }}
+                      style={{ border: '2px dashed var(--border)', borderRadius: 8, padding: '1.75rem 1rem', textAlign: 'center', cursor: imgUploading ? 'wait' : 'pointer', background: 'var(--cream)', transition: 'border-color .2s, background .2s' }}>
+                      {imgUploading ? (
+                        <>
+                          <div style={{ fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.6rem' }}>Subiendo imagen…</div>
+                          <div style={{ height: 3, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', background: 'var(--jade)', borderRadius: 3, animation: 'cfpPulse 1.2s ease-in-out infinite' }} />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto .6rem', display: 'block' }}>
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                          </svg>
+                          <div style={{ fontSize: '.82rem', color: 'var(--carbon)', fontWeight: 500, marginBottom: '.2rem' }}>Arrastra una imagen o haz clic para seleccionar</div>
+                          <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>JPG, PNG o WebP · Máx. 5MB</div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </Field>
-                {thumbnailUrl && (
-                  <div style={{ marginTop: '.5rem', marginBottom: '.75rem' }}>
-                    <img src={thumbnailUrl} alt="Portada" onError={e => e.target.style.display = 'none'}
-                      style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)' }} />
-                  </div>
-                )}
                 <Field label="Video promocional (URL)" hint="Acepta links de YouTube o Vimeo">
                   <input className="cfp-inp" type="url" placeholder="https://youtube.com/..." value={promoVideoUrl} onChange={e => setPromoVideoUrl(e.target.value)} style={INP} onFocus={onFocusInp} onBlur={onBlurInp} />
                 </Field>
