@@ -9,6 +9,8 @@ import DashboardRouter from './pages/dashboard/DashboardRouter'
 import UsersPage from './pages/dashboard/admin/UsersPage'
 import CategoriesPage from './pages/dashboard/admin/CategoriesPage'
 import CoursesPage from './pages/dashboard/admin/CoursesPage'
+import CourseFormPage from './pages/dashboard/admin/CourseFormPage'
+import CourseStructurePage from './pages/dashboard/admin/CourseStructurePage'
 import OrdersPage from './pages/dashboard/admin/OrdersPage'
 import CertificatesPage from './pages/dashboard/admin/CertificatesPage'
 import ReportsPage from './pages/dashboard/admin/ReportsPage'
@@ -53,8 +55,32 @@ function AppShell() {
           <Route
             path="/dashboard/cursos"
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'instructor']}>
                 <CoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/cursos/nuevo"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'instructor']}>
+                <CourseFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/cursos/:id/editar"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'instructor']}>
+                <CourseFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/cursos/:id/estructura"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'instructor']}>
+                <CourseStructurePage />
               </ProtectedRoute>
             }
           />
