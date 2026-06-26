@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
@@ -66,30 +67,48 @@ export default function GeneralPage() {
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
     },
     {
-      label: 'Estudiantes activos', value: stats.estudiantes,
+      label: 'Cursos publicados', value: stats.cursos_publicados,
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
     },
     {
-      label: 'Categorías', value: stats.categorias,
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+      label: 'Matrículas', value: stats.matriculas,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
     },
     {
-      label: 'Cursos publicados', value: stats.cursos_publicados,
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+      label: 'Órdenes', value: stats.ordenes,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
     },
   ] : null
 
-  const BREAKDOWN_ITEMS = stats ? [
-    { label: 'Estudiantes', value: stats.estudiantes, bg: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
-    { label: 'Instructores', value: stats.instructores, bg: 'rgba(59,130,246,.1)', color: '#3B7EF6', border: '1px solid rgba(59,130,246,.25)' },
-    { label: 'Admins', value: stats.admins, bg: 'rgba(22,125,120,.12)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' },
-  ] : null
+  const QUICK_LINKS = [
+    {
+      label: 'Gestionar usuarios', desc: 'Ver y administrar todos los usuarios', path: '/dashboard/usuarios',
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    },
+    {
+      label: 'Gestionar categorías', desc: 'Organiza el contenido por áreas', path: '/dashboard/categorias',
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+    },
+    {
+      label: 'Crear curso', desc: 'Agrega nuevo contenido a la plataforma', path: '/dashboard/cursos',
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+    },
+    {
+      label: 'Ver órdenes', desc: 'Revisa pagos y transacciones', path: '/dashboard/ordenes',
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+    },
+  ]
 
   return (
     <DashboardLayout navItems={navItems}>
       <style>{`
         .gp-skel { animation: gp-pulse 1.4s ease-in-out infinite; }
         @keyframes gp-pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+        .ql-row { display: flex; align-items: center; gap: .85rem; padding: .85rem 1rem; border-radius: 8px; text-decoration: none; transition: background .18s; }
+        .ql-row:hover { background: var(--jade-soft); }
+        .ql-row:hover .ql-arrow { color: var(--jade); }
+        .ql-row:not(:last-child) { border-bottom: 1px solid var(--border); border-radius: 0; }
+        .ql-row:not(:last-child):hover { border-radius: 8px; }
       `}</style>
 
       <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -103,14 +122,14 @@ export default function GeneralPage() {
         </div>
 
         {/* Metric cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
           {METRIC_CARDS ? METRIC_CARDS.map(m => (
             <div key={m.label} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
               <div style={{ width: 38, height: 38, background: 'var(--jade-soft)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {m.icon}
               </div>
               <div>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{m.value}</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{m.value ?? '—'}</div>
                 <div style={{ fontSize: '.74rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 400 }}>{m.label}</div>
               </div>
             </div>
@@ -123,48 +142,10 @@ export default function GeneralPage() {
           ))}
         </div>
 
+        {/* Bottom grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', alignItems: 'start' }}>
 
-          {/* Left column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-            {/* Breakdown */}
-            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
-              <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Desglose de usuarios</div>
-              {BREAKDOWN_ITEMS ? (
-                <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
-                  {BREAKDOWN_ITEMS.map(b => (
-                    <div key={b.label} style={{ flex: '1 1 80px', background: b.bg, border: b.border, borderRadius: 10, padding: '.75rem 1rem', textAlign: 'center' }}>
-                      <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: b.color, lineHeight: 1 }}>{b.value}</div>
-                      <div style={{ fontSize: '.72rem', color: b.color, marginTop: '.3rem', fontWeight: 600 }}>{b.label}</div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="gp-skel" style={{ display: 'flex', gap: '.75rem' }}>
-                  {[0,1,2].map(i => <div key={i} style={{ flex: 1, height: 72, background: 'var(--border)', borderRadius: 10 }} />)}
-                </div>
-              )}
-            </div>
-
-            {/* Categories list */}
-            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
-              <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Categorías</div>
-              {loading ? (
-                <div className="gp-skel" style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
-                  {[0,1,2].map(i => <Skel key={i} h={18} r={5} />)}
-                </div>
-              ) : !stats?.categorias ? (
-                <p style={{ fontSize: '.83rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>Sin categorías aún.</p>
-              ) : (
-                <p style={{ fontSize: '.83rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
-                  {stats.categorias} categoría{stats.categorias !== 1 ? 's' : ''} registrada{stats.categorias !== 1 ? 's' : ''}.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Right column — recent users */}
+          {/* Últimos registros */}
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
             <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Últimos registros</div>
             {loading ? (
@@ -207,6 +188,27 @@ export default function GeneralPage() {
                 })}
               </div>
             )}
+          </div>
+
+          {/* Accesos rápidos */}
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>
+            <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Accesos rápidos</div>
+            <div>
+              {QUICK_LINKS.map(ql => (
+                <Link key={ql.path} to={ql.path} className="ql-row">
+                  <div style={{ width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade)', flexShrink: 0 }}>
+                    {ql.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '.86rem', fontWeight: 600, color: 'var(--carbon)', fontFamily: 'var(--sans)' }}>{ql.label}</div>
+                    <div style={{ fontSize: '.74rem', color: 'var(--text-2)', marginTop: '.1rem' }}>{ql.desc}</div>
+                  </div>
+                  <svg className="ql-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: 'color .18s' }}>
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </Link>
+              ))}
+            </div>
           </div>
 
         </div>
