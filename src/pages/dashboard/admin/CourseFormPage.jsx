@@ -69,7 +69,7 @@ export default function CourseFormPage() {
 
   async function loadSupport() {
     const [{ data: instr }, { data: cats }] = await Promise.all([
-      supabase.from('profiles').select('id, full_name, role').in('role', ['instructor', 'admin']).order('full_name'),
+      supabase.from('users_view').select('id, full_name, role').in('role', ['instructor', 'admin']).order('full_name'),
       supabase.from('categories').select('id, name').order('name'),
     ])
     if (instr) setInstructors(instr)
