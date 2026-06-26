@@ -254,60 +254,70 @@ export default function UsersPage() {
 
         {/* Cards */}
         {loading ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>Cargando usuarios…</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', height: 68, opacity: 1 - i * 0.15 }} />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>No se encontraron usuarios.</div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
               {filtered.map(u => {
                 const roleStyle = ROLE_STYLE[u.role] || ROLE_STYLE.student
                 const isActive = u.is_active !== false
                 return (
-                  <div key={u.id} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '.75rem', transition: 'box-shadow .18s' }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 18px rgba(23,26,28,.08)'}
+                  <div key={u.id}
+                    style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '.9rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: 'box-shadow .18s' }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 18px rgba(23,26,28,.07)'}
                     onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
 
-                    {/* Top row: avatar + name + edit btn */}
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '.75rem' }}>
-                      <div style={{ width: 42, height: 42, borderRadius: '50%', background: isActive ? 'var(--jade)' : '#C8C5BF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.85rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
-                        {(u.full_name || u.email || '?')[0].toUpperCase()}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--carbon)', fontFamily: 'var(--serif)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.full_name || '—'}</div>
-                        <div style={{ fontSize: '.75rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>{u.email || '—'}</div>
-                      </div>
-                      <button className="icon-btn" onClick={() => openEdit(u)} title="Editar usuario" style={{ flexShrink: 0 }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </button>
+                    {/* Avatar */}
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: isActive ? 'var(--jade)' : '#C8C5BF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.85rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                      {(u.full_name || u.email || '?')[0].toUpperCase()}
                     </div>
 
-                    {/* Badges row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, ...roleStyle }}>{ROLE_LABELS[u.role] || u.role}</span>
+                    {/* Name + email */}
+                    <div style={{ flex: '0 0 220px', minWidth: 0 }}>
+                      <div style={{ fontSize: '.875rem', fontWeight: 600, color: 'var(--carbon)', fontFamily: 'var(--serif)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.full_name || '—'}</div>
+                      <div style={{ fontSize: '.75rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{u.email || '—'}</div>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ width: 1, height: 32, background: 'var(--border)', flexShrink: 0 }} />
+
+                    {/* Badges */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flex: '0 0 auto' }}>
+                      <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, ...roleStyle }}>{ROLE_LABELS[u.role] || u.role}</span>
                       {isActive ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.22)' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.22)' }}>
                           <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block' }} />Activo
                         </span>
                       ) : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' }}>
                           <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8C5BF', display: 'inline-block' }} />Inactivo
                         </span>
                       )}
                     </div>
 
-                    {/* Date */}
-                    <div style={{ fontSize: '.72rem', color: '#B5B2AB', borderTop: '1px solid var(--border)', paddingTop: '.6rem' }}>
-                      Registro: {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                    {/* Date — pushed to the right */}
+                    <div style={{ marginLeft: 'auto', fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                     </div>
+
+                    {/* Edit button */}
+                    <button className="icon-btn" onClick={() => openEdit(u)} title="Editar usuario" style={{ flexShrink: 0 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
                   </div>
                 )
               })}
             </div>
-            <div style={{ marginTop: '1.25rem', fontSize: '.75rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
+            <div style={{ marginTop: '1rem', fontSize: '.75rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
               {filtered.length} usuario{filtered.length !== 1 ? 's' : ''}
             </div>
           </>
