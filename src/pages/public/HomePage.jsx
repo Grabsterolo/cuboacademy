@@ -91,6 +91,8 @@ const TESTIMONIALS = [
   { text: '"La plataforma es intuitiva y el contenido es denso en el buen sentido. Cada hora aprendes algo accionable."', name: 'Sofía Chavarría', role: 'Directora RH, BAC Credomatic', initials: 'SC' },
 ]
 
+const LEVEL_LABELS = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
+
 function useReveal() {
   useEffect(() => {
     const els = document.querySelectorAll('.reveal')
@@ -121,12 +123,27 @@ export default function HomePage() {
   const [wordIndex, setWordIndex] = useState(0)
   const [wordVisible, setWordVisible] = useState(true)
   const [tracks, setTracks] = useState(null)
+  const [courses, setCourses] = useState([])
+  const [coursesLoading, setCoursesLoading] = useState(true)
   useReveal()
 
   useEffect(() => {
     supabase.from('categories').select('*').order('name').then(({ data }) => {
       setTracks(data || [])
     })
+  }, [])
+
+  useEffect(() => {
+    supabase
+      .from('courses')
+      .select('id, title, slug, cover_image_url, price, level, duration_hours, categories(name), profiles!instructor_id(full_name)')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(6)
+      .then(({ data }) => {
+        setCourses(data || [])
+        setCoursesLoading(false)
+      })
   }, [])
 
   useEffect(() => {
@@ -429,33 +446,74 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="reveal courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
-            {COURSES.map((c) => (
-              <div key={c.title} className="course-card" style={{ background: c.featured ? 'var(--jade-soft)' : 'white', border: `1px solid ${c.featured ? 'rgba(22,125,120,.2)' : 'var(--border)'}`, borderRadius: 12, overflow: 'hidden' }}>
-                <div style={{ height: 144, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: c.bg }}>
-                  <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.62rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', padding: '4px 9px', borderRadius: 4, background: c.featured ? 'rgba(201,110,75,.18)' : 'rgba(22,125,120,.18)', color: c.featured ? '#B85C36' : 'var(--jade)' }}>
-                    {c.track}
-                  </span>
-                </div>
-                <div style={{ padding: '1.35rem 1.4rem 1.4rem' }}>
-                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, marginBottom: '.4rem', lineHeight: 1.3, color: 'var(--carbon)' }}>{c.title}</div>
-                  <div style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.65, marginBottom: '1rem' }}>{c.desc}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', marginBottom: '1rem' }}>
-                    {[c.hours, c.level, c.modules].map((d) => (
-                      <span key={d} style={{ fontSize: '.72rem', color: '#9B9894' }}>{d}</span>
-                    ))}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '.9rem', borderTop: `1px solid ${c.featured ? 'rgba(22,125,120,.15)' : 'var(--border)'}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'var(--text-2)' }}>
-                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.58rem', fontWeight: 700, color: 'white' }}>{c.initials}</div>
-                      {c.instructor}
-                    </div>
-                    <Link to="/cursos" className="btn-course" style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--jade)', border: '1px solid rgba(22,125,120,.3)', background: 'transparent', padding: '5px 13px', borderRadius: 6 }}>
-                      Ver curso
-                    </Link>
+            {coursesLoading ? (
+              [0, 1, 2].map(i => (
+                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ height: 144, background: 'var(--border)' }} />
+                  <div style={{ padding: '1.35rem 1.4rem 1.4rem' }}>
+                    <div style={{ height: 18, background: 'var(--border)', borderRadius: 4, marginBottom: '.5rem', width: '80%' }} />
+                    <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, marginBottom: '1rem', width: '55%' }} />
+                    <div style={{ height: 1, background: 'var(--border)', marginBottom: '.9rem' }} />
+                    <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, width: '45%' }} />
                   </div>
                 </div>
+              ))
+            ) : courses.length === 0 ? (
+              <div style={{ gridColumn: '1/-1', padding: '3.5rem 2rem', textAlign: 'center', background: 'white', border: '1px solid var(--border)', borderRadius: 12 }}>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.35rem' }}>Próximamente nuevos cursos</p>
+                <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 300 }}>Estamos preparando contenido de alto impacto. Vuelve pronto.</p>
               </div>
-            ))}
+            ) : (
+              courses.map(c => {
+                const initials = (c.profiles?.full_name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+                return (
+                  <div key={c.id} className="course-card" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+                    <div style={{ height: 144, position: 'relative', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', overflow: 'hidden' }}>
+                      {c.cover_image_url
+                        ? <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.18)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                            </svg>
+                          </div>
+                        )
+                      }
+                      {c.categories?.name && (
+                        <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.62rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', padding: '4px 9px', borderRadius: 4, background: 'rgba(22,125,120,.18)', color: 'var(--jade)' }}>
+                          {c.categories.name}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ padding: '1.35rem 1.4rem 1.4rem' }}>
+                      <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, marginBottom: '.65rem', lineHeight: 1.3, color: 'var(--carbon)' }}>{c.title}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                        {c.duration_hours != null && (
+                          <span style={{ fontSize: '.72rem', color: '#9B9894' }}>{c.duration_hours}h</span>
+                        )}
+                        {c.level && (
+                          <span style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', padding: '2px 7px', borderRadius: 10 }}>
+                            {LEVEL_LABELS[c.level] || c.level}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '.9rem', borderTop: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'var(--text-2)', minWidth: 0 }}>
+                          <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.58rem', fontWeight: 700, color: 'white' }}>{initials}</div>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.profiles?.full_name || '—'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
+                          {c.price != null && <span style={{ fontSize: '.78rem', fontWeight: 700, color: 'var(--carbon)' }}>${c.price}</span>}
+                          <Link to={`/cursos/${c.slug}`} className="btn-course" style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--jade)', border: '1px solid rgba(22,125,120,.3)', background: 'transparent', padding: '5px 13px', borderRadius: 6 }}>
+                            Ver curso
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
       </section>
