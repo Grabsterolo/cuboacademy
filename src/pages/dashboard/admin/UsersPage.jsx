@@ -287,24 +287,26 @@ export default function UsersPage() {
                     {/* Divider */}
                     <div style={{ width: 1, height: 32, background: 'var(--border)', flexShrink: 0 }} />
 
-                    {/* Badges */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flex: '0 0 auto' }}>
+                    {/* Role badge */}
+                    <div style={{ flex: '0 0 auto' }}>
                       <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, ...roleStyle }}>{ROLE_LABELS[u.role] || u.role}</span>
-                      {isActive ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.22)' }}>
-                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block' }} />Activo
-                        </span>
-                      ) : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' }}>
-                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8C5BF', display: 'inline-block' }} />Inactivo
-                        </span>
-                      )}
                     </div>
 
                     {/* Date — pushed to the right */}
                     <div style={{ marginLeft: 'auto', fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap', flexShrink: 0 }}>
                       {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                     </div>
+
+                    {/* Status badge */}
+                    {isActive ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.22)', flexShrink: 0 }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block' }} />Activo
+                      </span>
+                    ) : (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)', flexShrink: 0 }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8C5BF', display: 'inline-block' }} />Inactivo
+                      </span>
+                    )}
 
                     {/* Edit button */}
                     <button className="icon-btn" onClick={() => openEdit(u)} title="Editar usuario" style={{ flexShrink: 0 }}>
