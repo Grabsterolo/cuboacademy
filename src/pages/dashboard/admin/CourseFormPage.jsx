@@ -69,7 +69,7 @@ export default function CourseFormPage() {
 
   async function loadSupport() {
     const [{ data: instr }, { data: cats }] = await Promise.all([
-      supabase.from('profiles').select('id, full_name').eq('role', 'instructor').order('full_name'),
+      supabase.from('profiles').select('id, full_name, role').in('role', ['instructor', 'admin']).order('full_name'),
       supabase.from('categories').select('id, name').order('name'),
     ])
     if (instr) setInstructors(instr)
@@ -111,6 +111,7 @@ export default function CourseFormPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!title.trim()) { setError('El título es obligatorio.'); return }
+    if (!instructorId) { setError('Debes seleccionar un instructor.'); return }
     setError('')
     setSaving(true)
 
@@ -118,7 +119,7 @@ export default function CourseFormPage() {
       title: title.trim(),
       slug: slug.trim() || generateSlug(title.trim()),
       description: description.trim() || null,
-      instructor_id: instructorId || null,
+      instructor_id: instructorId,
       category_id: categoryId || null,
       cover_image_url: thumbnailUrl.trim() || null,
       promo_video_url: promoVideoUrl.trim() || null,
