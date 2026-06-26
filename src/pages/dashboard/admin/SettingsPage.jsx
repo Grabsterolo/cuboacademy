@@ -177,10 +177,10 @@ export default function SettingsPage() {
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Configuración</h1>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: 640 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
 
           {/* ── Sección 1: Identidad ── */}
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem 2rem' }}>
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '2rem' }}>
             <SectionTitle>Identidad de la plataforma</SectionTitle>
 
             {loadingInit ? (
@@ -243,7 +243,7 @@ export default function SettingsPage() {
           </div>
 
           {/* ── Sección 2: Acceso y seguridad ── */}
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem 2rem' }}>
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '2rem' }}>
             <SectionTitle>Acceso y seguridad</SectionTitle>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -299,7 +299,7 @@ export default function SettingsPage() {
           </div>
 
           {/* ── Sección 3: Contenido y contacto ── */}
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem 2rem' }}>
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '2rem', gridColumn: '1 / -1' }}>
             <SectionTitle>Contenido y contacto</SectionTitle>
 
             {loadingInit ? (
