@@ -178,13 +178,18 @@ export default function CategoriesPage() {
         .btn-submit-c:disabled { opacity: .6; cursor: not-allowed; }
         .cat-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(23,26,28,.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-        @media (max-width: 480px) { .cat-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+          .cat-pad { padding: 1.25rem 1rem 2rem !important; }
+          .cat-header { flex-direction: column !important; align-items: flex-start !important; }
+          .cat-grid { grid-template-columns: 1fr; }
+          .cat-modal { padding: 1.5rem 1.25rem !important; border-radius: 12px !important; }
+        }
       `}</style>
 
-      <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
+      <div className="cat-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem' }}>
+        <div className="cat-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem' }}>
           <div>
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Gestión</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Categorías</h1>
@@ -263,7 +268,7 @@ export default function CategoriesPage() {
       {/* Create / edit modal */}
       {showModal && (
         <div className="cat-overlay" onClick={e => { if (e.target === e.currentTarget) closeModal() }}>
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', width: '100%', maxWidth: 420, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
+          <div className="cat-modal" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', width: '100%', maxWidth: 420, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
             <button onClick={closeModal} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: 6, borderRadius: 6, minWidth: 32, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

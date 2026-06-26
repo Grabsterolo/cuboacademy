@@ -29,7 +29,8 @@ export default function StudentDashboard() {
 
   return (
     <DashboardLayout navItems={navItems}>
-      <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
+      <style>{`@media (max-width: 768px) { .std-pad { padding: 1.25rem 1rem 2rem !important; } }`}</style>
+      <div className="std-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
         <div style={{ marginBottom: '2.5rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Bienvenido de vuelta</p>
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>

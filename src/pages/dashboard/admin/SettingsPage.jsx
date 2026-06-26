@@ -167,9 +167,13 @@ export default function SettingsPage() {
         .btn-save-sett { padding: .75rem 1.75rem; background: var(--jade); color: white; border: none; border-radius: 8px; font-size: .875rem; font-weight: 700; cursor: pointer; font-family: var(--sans); transition: background .2s, opacity .2s; }
         .btn-save-sett:hover { background: var(--jade-hover); }
         .btn-save-sett:disabled { opacity: .6; cursor: not-allowed; }
+        @media (max-width: 768px) {
+          .sett-pad { padding: 1.25rem 1rem 2rem !important; }
+          .sett-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
-      <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
+      <div className="sett-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
 
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
@@ -177,7 +181,7 @@ export default function SettingsPage() {
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Configuración</h1>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <div className="sett-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
 
           {/* ── Sección 1: Identidad ── */}
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '2rem' }}>

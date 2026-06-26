@@ -109,9 +109,14 @@ export default function GeneralPage() {
         .ql-row:hover .ql-arrow { color: var(--jade); }
         .ql-row:not(:last-child) { border-bottom: 1px solid var(--border); border-radius: 0; }
         .ql-row:not(:last-child):hover { border-radius: 8px; }
+        @media (max-width: 768px) {
+          .gp-pad { padding: 1.25rem 1rem 2rem !important; }
+          .gp-metrics { grid-template-columns: repeat(2, 1fr) !important; }
+          .gp-bottom { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
-      <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
+      <div className="gp-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
 
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
@@ -122,7 +127,7 @@ export default function GeneralPage() {
         </div>
 
         {/* Metric cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="gp-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
           {METRIC_CARDS ? METRIC_CARDS.map(m => (
             <div key={m.label} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
               <div style={{ width: 38, height: 38, background: 'var(--jade-soft)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -143,7 +148,7 @@ export default function GeneralPage() {
         </div>
 
         {/* Bottom grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', alignItems: 'start' }}>
+        <div className="gp-bottom" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', alignItems: 'start' }}>
 
           {/* Últimos registros */}
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.4rem 1.5rem' }}>

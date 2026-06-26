@@ -31,7 +31,13 @@ export default function Footer() {
 
   return (
     <footer style={{ background: 'white', borderTop: '1px solid var(--border)', padding: '1.5rem 5%' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '.75rem' }}>
+      <style>{`
+        @media (max-width: 600px) {
+          .footer-inner { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
+          .footer-right { flex-direction: column !important; align-items: flex-start !important; }
+        }
+      `}</style>
+      <div className="footer-inner" style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '.75rem' }}>
         <span style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700 }}>
           <span style={{ color: 'var(--carbon)' }}>Cubo </span>
           <span style={{ color: 'var(--jade)' }}>Academy</span>
@@ -42,7 +48,7 @@ export default function Footer() {
           <Link to="#" style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 400 }}>Términos</Link>
           <a href={`mailto:${contactEmail}`} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 400 }}>{contactEmail}</a>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="footer-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {hasSocial && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
               {settings.social_instagram && (
