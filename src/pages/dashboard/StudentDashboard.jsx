@@ -2,25 +2,7 @@ import { Link } from 'react-router-dom'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
-
-const navItems = [
-  {
-    label: 'Mi aprendizaje', path: '/dashboard',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
-  },
-  {
-    label: 'Explorar cursos', path: '/cursos',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
-  },
-  {
-    label: 'Mis certificados', path: '/dashboard/certificados',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>,
-  },
-  {
-    label: 'Mi perfil', path: '/dashboard/perfil',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  },
-]
+import { STUDENT_NAV } from '../../config/navigation'
 
 export default function StudentDashboard() {
   const { profile, user } = useAuth()
@@ -28,7 +10,7 @@ export default function StudentDashboard() {
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'estudiante').split(' ')[0]
 
   return (
-    <DashboardLayout navItems={navItems}>
+    <DashboardLayout navItems={STUDENT_NAV}>
       <style>{`@media (max-width: 768px) { .std-pad { padding: 1.25rem 1rem 2rem !important; } }`}</style>
       <div className="std-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
         <div style={{ marginBottom: '2.5rem' }}>

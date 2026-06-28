@@ -1,31 +1,13 @@
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
-
-const navItems = [
-  {
-    label: 'Mis cursos', path: '/dashboard',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
-  },
-  {
-    label: 'Estudiantes', path: '/dashboard/estudiantes',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-  },
-  {
-    label: 'Estadísticas', path: '/dashboard/estadisticas',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-  },
-  {
-    label: 'Mi perfil', path: '/dashboard/perfil',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  },
-]
+import { INSTRUCTOR_NAV } from '../../config/navigation'
 
 export default function InstructorDashboard() {
   const { profile, user } = useAuth()
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'instructor').split(' ')[0]
 
   return (
-    <DashboardLayout navItems={navItems}>
+    <DashboardLayout navItems={INSTRUCTOR_NAV}>
       <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
         <div style={{ marginBottom: '2.5rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Panel de instructor</p>
