@@ -6,6 +6,9 @@ import Footer from './components/shared/Footer'
 import ProtectedRoute from './components/shared/ProtectedRoute'
 
 import HomePage from './pages/public/HomePage'
+import LoginPage from './pages/public/LoginPage'
+import RegisterPage from './pages/public/RegisterPage'
+import InstructorApplicationPage from './pages/public/InstructorApplicationPage'
 import DashboardRouter from './pages/dashboard/DashboardRouter'
 
 // Admin pages
@@ -55,16 +58,20 @@ function RoleRouter({ admin, instructor, student }) {
 function AppShell() {
   const location = useLocation()
   const isDashboard = location.pathname.startsWith('/dashboard')
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/registro'
+  const showNav = !isDashboard && !isAuthPage
 
   return (
     <>
-      {!isDashboard && <Navbar />}
-      <main style={isDashboard ? {} : { paddingTop: 66 }}>
+      {showNav && <Navbar />}
+      <main style={showNav ? { paddingTop: 66 } : {}}>
         <Routes>
           {/* Public */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/quiero-ser-instructor" element={<InstructorApplicationPage />} />
           <Route path="/cursos" element={<div style={{ padding: '8rem 5%', textAlign: 'center', fontFamily: 'var(--serif)', fontSize: '2rem', color: 'var(--carbon)' }}>Catálogo de cursos — próximamente</div>} />
-          <Route path="/registro" element={<div style={{ padding: '8rem 5%', textAlign: 'center', fontFamily: 'var(--serif)', fontSize: '2rem', color: 'var(--carbon)' }}>Registro — próximamente</div>} />
 
           {/* Dashboard root — role-aware */}
           <Route
@@ -267,7 +274,7 @@ function AppShell() {
           />
         </Routes>
       </main>
-      {!isDashboard && <Footer />}
+      {showNav && <Footer />}
     </>
   )
 }

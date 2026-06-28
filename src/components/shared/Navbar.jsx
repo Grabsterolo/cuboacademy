@@ -266,10 +266,15 @@ export default function Navbar() {
               <button className="btn-signout" onClick={handleSignOut}>Salir</button>
             </>
           ) : (
-            <>
-              <button className="btn-outline-nav" onClick={() => openModal('login')}>Iniciar sesión</button>
-              {allowRegistration && <button className="btn-primary-nav" onClick={() => openModal('register')}>Registrarse</button>}
-            </>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.25rem' }}>
+              <div style={{ display: 'flex', gap: '.6rem' }}>
+                <button className="btn-outline-nav" onClick={() => openModal('login')}>Iniciar sesión</button>
+                {allowRegistration && <Link to="/registro" className="btn-primary-nav" style={{ textDecoration: 'none' }}>Registrarse</Link>}
+              </div>
+              <Link to="/quiero-ser-instructor" style={{ fontSize: '.72rem', color: 'var(--jade)', textDecoration: 'none', fontWeight: 500, opacity: .85 }}>
+                ¿Eres instructor? Postúlate →
+              </Link>
+            </div>
           )}
         </div>
 
@@ -309,8 +314,11 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {allowRegistration && <button className="btn-mobile-full" style={{ background: 'var(--jade)', color: 'white' }} onClick={() => openModal('register')}>Registrarse gratis</button>}
+              {allowRegistration && <Link to="/registro" onClick={() => setMenuOpen(false)} className="btn-mobile-full" style={{ background: 'var(--jade)', color: 'white', textDecoration: 'none' }}>Registrarse gratis</Link>}
               <button className="btn-mobile-full" style={{ background: 'transparent', color: 'var(--carbon)', border: '1px solid var(--border)' }} onClick={() => openModal('login')}>Iniciar sesión</button>
+              <Link to="/quiero-ser-instructor" onClick={() => setMenuOpen(false)} style={{ textAlign: 'center', fontSize: '.82rem', color: 'var(--jade)', fontWeight: 500, textDecoration: 'none', display: 'block', paddingBottom: '.5rem' }}>
+                ¿Eres instructor? Postúlate →
+              </Link>
             </>
           )}
         </div>
