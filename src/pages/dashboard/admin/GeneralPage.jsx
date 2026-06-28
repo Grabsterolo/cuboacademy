@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
+import { useNavigation } from '../../../context/NavigationContext'
 import { Skeleton } from '../../../components/ui'
+
+const Skel = Skeleton
 
 const ROLE_BADGE = {
   admin:      { label: 'Admin',       bg: 'rgba(22,125,120,.12)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
@@ -12,6 +15,7 @@ const ROLE_BADGE = {
 
 export default function GeneralPage() {
   const { profile, user } = useAuth()
+  const { navigate } = useNavigation()
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'admin').split(' ')[0]
 
   const [{ stats, loading }, setData] = useState({ stats: null, loading: true })
@@ -43,19 +47,19 @@ export default function GeneralPage() {
 
   const QUICK_LINKS = [
     {
-      label: 'Gestionar usuarios', desc: 'Ver y administrar todos los usuarios', path: '/dashboard/usuarios',
+      label: 'Gestionar usuarios', desc: 'Ver y administrar todos los usuarios', section: 'usuarios',
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
     },
     {
-      label: 'Gestionar categorías', desc: 'Organiza el contenido por áreas', path: '/dashboard/categorias',
+      label: 'Gestionar categorías', desc: 'Organiza el contenido por áreas', section: 'categorias',
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
     },
     {
-      label: 'Crear curso', desc: 'Agrega nuevo contenido a la plataforma', path: '/dashboard/cursos',
+      label: 'Gestionar cursos', desc: 'Agrega y administra el catálogo', section: 'cursos',
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
     },
     {
-      label: 'Ver órdenes', desc: 'Revisa pagos y transacciones', path: '/dashboard/ordenes',
+      label: 'Ver órdenes', desc: 'Revisa pagos y transacciones', section: 'pagos',
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
     },
   ]
@@ -161,7 +165,7 @@ export default function GeneralPage() {
             <div style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '1rem' }}>Accesos rápidos</div>
             <div>
               {QUICK_LINKS.map(ql => (
-                <Link key={ql.path} to={ql.path} className="ql-row">
+                <button key={ql.section} onClick={() => navigate(ql.section)} className="ql-row" style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--sans)' }}>
                   <div style={{ width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade)', flexShrink: 0 }}>
                     {ql.icon}
                   </div>
@@ -172,7 +176,7 @@ export default function GeneralPage() {
                   <svg className="ql-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: 'color .18s' }}>
                     <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
                   </svg>
-                </Link>
+                </button>
               ))}
             </div>
           </div>
