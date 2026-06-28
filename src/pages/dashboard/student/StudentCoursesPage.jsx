@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { STUDENT_NAV } from '../../../config/navigation'
@@ -30,6 +30,7 @@ function Skel() {
 }
 
 export default function StudentCoursesPage() {
+  const { navigate } = useNavigation()
   const { user } = useAuth()
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -76,11 +77,11 @@ export default function StudentCoursesPage() {
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Estudiante</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Mis cursos</h1>
           </div>
-          <Link to="/dashboard/tienda"
-            style={{ padding: '.6rem 1.1rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+          <button onClick={() => navigate('tienda')}
+            style={{ padding: '.6rem 1.1rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.4rem' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Explorar cursos
-          </Link>
+          </button>
         </div>
 
         {/* Stats strip */}
@@ -123,10 +124,10 @@ export default function StudentCoursesPage() {
             <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.4rem', fontWeight: 300, lineHeight: 1.6 }}>
               {tab === 'active' ? 'Explora el catálogo y comienza tu aprendizaje.' : 'Sigue avanzando en tus cursos actuales para completarlos.'}
             </p>
-            <Link to="/dashboard/tienda"
-              style={{ fontSize: '.84rem', fontWeight: 600, color: 'var(--jade)', textDecoration: 'none', border: '1px solid rgba(22,125,120,.3)', padding: '.5rem 1.1rem', borderRadius: 8, display: 'inline-block' }}>
+            <button onClick={() => navigate('tienda')}
+              style={{ fontSize: '.84rem', fontWeight: 600, color: 'var(--jade)', background: 'transparent', border: '1px solid rgba(22,125,120,.3)', padding: '.5rem 1.1rem', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
               Ir a la tienda
-            </Link>
+            </button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
@@ -160,12 +161,12 @@ export default function StudentCoursesPage() {
                         {isCompleted ? '✓ Completado' : `${Math.round(pct)}% completado`}
                       </span>
                       {isCompleted ? (
-                        <Link to={`/dashboard/cursos/${c.id}/aprender`} className="view-btn">Ver curso</Link>
+                        <button onClick={() => navigate('aprender', { courseId: c.id })} className="view-btn">Ver curso</button>
                       ) : (
-                        <Link to={`/dashboard/cursos/${c.id}/aprender`} className="cont-btn">
+                        <button onClick={() => navigate('aprender', { courseId: c.id })} className="cont-btn">
                           Continuar
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-                        </Link>
+                        </button>
                       )}
                     </div>
                   </div>

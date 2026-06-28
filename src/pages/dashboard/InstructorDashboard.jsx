@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
+import { useNavigation } from '../../context/NavigationContext'
 import { INSTRUCTOR_NAV } from '../../config/navigation'
 import { supabase } from '../../lib/supabase'
 
@@ -26,7 +26,7 @@ function StatCard({ value, label, icon, accent }) {
 
 export default function InstructorDashboard() {
   const { profile, user } = useAuth()
-  const navigate = useNavigate()
+  const { navigate } = useNavigation()
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'instructor').split(' ')[0]
   const [courses, setCourses] = useState([])
   const [studentCounts, setStudentCounts] = useState({})
@@ -91,10 +91,10 @@ export default function InstructorDashboard() {
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.3rem' }}>Panel de instructor</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Hola, {firstName}</h1>
           </div>
-          <Link to="/dashboard/cursos/nuevo" style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.65rem 1.25rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, textDecoration: 'none', flexShrink: 0 }}>
+          <button onClick={() => navigate('curso-form', { courseId: null })} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.65rem 1.25rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Crear curso
-          </Link>
+          </button>
         </div>
 
         {/* Stats */}
@@ -111,7 +111,7 @@ export default function InstructorDashboard() {
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
             <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Mis cursos</h2>
-              <Link to="/dashboard/cursos" style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, textDecoration: 'none' }}>Gestionar →</Link>
+              <button onClick={() => navigate('cursos')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Gestionar →</button>
             </div>
 
             {loading ? (
@@ -132,16 +132,16 @@ export default function InstructorDashboard() {
                 <p style={{ fontSize: '.86rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.25rem', fontWeight: 300, maxWidth: 300, margin: '0 auto 1.25rem' }}>
                   Comparte tu experiencia consultiva con profesionales que quieren aprender desde la práctica real.
                 </p>
-                <Link to="/dashboard/cursos/nuevo" style={{ display: 'inline-block', padding: '.7rem 1.5rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, textDecoration: 'none' }}>
+                <button onClick={() => navigate('curso-form', { courseId: null })} style={{ display: 'inline-block', padding: '.7rem 1.5rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
                   Crear mi primer curso
-                </Link>
+                </button>
               </div>
             ) : (
               courses.map(c => {
                 const ss = STATUS_STYLE[c.status] || STATUS_STYLE.draft
                 const count = studentCounts[c.id] || 0
                 return (
-                  <div key={c.id} className="course-row" onClick={() => navigate(`/dashboard/cursos/${c.id}/estructura`)}>
+                  <div key={c.id} className="course-row" onClick={() => navigate('curso-estructura', { courseId: c.id })}>
                     <div style={{ width: 60, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
                       {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
@@ -172,7 +172,7 @@ export default function InstructorDashboard() {
             <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
               <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Comunicados</h2>
-                <Link to="/dashboard/comunicados" style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, textDecoration: 'none' }}>Ver →</Link>
+                <button onClick={() => navigate('comunicados')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Ver →</button>
               </div>
               {announcements.length === 0 ? (
                 <div style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
@@ -198,17 +198,17 @@ export default function InstructorDashboard() {
               </div>
               <div style={{ padding: '.5rem .75rem' }}>
                 {[
-                  { label: 'Mis estudiantes', to: '/dashboard/estudiantes', icon: USERS_ICON },
-                  { label: 'Evaluaciones', to: '/dashboard/evaluaciones', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
-                  { label: 'Mis reportes', to: '/dashboard/reportes', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
-                  { label: 'Mis ganancias', to: '/dashboard/ganancias', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+                  { label: 'Mis estudiantes', key: 'estudiantes', icon: USERS_ICON },
+                  { label: 'Evaluaciones', key: 'evaluaciones', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
+                  { label: 'Mis reportes', key: 'reportes', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+                  { label: 'Mis ganancias', key: 'ganancias', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
                 ].map(item => (
-                  <Link key={item.to} to={item.to} style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.6rem .5rem', borderRadius: 7, color: 'var(--text-2)', textDecoration: 'none', fontSize: '.84rem', fontWeight: 500, transition: 'background .15s, color .15s' }}
+                  <button key={item.key} onClick={() => navigate(item.key)} style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.6rem .5rem', borderRadius: 7, color: 'var(--text-2)', width: '100%', background: 'transparent', border: 'none', fontSize: '.84rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'background .15s, color .15s' }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'var(--jade-soft)'; e.currentTarget.style.color = 'var(--jade)' }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-2)' }}>
                     <span style={{ opacity: .7 }}>{item.icon}</span>
                     {item.label}
-                  </Link>
+                  </button>
                 ))}
               </div>
             </div>

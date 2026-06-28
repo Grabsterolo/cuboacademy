@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
+import { useNavigation } from '../../context/NavigationContext'
 import { STUDENT_NAV } from '../../config/navigation'
 import { supabase } from '../../lib/supabase'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
-function StatCard({ value, label, icon, to }) {
-  const inner = (
-    <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '.85rem', transition: 'border-color .2s, box-shadow .2s' }}
-      onMouseEnter={e => { if (to) { e.currentTarget.style.borderColor = 'rgba(22,125,120,.3)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(23,26,28,.07)' } }}
+function StatCard({ value, label, icon, onClick }) {
+  return (
+    <div onClick={onClick} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '.85rem', transition: 'border-color .2s, box-shadow .2s', cursor: onClick ? 'pointer' : 'default' }}
+      onMouseEnter={e => { if (onClick) { e.currentTarget.style.borderColor = 'rgba(22,125,120,.3)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(23,26,28,.07)' } }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}>
       <div style={{ width: 40, height: 40, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--jade)' }}>{icon}</div>
       <div>
@@ -20,7 +20,6 @@ function StatCard({ value, label, icon, to }) {
       </div>
     </div>
   )
-  return to ? <Link to={to} style={{ textDecoration: 'none' }}>{inner}</Link> : inner
 }
 
 function SectionHeader({ title, action }) {
@@ -32,13 +31,13 @@ function SectionHeader({ title, action }) {
   )
 }
 
-function EmptyCard({ icon, text, cta, to }) {
+function EmptyCard({ icon, text, cta, onCtaClick }) {
   return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '2.25rem 1.5rem', textAlign: 'center' }}>
       <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .9rem', color: 'var(--jade)' }}>{icon}</div>
       <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: cta ? '1.1rem' : 0, lineHeight: 1.55, fontWeight: 300 }}>{text}</p>
       {cta && (
-        <Link to={to} style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--jade)', textDecoration: 'none', border: '1px solid rgba(22,125,120,.3)', padding: '.45rem 1rem', borderRadius: 7, display: 'inline-block', background: 'transparent' }}>{cta}</Link>
+        <button onClick={onCtaClick} style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--jade)', background: 'transparent', border: '1px solid rgba(22,125,120,.3)', padding: '.45rem 1rem', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--sans)' }}>{cta}</button>
       )}
     </div>
   )
@@ -47,6 +46,7 @@ function EmptyCard({ icon, text, cta, to }) {
 export default function StudentDashboard() {
   const { profile, user } = useAuth()
   const { settings } = useSettings()
+  const { navigate } = useNavigation()
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'estudiante').split(' ')[0]
   const [enrollments, setEnrollments] = useState([])
   const [announcements, setAnnouncements] = useState([])
@@ -98,10 +98,10 @@ export default function StudentDashboard() {
 
         {/* Stats row */}
         <div className="std-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '.85rem', marginBottom: '2rem' }}>
-          <StatCard value={active.length} label="Cursos activos" icon={BOOK_ICON} to="/dashboard/cursos" />
-          <StatCard value={completed.length} label="Completados" icon={CHECK_ICON} to="/dashboard/cursos" />
-          <StatCard value={0} label="Certificados" icon={CERT_ICON} to="/dashboard/certificados" />
-          <StatCard value={0} label="Logros" icon={STAR_ICON} to="/dashboard/logros" />
+          <StatCard value={active.length} label="Cursos activos" icon={BOOK_ICON} onClick={() => navigate('cursos')} />
+          <StatCard value={completed.length} label="Completados" icon={CHECK_ICON} onClick={() => navigate('cursos')} />
+          <StatCard value={0} label="Certificados" icon={CERT_ICON} onClick={() => navigate('certificados')} />
+          <StatCard value={0} label="Logros" icon={STAR_ICON} onClick={() => navigate('logros')} />
         </div>
 
         {/* Main grid */}
@@ -112,7 +112,7 @@ export default function StudentDashboard() {
             <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
               <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Mis cursos activos</h2>
-                <Link to="/dashboard/cursos" style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, textDecoration: 'none' }}>Ver todos →</Link>
+                <button onClick={() => navigate('cursos')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Ver todos →</button>
               </div>
               {loading ? (
                 <div style={{ padding: '1.5rem' }}>
@@ -132,7 +132,7 @@ export default function StudentDashboard() {
                   <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1rem', lineHeight: 1.55, fontWeight: 300 }}>
                     {settings.welcome_message || 'Explora el catálogo y empieza a aprender con formación diseñada por consultores activos.'}
                   </p>
-                  <Link to="/cursos" style={{ fontSize: '.82rem', fontWeight: 600, color: 'white', background: 'var(--jade)', textDecoration: 'none', padding: '.55rem 1.25rem', borderRadius: 7, display: 'inline-block' }}>Explorar catálogo</Link>
+                  <button onClick={() => navigate('courses')} style={{ fontSize: '.82rem', fontWeight: 600, color: 'white', background: 'var(--jade)', border: 'none', cursor: 'pointer', padding: '.55rem 1.25rem', borderRadius: 7, fontFamily: 'var(--sans)' }}>Explorar catálogo</button>
                 </div>
               ) : (
                 <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
@@ -142,7 +142,7 @@ export default function StudentDashboard() {
                     const pct = e.progress_pct || 0
                     const initials = (c.profiles?.full_name || '?').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase()
                     return (
-                      <Link key={e.id} to={`/cursos/${c.id}`} style={{ textDecoration: 'none', display: 'flex', gap: '.85rem', alignItems: 'center' }}>
+                      <div key={e.id} style={{ display: 'flex', gap: '.85rem', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('tienda')}>
                         <div style={{ width: 72, height: 52, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                           {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
@@ -159,7 +159,7 @@ export default function StudentDashboard() {
                             {c.level && <><span>·</span><span>{LEVEL_LABEL[c.level] || c.level}</span></>}
                           </div>
                         </div>
-                      </Link>
+                      </div>
                     )
                   })}
                 </div>
@@ -197,7 +197,7 @@ export default function StudentDashboard() {
             <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
               <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Comunicados</h2>
-                <Link to="/dashboard/comunicados" style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, textDecoration: 'none' }}>Ver todos →</Link>
+                <button onClick={() => navigate('comunicados')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Ver todos →</button>
               </div>
               {announcements.length === 0 ? (
                 <div style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
@@ -221,7 +221,7 @@ export default function StudentDashboard() {
               icon={STAR_ICON}
               text="Completa cursos y desafíos para ganar logros."
               cta="Ver mis logros"
-              to="/dashboard/logros"
+              onCtaClick={() => navigate('logros')}
             />
 
             {/* Certificados */}
@@ -229,7 +229,7 @@ export default function StudentDashboard() {
               icon={CERT_ICON}
               text="Tus certificados aparecerán aquí al completar un curso."
               cta="Ver certificados"
-              to="/dashboard/certificados"
+              onCtaClick={() => navigate('certificados')}
             />
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { STUDENT_NAV } from '../../../config/navigation'
@@ -21,7 +21,7 @@ function Field({ label, children, hint }) {
   )
 }
 
-function ReadOnlySection({ icon, title, text, to, cta }) {
+function ReadOnlySection({ icon, title, text, onCtaClick, cta }) {
   return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
       <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
@@ -30,13 +30,14 @@ function ReadOnlySection({ icon, title, text, to, cta }) {
       <div style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
         <div style={{ width: 40, height: 40, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .75rem', color: 'var(--jade)' }}>{icon}</div>
         <p style={{ fontSize: '.8rem', color: 'var(--text-2)', marginBottom: cta ? '.9rem' : 0, lineHeight: 1.55, fontWeight: 300 }}>{text}</p>
-        {cta && <Link to={to} style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--jade)', textDecoration: 'none', border: '1px solid rgba(22,125,120,.3)', padding: '.4rem .9rem', borderRadius: 7, display: 'inline-block' }}>{cta}</Link>}
+        {cta && <button onClick={onCtaClick} style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--jade)', background: 'transparent', border: '1px solid rgba(22,125,120,.3)', padding: '.4rem .9rem', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--sans)' }}>{cta}</button>}
       </div>
     </div>
   )
 }
 
 export default function StudentProfilePage() {
+  const { navigate } = useNavigation()
   const { profile, user } = useAuth()
   const fileRef = useRef(null)
   const [saving, setSaving] = useState(false)
@@ -303,14 +304,14 @@ export default function StudentProfilePage() {
                 title="Mis logros"
                 text="Completa cursos y desafíos para desbloquear logros."
                 cta="Ver sección"
-                to="/dashboard/logros"
+                onCtaClick={() => navigate('logros')}
               />
               <ReadOnlySection
                 icon={CERT_ICON}
                 title="Certificados"
                 text="Tus certificados digitales aparecerán aquí."
                 cta="Ver sección"
-                to="/dashboard/certificados"
+                onCtaClick={() => navigate('certificados')}
               />
               <ReadOnlySection
                 icon={BOOK_ICON}

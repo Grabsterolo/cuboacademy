@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { INSTRUCTOR_NAV } from '../../../config/navigation'
@@ -23,6 +23,7 @@ function Field({ label, children, hint }) {
 }
 
 export default function InstructorProfilePage() {
+  const { navigate } = useNavigation()
   const { profile, user } = useAuth()
   const fileRef = useRef(null)
   const [saving, setSaving] = useState(false)
@@ -302,28 +303,28 @@ export default function InstructorProfilePage() {
                 </div>
                 <div style={{ padding: '.85rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
                   {[
-                    { label: 'Cursos publicados', value: courseCount === null ? '…' : courseCount, to: '/dashboard/cursos' },
-                    { label: 'Estudiantes totales', value: studentCount === null ? '…' : studentCount, to: '/dashboard/estudiantes' },
+                    { label: 'Cursos publicados', value: courseCount === null ? '…' : courseCount, key: 'cursos' },
+                    { label: 'Estudiantes totales', value: studentCount === null ? '…' : studentCount, key: 'estudiantes' },
                   ].map(item => (
-                    <Link key={item.label} to={item.to} className="stat-link">
+                    <button key={item.label} onClick={() => navigate(item.key)} className="stat-link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', textAlign: 'left', padding: 0, width: '100%' }}>
                       <span style={{ fontSize: '.84rem', color: 'var(--text-2)' }}>{item.label}</span>
                       <span style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)' }}>{item.value}</span>
-                    </Link>
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* Quick action */}
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem' }}>
-                <Link to="/dashboard/cursos/nuevo"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', padding: '.7rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, textDecoration: 'none' }}>
+                <button onClick={() => navigate('curso-form', { courseId: null })}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', padding: '.7rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, border: 'none', cursor: 'pointer', width: '100%' }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   Crear nuevo curso
-                </Link>
-                <Link to="/dashboard/cursos"
-                  style={{ display: 'block', textAlign: 'center', marginTop: '.65rem', fontSize: '.8rem', color: 'var(--jade)', textDecoration: 'none', fontWeight: 500 }}>
+                </button>
+                <button onClick={() => navigate('cursos')}
+                  style={{ display: 'block', textAlign: 'center', marginTop: '.65rem', fontSize: '.8rem', color: 'var(--jade)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', fontWeight: 500, width: '100%' }}>
                   Gestionar mis cursos →
-                </Link>
+                </button>
               </div>
             </div>
           </div>

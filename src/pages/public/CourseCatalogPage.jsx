@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 
 const LEVEL_OPTS = [
@@ -11,7 +11,7 @@ const LEVEL_OPTS = [
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
 function CourseCard({ course }) {
-  const navigate = useNavigate()
+  const { navigate } = useNavigation()
   const cover = course.cover_image_url
   const priceNum = Number(course.price)
   const price = !course.price || priceNum === 0 ? 'Gratis' : `$${priceNum.toFixed(2)}`
@@ -21,7 +21,7 @@ function CourseCard({ course }) {
   const level = LEVEL_LABEL[course.level] || ''
 
   return (
-    <div className="pub-card" onClick={() => navigate(`/cursos/${course.slug}`)}
+    <div className="pub-card" onClick={() => navigate('course-detail', { slug: course.slug })}
       style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: 170, background: cover ? `url(${cover}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', flexShrink: 0 }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.65) 0%,transparent 55%)' }} />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 
 const COUNTRIES = ['Costa Rica','México','Colombia','Argentina','Chile','Perú','Ecuador','Guatemala','Honduras','El Salvador','Nicaragua','Panamá','Uruguay','Paraguay','Bolivia','Venezuela','República Dominicana','España','Otro']
@@ -42,6 +42,7 @@ function Fld({ label, children }) {
 }
 
 export default function InstructorApplicationPage() {
+  const { navigate } = useNavigation()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -177,9 +178,9 @@ export default function InstructorApplicationPage() {
               Revisaremos tu perfil y propuesta de curso en los próximos días.<br />
               Te contactaremos al correo <strong style={{ color: 'var(--carbon)' }}>{email}</strong>.
             </p>
-            <Link to="/" style={{ display: 'inline-block', padding: '.85rem 2rem', background: 'var(--jade)', color: 'white', borderRadius: 9, fontFamily: 'var(--sans)', fontSize: '.93rem', fontWeight: 700, textDecoration: 'none' }}>
+            <button onClick={() => navigate('landing')} style={{ display: 'inline-block', padding: '.85rem 2rem', background: 'var(--jade)', color: 'white', borderRadius: 9, fontFamily: 'var(--sans)', fontSize: '.93rem', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
               Volver al inicio
-            </Link>
+            </button>
           </div>
         </div>
       </>

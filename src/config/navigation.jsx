@@ -1,3 +1,6 @@
+// Navigation config — uses `key` (section identifier) instead of `path`
+// Portal.jsx maps keys to components; Sidebar.jsx uses this for nav items
+
 const ICON = {
   grid:          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
   users:         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
@@ -11,43 +14,44 @@ const ICON = {
   evaluations:   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>,
   announcements: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
   earnings:      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
-  achievements:  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>,
+  achievements:  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   explore:       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  requests:      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>,
 }
 
 export const ADMIN_NAV = [
-  { label: 'Panel general', path: '/dashboard',               icon: ICON.grid },
-  { label: 'Solicitudes',   path: '/dashboard/solicitudes',   icon: ICON.evaluations },
-  { label: 'Usuarios',      path: '/dashboard/usuarios',      icon: ICON.users },
-  { label: 'Cursos',        path: '/dashboard/cursos',        icon: ICON.courses },
-  { label: 'Categorías',    path: '/dashboard/categorias',    icon: ICON.categories },
-  { label: 'Comunicados',   path: '/dashboard/comunicados',   icon: ICON.announcements },
-  { label: 'Pagos',         path: '/dashboard/pagos',         icon: ICON.orders },
-  { label: 'Certificados',  path: '/dashboard/certificados',  icon: ICON.certificates },
-  { label: 'Reportes',      path: '/dashboard/reportes',      icon: ICON.reports },
-  { label: 'Configuración', path: '/dashboard/configuracion', icon: ICON.settings },
+  { key: 'panel',         label: 'Panel general',  icon: ICON.grid },
+  { key: 'solicitudes',   label: 'Solicitudes',    icon: ICON.requests },
+  { key: 'usuarios',      label: 'Usuarios',       icon: ICON.users },
+  { key: 'cursos',        label: 'Cursos',         icon: ICON.courses },
+  { key: 'categorias',    label: 'Categorías',     icon: ICON.categories },
+  { key: 'comunicados',   label: 'Comunicados',    icon: ICON.announcements },
+  { key: 'pagos',         label: 'Pagos',          icon: ICON.orders },
+  { key: 'certificados',  label: 'Certificados',   icon: ICON.certificates },
+  { key: 'reportes',      label: 'Reportes',       icon: ICON.reports },
+  { key: 'configuracion', label: 'Configuración',  icon: ICON.settings },
 ]
 
 export const INSTRUCTOR_NAV = [
-  { label: 'Panel general',   path: '/dashboard',                icon: ICON.grid },
-  { label: 'Mi perfil',       path: '/dashboard/perfil',         icon: ICON.person },
-  { label: 'Mis cursos',      path: '/dashboard/cursos',         icon: ICON.courses },
-  { label: 'Mis estudiantes', path: '/dashboard/estudiantes',    icon: ICON.users },
-  { label: 'Evaluaciones',    path: '/dashboard/evaluaciones',   icon: ICON.evaluations },
-  { label: 'Comunicados',     path: '/dashboard/comunicados',    icon: ICON.announcements },
-  { label: 'Reportes',        path: '/dashboard/reportes',       icon: ICON.reports },
-  { label: 'Mis ganancias',   path: '/dashboard/ganancias',      icon: ICON.earnings },
-  { label: 'Configuración',   path: '/dashboard/configuracion',  icon: ICON.settings },
+  { key: 'panel',         label: 'Panel general',    icon: ICON.grid },
+  { key: 'perfil',        label: 'Mi perfil',        icon: ICON.person },
+  { key: 'cursos',        label: 'Mis cursos',       icon: ICON.courses },
+  { key: 'estudiantes',   label: 'Mis estudiantes',  icon: ICON.users },
+  { key: 'evaluaciones',  label: 'Evaluaciones',     icon: ICON.evaluations },
+  { key: 'comunicados',   label: 'Comunicados',      icon: ICON.announcements },
+  { key: 'reportes',      label: 'Reportes',         icon: ICON.reports },
+  { key: 'ganancias',     label: 'Mis ganancias',    icon: ICON.earnings },
+  { key: 'configuracion', label: 'Configuración',    icon: ICON.settings },
 ]
 
 export const STUDENT_NAV = [
-  { label: 'Panel general',  path: '/dashboard',               icon: ICON.grid },
-  { label: 'Mi perfil',      path: '/dashboard/perfil',        icon: ICON.person },
-  { label: 'Mis cursos',     path: '/dashboard/cursos',        icon: ICON.courses },
-  { label: 'Instructores',   path: '/dashboard/instructores',  icon: ICON.users },
-  { label: 'Comunicados',    path: '/dashboard/comunicados',   icon: ICON.announcements },
-  { label: 'Mis logros',     path: '/dashboard/logros',        icon: ICON.achievements },
-  { label: 'Certificados',   path: '/dashboard/certificados',  icon: ICON.certificates },
-  { label: 'Tienda',         path: '/dashboard/tienda',        icon: ICON.explore },
-  { label: 'Configuración',  path: '/dashboard/configuracion', icon: ICON.settings },
+  { key: 'panel',         label: 'Panel general',  icon: ICON.grid },
+  { key: 'perfil',        label: 'Mi perfil',      icon: ICON.person },
+  { key: 'cursos',        label: 'Mis cursos',     icon: ICON.courses },
+  { key: 'instructores',  label: 'Instructores',   icon: ICON.users },
+  { key: 'comunicados',   label: 'Comunicados',    icon: ICON.announcements },
+  { key: 'logros',        label: 'Mis logros',     icon: ICON.achievements },
+  { key: 'certificados',  label: 'Certificados',   icon: ICON.certificates },
+  { key: 'tienda',        label: 'Tienda',         icon: ICON.explore },
+  { key: 'configuracion', label: 'Configuración',  icon: ICON.settings },
 ]

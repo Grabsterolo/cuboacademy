@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { STUDENT_NAV } from '../../../config/navigation'
@@ -18,7 +18,7 @@ function saveWishlist(ids) {
 }
 
 function CourseCard({ course, wishlistIds, onToggleWishlist }) {
-  const navigate = useNavigate()
+  const { navigate } = useNavigation()
   const cover = course.cover_image_url
   const priceNum = Number(course.price)
   const price = !course.price || priceNum === 0 ? 'Gratis' : `$${priceNum.toFixed(2)}`
@@ -39,7 +39,7 @@ function CourseCard({ course, wishlistIds, onToggleWishlist }) {
       </button>
 
       {/* Cover */}
-      <div onClick={() => navigate(`/cursos/${course.slug}`)} style={{ height: 160, background: cover ? `url(${cover}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', cursor: 'pointer', flexShrink: 0 }}>
+      <div onClick={() => navigate('course-detail', { slug: course.slug })} style={{ height: 160, background: cover ? `url(${cover}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', cursor: 'pointer', flexShrink: 0 }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.65) 0%,transparent 55%)' }} />
         {level && <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.64rem', fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,.4)', color: 'white', backdropFilter: 'blur(4px)', letterSpacing: '.04em' }}>{level}</span>}
         <span style={{ position: 'absolute', bottom: 9, left: 10, fontSize: '.72rem', fontWeight: 700, color: 'white', background: isGratis ? 'rgba(22,125,120,.9)' : 'var(--jade)', padding: '2px 8px', borderRadius: 10 }}>{price}</span>
@@ -50,7 +50,7 @@ function CourseCard({ course, wishlistIds, onToggleWishlist }) {
       </div>
 
       {/* Body */}
-      <div onClick={() => navigate(`/cursos/${course.slug}`)} style={{ padding: '.9rem 1rem 1rem', flex: 1, cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
+      <div onClick={() => navigate('course-detail', { slug: course.slug })} style={{ padding: '.9rem 1rem 1rem', flex: 1, cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
         {category && <div style={{ fontSize: '.66rem', fontWeight: 700, color: 'var(--jade)', marginBottom: '.3rem', letterSpacing: '.06em', textTransform: 'uppercase' }}>{category}</div>}
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.93rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.35, flex: 1, marginBottom: '.5rem' }}>{course.title}</h3>
         <div style={{ fontSize: '.74rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
@@ -186,7 +186,7 @@ function WishlistTab({ wishlistIds, onToggleWishlist }) {
 
 // ─── Purchases tab ────────────────────────────────────────────────────────────
 function PurchasesTab({ user }) {
-  const navigate = useNavigate()
+  const { navigate } = useNavigation()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -233,7 +233,7 @@ function PurchasesTab({ user }) {
             {c?.cover_image_url && <div style={{ width: 52, height: 36, borderRadius: 6, background: `url(${c.cover_image_url}) center/cover no-repeat`, flexShrink: 0 }} />}
             <div style={{ flex: 1, minWidth: 160 }}>
               <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', fontSize: '.9rem', marginBottom: '.2rem' }}>
-                {c ? <span style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }} onClick={() => navigate(`/cursos/${c.slug}`)}>{c.title}</span> : `Orden ${order.id.slice(0,8)}`}
+                {c ? <span style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }} onClick={() => navigate('course-detail', { slug: c.slug })}>{c.title}</span> : `Orden ${order.id.slice(0,8)}`}
               </div>
               <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{date} {order.payment_provider ? `· ${order.payment_provider}` : ''}</div>
             </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useNavigation } from '../../context/NavigationContext'
 import { ModalOverlay } from '../../components/ui/index'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
@@ -34,8 +34,8 @@ function BuyModal({ course, onClose }) {
 }
 
 export default function CourseDetailPage() {
-  const { slug } = useParams()
-  const navigate = useNavigate()
+  const { params, navigate } = useNavigation()
+  const slug = params?.slug
   const { user } = useAuth()
 
   const [course, setCourse] = useState(null)
@@ -105,7 +105,7 @@ export default function CourseDetailPage() {
     <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '3rem 5%' }}>
       <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.5rem' }}>Curso no encontrado</h2>
       <p style={{ color: 'var(--text-2)', marginBottom: '1.5rem' }}>Este curso no existe o ya no está disponible.</p>
-      <Link to="/cursos" style={{ padding: '.7rem 1.5rem', background: 'var(--jade)', color: 'white', borderRadius: 9, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--sans)' }}>Ver catálogo</Link>
+      <button onClick={() => navigate('courses')} style={{ padding: '.7rem 1.5rem', background: 'var(--jade)', color: 'white', borderRadius: 9, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Ver catálogo</button>
     </div>
   )
 
@@ -133,9 +133,9 @@ export default function CourseDetailPage() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.88) 0%,rgba(8,24,28,.4) 60%,transparent 100%)' }} />
         <div style={{ position: 'relative', zIndex: 1, padding: '2.5rem 5%', width: '100%', boxSizing: 'border-box' }}>
           <nav style={{ fontSize: '.76rem', color: 'rgba(255,255,255,.6)', marginBottom: '1rem', display: 'flex', gap: '.4rem', alignItems: 'center' }}>
-            <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>Inicio</Link>
+            <button onClick={() => navigate('landing')} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 'inherit', padding: 0 }}>Inicio</button>
             <span>›</span>
-            <Link to="/cursos" style={{ color: 'inherit', textDecoration: 'none' }}>Cursos</Link>
+            <button onClick={() => navigate('courses')} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 'inherit', padding: 0 }}>Cursos</button>
             <span>›</span>
             <span style={{ color: 'rgba(255,255,255,.9)' }}>{course.title}</span>
           </nav>
@@ -273,7 +273,7 @@ export default function CourseDetailPage() {
             </div>
 
             {/* Back link */}
-            <button onClick={() => navigate('/cursos')}
+            <button onClick={() => navigate('courses')}
               style={{ marginTop: '1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '.8rem', color: 'var(--text-2)', fontFamily: 'var(--sans)', padding: '.25rem 0', display: 'flex', alignItems: 'center', gap: '.35rem' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
               Volver al catálogo

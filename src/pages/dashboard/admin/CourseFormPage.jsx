@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { ADMIN_NAV } from '../../../config/navigation'
@@ -29,8 +29,8 @@ const INP = { width: '100%', padding: '.7rem .95rem', background: 'var(--cream)'
 const SEL = { ...INP, cursor: 'pointer' }
 
 export default function CourseFormPage() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const { params, navigate } = useNavigation()
+  const id = params?.courseId || null
   const isEdit = Boolean(id)
 
   const [loading, setLoading] = useState(isEdit)
@@ -141,12 +141,12 @@ export default function CourseFormPage() {
       const { error: err } = await supabase.from('courses').update(payload).eq('id', id)
       setSaving(false)
       if (err) { setError(err.message); return }
-      navigate('/dashboard/cursos')
+      navigate('cursos')
     } else {
       const { data, error: err } = await supabase.from('courses').insert(payload).select('id').single()
       setSaving(false)
       if (err) { setError(err.message); return }
-      navigate(`/dashboard/cursos/${data.id}/estructura`)
+      navigate('curso-estructura', { courseId: data.id })
     }
   }
 
@@ -304,14 +304,14 @@ export default function CourseFormPage() {
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.75rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-            <button type="button" onClick={() => navigate('/dashboard/cursos')}
+            <button type="button" onClick={() => navigate('cursos')}
               style={{ padding: '.7rem 1.5rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.875rem', fontWeight: 500, color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'border-color .2s, color .2s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--carbon)'; e.currentTarget.style.color = 'var(--carbon)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-2)' }}>
               Cancelar
             </button>
             {isEdit && (
-              <button type="button" onClick={() => navigate(`/dashboard/cursos/${id}/estructura`)}
+              <button type="button" onClick={() => navigate('curso-estructura', { courseId: id })}
                 style={{ padding: '.7rem 1.5rem', background: 'white', border: '1px solid var(--jade)', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, color: 'var(--jade)', cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'background .2s, color .2s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--jade-soft)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'white' }}>

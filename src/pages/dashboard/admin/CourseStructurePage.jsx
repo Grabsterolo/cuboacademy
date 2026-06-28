@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { ADMIN_NAV } from '../../../config/navigation'
@@ -47,8 +47,8 @@ function nextOrder(items) {
 }
 
 export default function CourseStructurePage() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const { params, navigate } = useNavigation()
+  const id = params?.courseId || null
   const [course, setCourse] = useState(null)
   const [modules, setModules] = useState([])
   const [loading, setLoading] = useState(true)
@@ -432,18 +432,18 @@ export default function CourseStructurePage() {
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <Link to="/dashboard/cursos" style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.85rem', textDecoration: 'none' }}
+              <button onClick={() => navigate('cursos')} style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.85rem', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}
                 onMouseEnter={e => e.currentTarget.style.color = 'var(--jade)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
                 Cursos
-              </Link>
+              </button>
               <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Estructura del curso</p>
               <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.4rem,3vw,1.9rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.2 }}>
                 {loading ? '…' : course?.title || 'Curso'}
               </h1>
             </div>
-            <button onClick={() => navigate('/dashboard/cursos')}
+            <button onClick={() => navigate('cursos')}
               style={{ padding: '.65rem 1.25rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, transition: 'background .2s' }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--jade-dark)'}
               onMouseLeave={e => e.currentTarget.style.background = 'var(--jade)'}>

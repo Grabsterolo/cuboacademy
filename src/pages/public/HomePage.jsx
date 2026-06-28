@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../context/SettingsContext'
+import { useNavigation } from '../../context/NavigationContext'
 
 const CATEGORY_ICON = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -118,6 +118,7 @@ function useReveal() {
 const ROTATING_WORDS = ['organizaciones', 'equipos', 'líderes', 'empresas']
 
 export default function HomePage() {
+  const { navigate } = useNavigation()
   const { settings } = useSettings()
   const [scrolled, setScrolled] = useState(false)
   const [wordIndex, setWordIndex] = useState(0)
@@ -290,12 +291,12 @@ export default function HomePage() {
               {settings.hero_subtitle || 'Cubo Academy convierte experiencia consultiva real en cursos de alto impacto. Procesos, datos y liderazgo — metodología que ya funciona en empresas reales.'}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem', flexWrap: 'wrap' }}>
-              <Link to="/cursos" style={{ padding: '.9rem 2rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 600, boxShadow: '0 4px 20px rgba(22,125,120,.4)' }}>
+              <button onClick={() => navigate('courses')} style={{ padding: '.9rem 2rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 600, border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(22,125,120,.4)' }}>
                 Explorar cursos
-              </Link>
-              <Link to="/cursos" style={{ padding: '.9rem 1.75rem', background: 'transparent', color: 'rgba(248,246,241,.75)', border: '1px solid rgba(248,246,241,.18)', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 500 }}>
+              </button>
+              <button onClick={() => navigate('courses')} style={{ padding: '.9rem 1.75rem', background: 'transparent', color: 'rgba(248,246,241,.75)', border: '1px solid rgba(248,246,241,.18)', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 500, cursor: 'pointer' }}>
                 Cómo es diferente
-              </Link>
+              </button>
             </div>
           </div>
           <div className="hero-metrics" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -441,9 +442,9 @@ export default function HomePage() {
               <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Catálogo</div>
               <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Cursos destacados</h2>
             </div>
-            <Link to="/cursos" style={{ padding: '.45rem 1.1rem', border: '1px solid var(--border)', background: 'white', color: 'var(--carbon)', borderRadius: 7, fontSize: '.85rem', fontWeight: 500 }}>
+            <button onClick={() => navigate('courses')} style={{ padding: '.45rem 1.1rem', border: '1px solid var(--border)', background: 'white', color: 'var(--carbon)', borderRadius: 7, fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
               Ver catálogo completo →
-            </Link>
+            </button>
           </div>
           <div className="reveal courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
             {coursesLoading ? (
@@ -504,9 +505,9 @@ export default function HomePage() {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
                           {c.price != null && <span style={{ fontSize: '.78rem', fontWeight: 700, color: 'var(--carbon)' }}>${c.price}</span>}
-                          <Link to={`/cursos/${c.slug}`} className="btn-course" style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--jade)', border: '1px solid rgba(22,125,120,.3)', background: 'transparent', padding: '5px 13px', borderRadius: 6 }}>
+                          <button onClick={() => navigate('course-detail', { slug: c.slug })} className="btn-course" style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--jade)', border: '1px solid rgba(22,125,120,.3)', background: 'transparent', padding: '5px 13px', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
                             Ver curso
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -598,12 +599,12 @@ export default function HomePage() {
             </p>
           </div>
           <div className="cta-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.9rem', flexShrink: 0 }}>
-            <Link to="/registro" style={{ padding: '1rem 2.2rem', background: 'var(--terra)', color: 'var(--carbon)', borderRadius: 9, fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(201,110,75,.35)' }}>
+            <button onClick={() => navigate('register')} style={{ padding: '1rem 2.2rem', background: 'var(--terra)', color: 'var(--carbon)', borderRadius: 9, fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(201,110,75,.35)' }}>
               Crear cuenta gratis
-            </Link>
-            <Link to="/cursos" style={{ padding: '.75rem 1.75rem', background: 'transparent', color: 'rgba(248,246,241,.7)', border: '1px solid rgba(248,246,241,.18)', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 500, whiteSpace: 'nowrap', textAlign: 'center' }}>
+            </button>
+            <button onClick={() => navigate('courses')} style={{ padding: '.75rem 1.75rem', background: 'transparent', color: 'rgba(248,246,241,.7)', border: '1px solid rgba(248,246,241,.18)', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 500, whiteSpace: 'nowrap', textAlign: 'center', cursor: 'pointer' }}>
               Ver planes y precios
-            </Link>
+            </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', fontSize: '.72rem', color: 'rgba(248,246,241,.35)' }}>
               Sin tarjeta de crédito · Cancela cuando quieras
             </div>

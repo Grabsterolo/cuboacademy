@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { ADMIN_NAV } from '../../../config/navigation'
@@ -39,7 +39,7 @@ function IconBtn({ onClick, title, danger, children }) {
 }
 
 export default function CoursesPage() {
-  const navigate = useNavigate()
+  const { navigate } = useNavigation()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(null)
@@ -113,7 +113,7 @@ export default function CoursesPage() {
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Gestión</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Cursos</h1>
           </div>
-          <button onClick={() => navigate('/dashboard/cursos/nuevo')}
+          <button onClick={() => navigate('curso-form', { courseId: null })}
             style={{ display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.5rem 1.1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.855rem', fontWeight: 600, fontFamily: 'var(--sans)', cursor: 'pointer', transition: 'background .2s', whiteSpace: 'nowrap' }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--jade-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--jade)'}>
@@ -155,7 +155,7 @@ export default function CoursesPage() {
             </div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.45rem' }}>Todavía no hay cursos</h2>
             <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.5rem', maxWidth: 320, margin: '0 auto 1.5rem', lineHeight: 1.6 }}>Crea el primer curso de la plataforma y empieza a construir el catálogo.</p>
-            <button onClick={() => navigate('/dashboard/cursos/nuevo')}
+            <button onClick={() => navigate('curso-form', { courseId: null })}
               style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 600, cursor: 'pointer' }}>
               Crear primer curso
             </button>
@@ -225,7 +225,7 @@ export default function CoursesPage() {
                           </select>
 
                           {/* Edit */}
-                          <IconBtn title="Editar curso" onClick={() => navigate(`/dashboard/cursos/${c.id}/editar`)}>
+                          <IconBtn title="Editar curso" onClick={() => navigate('curso-form', { courseId: c.id })}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
