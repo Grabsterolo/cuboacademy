@@ -37,6 +37,14 @@ function TypeBadge({ value }) {
   )
 }
 
+const TYPE_FILTERS = [
+  { value: null,          label: 'Todos' },
+  { value: 'general',     label: 'Aviso' },
+  { value: 'news',        label: 'Novedad' },
+  { value: 'maintenance', label: 'Mantenimiento' },
+  { value: 'event',       label: 'Evento' },
+]
+
 const BELL = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
 const OVERLAY = { position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(23,26,28,.55)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
 
@@ -44,6 +52,8 @@ export default function InstructorAnnouncementsPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [readItem, setReadItem] = useState(null)
+  const [search, setSearch] = useState('')
+  const [filterType, setFilterType] = useState(null)
 
   useEffect(() => {
     supabase.from('announcements').select('id, title, content, type, created_at')
@@ -60,9 +70,10 @@ export default function InstructorAnnouncementsPage() {
   return (
     <DashboardLayout navItems={INSTRUCTOR_NAV}>
       <style>{`
-        @media (max-width: 768px) { .ann-i-pad { padding: 1.25rem 1rem 2rem !important; } }
+        @media (max-width: 768px) { .ann-i-pad { padding: 1.25rem 1rem 2rem !important; } .ann-i-filters { flex-wrap: wrap !important; } }
         .ann-i-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.35rem 1.5rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
         .ann-i-card:hover { box-shadow: 0 4px 18px rgba(23,26,28,.07); border-color: rgba(22,125,120,.25); }
+        .ann-filter-pill-i { padding: .3rem .75rem; border-radius: 20px; font-size: .78rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; }
       `}</style>
 
       <div className="ann-i-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -71,39 +82,76 @@ export default function InstructorAnnouncementsPage() {
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Comunicados</h1>
         </div>
 
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
-            {[...Array(3)].map((_, i) => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 100, opacity: 1 - i * 0.2 }} />)}
-          </div>
-        ) : items.length === 0 ? (
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center', maxWidth: 400 }}>
-            <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{BELL}</div>
-            <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.3rem' }}>Sin comunicados</p>
-            <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)' }}>No hay comunicados disponibles por el momento.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', maxWidth: 720 }}>
-            {items.map(item => (
-              <div key={item.id} className="ann-i-card" onClick={() => setReadItem(item)}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '.55rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap' }}>
-                    <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{item.title}</h2>
-                    <TypeBadge value={item.type} />
-                  </div>
-                  <span style={{ fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap', flexShrink: 0, marginTop: '.15rem' }}>
-                    {new Date(item.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </span>
-                </div>
-                <p style={{ fontSize: '.85rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0, fontWeight: 300 }}>
-                  {item.content.length > 140 ? item.content.slice(0, 140) + '…' : item.content}
-                </p>
-                {item.content.length > 140 && (
-                  <span style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 600, display: 'inline-block', marginTop: '.5rem', fontFamily: 'var(--sans)' }}>Leer más →</span>
-                )}
-              </div>
-            ))}
+        {/* Filtros */}
+        {!loading && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem', marginBottom: '1.4rem' }}>
+            <div style={{ position: 'relative', maxWidth: 340 }}>
+              <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Buscar comunicado…" value={search} onChange={e => setSearch(e.target.value)}
+                style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 9, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+                onFocus={e => e.target.style.borderColor = 'var(--jade)'}
+                onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+            </div>
+            <div className="ann-i-filters" style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+              <span style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--text-2)', letterSpacing: '.05em', textTransform: 'uppercase', marginRight: '.2rem' }}>Tipo</span>
+              {TYPE_FILTERS.map(opt => {
+                const active = filterType === opt.value
+                const t = opt.value ? typeInfo(opt.value) : null
+                return (
+                  <button key={String(opt.value)} onClick={() => setFilterType(opt.value)} className="ann-filter-pill-i"
+                    style={{ border: `1.5px solid ${active ? (t?.border || 'rgba(22,125,120,.3)') : 'var(--border)'}`, background: active ? (t?.bg || 'var(--jade-soft)') : 'white', color: active ? (t?.color || 'var(--jade)') : 'var(--text-2)' }}>
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
+
+        {(() => {
+          const filtered = items.filter(item => {
+            const q = search.toLowerCase()
+            return (
+              (!filterType || item.type === filterType) &&
+              (!q || item.title.toLowerCase().includes(q) || item.content.toLowerCase().includes(q))
+            )
+          })
+          return (
+            loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+                {[...Array(3)].map((_, i) => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 100, opacity: 1 - i * 0.2 }} />)}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center', maxWidth: 400 }}>
+                <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{BELL}</div>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.3rem' }}>{items.length === 0 ? 'Sin comunicados' : 'Sin resultados'}</p>
+                <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)' }}>{items.length === 0 ? 'No hay comunicados disponibles.' : 'Prueba con otros filtros.'}</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', maxWidth: 720 }}>
+                {filtered.map(item => (
+                  <div key={item.id} className="ann-i-card" onClick={() => setReadItem(item)}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '.55rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap' }}>
+                        <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{item.title}</h2>
+                        <TypeBadge value={item.type} />
+                      </div>
+                      <span style={{ fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap', flexShrink: 0, marginTop: '.15rem' }}>
+                        {new Date(item.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '.85rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0, fontWeight: 300 }}>
+                      {item.content.length > 140 ? item.content.slice(0, 140) + '…' : item.content}
+                    </p>
+                    {item.content.length > 140 && (
+                      <span style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 600, display: 'inline-block', marginTop: '.5rem', fontFamily: 'var(--sans)' }}>Leer más →</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          )
+        })()}
       </div>
 
       {/* Modal: leer comunicado completo */}
