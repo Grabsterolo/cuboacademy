@@ -9,6 +9,8 @@ import HomePage from './pages/public/HomePage'
 import LoginPage from './pages/public/LoginPage'
 import RegisterPage from './pages/public/RegisterPage'
 import InstructorApplicationPage from './pages/public/InstructorApplicationPage'
+import CourseCatalogPage from './pages/public/CourseCatalogPage'
+import CourseDetailPage from './pages/public/CourseDetailPage'
 import DashboardRouter from './pages/dashboard/DashboardRouter'
 
 // Admin pages
@@ -71,7 +73,8 @@ function AppShell() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/quiero-ser-instructor" element={<InstructorApplicationPage />} />
-          <Route path="/cursos" element={<div style={{ padding: '8rem 5%', textAlign: 'center', fontFamily: 'var(--serif)', fontSize: '2rem', color: 'var(--carbon)' }}>Catálogo de cursos — próximamente</div>} />
+          <Route path="/cursos" element={<CourseCatalogPage />} />
+          <Route path="/cursos/:slug" element={<CourseDetailPage />} />
 
           {/* Dashboard root — role-aware */}
           <Route
@@ -117,14 +120,15 @@ function AppShell() {
             }
           />
 
-          {/* Cursos — admin + instructor (role-aware) */}
+          {/* Cursos — admin + instructor + student (role-aware) */}
           <Route
             path="/dashboard/cursos"
             element={
-              <ProtectedRoute allowedRoles={['admin', 'instructor']}>
+              <ProtectedRoute allowedRoles={['admin', 'instructor', 'student']}>
                 <RoleRouter
                   admin={<CoursesPage />}
                   instructor={<InstructorCoursesPage />}
+                  student={<StudentCoursesPage />}
                 />
               </ProtectedRoute>
             }
@@ -150,6 +154,18 @@ function AppShell() {
             element={
               <ProtectedRoute allowedRoles={['admin', 'instructor']}>
                 <CourseStructurePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/cursos/:id/aprender"
+            element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', flexDirection: 'column', gap: '1rem', fontFamily: 'var(--sans)', color: 'var(--text-2)' }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                  <p style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)' }}>Reproductor de clases</p>
+                  <p style={{ fontSize: '.88rem' }}>Próximamente disponible</p>
+                </div>
               </ProtectedRoute>
             }
           />
