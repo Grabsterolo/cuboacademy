@@ -20,16 +20,16 @@ const ICON = {
 }
 
 export const ADMIN_NAV = [
-  { key: 'panel',         label: 'Panel general',  icon: ICON.grid },
-  { key: 'solicitudes',   label: 'Solicitudes',    icon: ICON.requests },
-  { key: 'usuarios',      label: 'Usuarios',       icon: ICON.users },
-  { key: 'cursos',        label: 'Cursos',         icon: ICON.courses },
-  { key: 'categorias',    label: 'Categorías',     icon: ICON.categories },
-  { key: 'comunicados',   label: 'Comunicados',    icon: ICON.announcements },
-  { key: 'pagos',         label: 'Pagos',          icon: ICON.orders },
-  { key: 'certificados',  label: 'Certificados',   icon: ICON.certificates },
-  { key: 'reportes',      label: 'Reportes',       icon: ICON.reports },
-  { key: 'configuracion', label: 'Configuración',  icon: ICON.settings },
+  { key: 'panel',         label: 'Panel general',   icon: ICON.grid },
+  { key: 'comunicados',   label: 'Comunicados',     icon: ICON.announcements },
+  { key: 'categorias',    label: 'Categorías',      icon: ICON.categories },
+  { key: 'cursos',        label: 'Cursos',          icon: ICON.courses },
+  { key: 'solicitudes',   label: 'Solicitudes',     icon: ICON.requests },
+  { key: 'certificados',  label: 'Certificados',    icon: ICON.certificates },
+  { key: 'usuarios',      label: 'Usuarios',        icon: ICON.users },
+  { key: 'reportes',      label: 'Reportes',        icon: ICON.reports },
+  { key: 'pagos',         label: 'Órdenes y pagos', icon: ICON.orders },
+  { key: 'configuracion', label: 'Configuración',   icon: ICON.settings },
 ]
 
 export const INSTRUCTOR_NAV = [
