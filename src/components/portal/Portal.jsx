@@ -5,6 +5,7 @@ import { useIsMobile } from '../../hooks/useIsMobile'
 import Sidebar from './Sidebar'
 
 // Admin
+import GeneralPage from '../../pages/dashboard/admin/GeneralPage'
 import AdminDashboard from '../../pages/dashboard/AdminDashboard'
 import UsersPage from '../../pages/dashboard/admin/UsersPage'
 import CategoriesPage from '../../pages/dashboard/admin/CategoriesPage'
@@ -25,7 +26,6 @@ import InstructorCoursesPage from '../../pages/dashboard/instructor/InstructorCo
 import InstructorStudentsPage from '../../pages/dashboard/instructor/InstructorStudentsPage'
 import InstructorEvaluationsPage from '../../pages/dashboard/instructor/InstructorEvaluationsPage'
 import InstructorReportsPage from '../../pages/dashboard/instructor/InstructorReportsPage'
-import InstructorEarningsPage from '../../pages/dashboard/instructor/InstructorEarningsPage'
 import InstructorSettingsPage from '../../pages/dashboard/instructor/InstructorSettingsPage'
 import InstructorAnnouncementsPage from '../../pages/dashboard/instructor/InstructorAnnouncementsPage'
 
@@ -65,7 +65,7 @@ function Placeholder({ label }) {
 function renderSection(section, role, params) {
   if (role === 'admin') {
     switch (section) {
-      case 'panel':         return <AdminDashboard />
+      case 'panel':         return <GeneralPage />
       case 'solicitudes':   return <RequestsPage />
       case 'usuarios':      return <UsersPage />
       case 'cursos':        return <CoursesPage />
@@ -91,7 +91,6 @@ function renderSection(section, role, params) {
       case 'evaluaciones':  return <InstructorEvaluationsPage />
       case 'comunicados':   return <InstructorAnnouncementsPage />
       case 'reportes':      return <InstructorReportsPage />
-      case 'ganancias':     return <InstructorEarningsPage />
       case 'configuracion': return <InstructorSettingsPage />
       default:              return <Placeholder label={section} />
     }
