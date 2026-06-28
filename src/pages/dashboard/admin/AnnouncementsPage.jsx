@@ -143,10 +143,13 @@ export default function AnnouncementsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
+  // Read modal
+  const [readItem, setReadItem] = useState(null)
+
   useEffect(() => { load() }, [])
 
   useEffect(() => {
-    const fn = e => { if (e.key === 'Escape') { closeCreate(); setDeleteTarget(null) } }
+    const fn = e => { if (e.key === 'Escape') { closeCreate(); setDeleteTarget(null); setReadItem(null) } }
     document.addEventListener('keydown', fn)
     return () => document.removeEventListener('keydown', fn)
   }, [])
@@ -203,8 +206,8 @@ export default function AnnouncementsPage() {
         .ann-icon-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; min-width: 30px; min-height: 30px; }
         .ann-icon-btn:hover { background: rgba(220,38,38,.09); color: #dc2626; }
         .ann-toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--carbon); color: white; padding: .65rem 1.25rem; border-radius: 8px; font-size: .84rem; font-family: var(--sans); font-weight: 500; z-index: 400; white-space: nowrap; box-shadow: 0 4px 20px rgba(23,26,28,.2); pointer-events: none; }
-        .ann-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem 1.35rem; display: flex; align-items: flex-start; gap: 1rem; transition: box-shadow .18s; }
-        .ann-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.07); }
+        .ann-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem 1.35rem; display: flex; align-items: flex-start; gap: 1rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
+        .ann-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.07); border-color: rgba(22,125,120,.25); }
         .type-opt { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .45rem; padding: .9rem .5rem; border-radius: 10px; border: 1.5px solid var(--border); background: white; cursor: pointer; transition: all .15s; font-size: .75rem; font-weight: 600; font-family: var(--sans); color: var(--text-2); }
         .type-opt:hover { border-color: var(--jade); color: var(--carbon); }
         .target-opt { flex: 1; display: flex; align-items: center; gap: .6rem; padding: .75rem .9rem; border-radius: 9px; border: 1.5px solid var(--border); background: white; cursor: pointer; transition: all .15s; font-family: var(--sans); }
@@ -254,7 +257,7 @@ export default function AnnouncementsPage() {
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
               {items.map(item => (
-                <div key={item.id} className="ann-card">
+                <div key={item.id} className="ann-card" onClick={() => setReadItem(item)}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', flexWrap: 'wrap', marginBottom: '.45rem' }}>
                       <span style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)' }}>{item.title}</span>
@@ -269,7 +272,7 @@ export default function AnnouncementsPage() {
                     <span style={{ fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap' }}>
                       {new Date(item.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </span>
-                    <button className="ann-icon-btn" onClick={() => setDeleteTarget(item)} title="Eliminar">
+                    <button className="ann-icon-btn" onClick={e => { e.stopPropagation(); setDeleteTarget(item) }} title="Eliminar">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                       </svg>
@@ -376,6 +379,33 @@ export default function AnnouncementsPage() {
                 {saving ? 'Publicando…' : 'Publicar comunicado'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: leer comunicado ── */}
+      {readItem && (
+        <div style={OVERLAY} onClick={e => { if (e.target === e.currentTarget) setReadItem(null) }}>
+          <div style={{ background: 'white', borderRadius: 18, width: '100%', maxWidth: 580, maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(23,26,28,.22)', position: 'relative' }}>
+            <div style={{ padding: '1.6rem 2rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '18px 18px 0 0' }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.5rem' }}>
+                  <TypeBadge value={readItem.type} />
+                  <TargetBadge value={readItem.target_role} />
+                </div>
+                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'var(--carbon)', margin: 0, lineHeight: 1.3 }}>{readItem.title}</h2>
+                <p style={{ fontSize: '.73rem', color: '#B5B2AB', margin: '.4rem 0 0', fontFamily: 'var(--sans)' }}>
+                  {new Date(readItem.created_at).toLocaleDateString('es-CR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+                </p>
+              </div>
+              <button onClick={() => setReadItem(null)}
+                style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px', cursor: 'pointer', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div style={{ padding: '1.75rem 2rem 2rem' }}>
+              <p style={{ fontSize: '.93rem', color: 'var(--carbon)', lineHeight: 1.75, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 300 }}>{readItem.content}</p>
+            </div>
           </div>
         </div>
       )}
