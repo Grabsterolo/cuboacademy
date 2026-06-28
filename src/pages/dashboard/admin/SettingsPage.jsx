@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useSettings } from '../../../context/SettingsContext'
+import { FieldLabelHint } from '../../../components/ui'
 
 const DEFAULTS = {
   platform_name: 'Cubo Academy',
@@ -17,15 +18,6 @@ const DEFAULTS = {
   social_instagram: '',
   social_linkedin: '',
   social_youtube: '',
-}
-
-function LabelField({ children, hint }) {
-  return (
-    <div style={{ marginBottom: '.35rem' }}>
-      <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', letterSpacing: '.05em', textTransform: 'uppercase' }}>{children}</label>
-      {hint && <span style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.15rem', display: 'block' }}>{hint}</span>}
-    </div>
-  )
 }
 
 function SectionTitle({ children }) {
@@ -185,22 +177,22 @@ export default function SettingsPage() {
             ) : (
               <form onSubmit={handleSaveIdentity} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
                 <div>
-                  <LabelField>Nombre de la plataforma</LabelField>
+                  <FieldLabelHint>Nombre de la plataforma</FieldLabelHint>
                   <input className="sett-inp" style={inp} type="text" value={settings.platform_name}
                     onChange={e => set('platform_name', e.target.value)} placeholder="Cubo Academy" />
                 </div>
                 <div>
-                  <LabelField hint="Aparece en la página de inicio y en emails">Descripción corta</LabelField>
+                  <FieldLabelHint hint="Aparece en la página de inicio y en emails">Descripción corta</FieldLabelHint>
                   <input className="sett-inp" style={inp} type="text" value={settings.platform_description}
                     onChange={e => set('platform_description', e.target.value)} placeholder="Formación práctica para profesionales consultivos" />
                 </div>
                 <div>
-                  <LabelField hint="URL pública de la imagen">URL del logo</LabelField>
+                  <FieldLabelHint hint="URL pública de la imagen">URL del logo</FieldLabelHint>
                   <input className="sett-inp" style={inp} type="text" value={settings.logo_url}
                     onChange={e => set('logo_url', e.target.value)} placeholder="https://..." />
                 </div>
                 <div>
-                  <LabelField>Color principal</LabelField>
+                  <FieldLabelHint>Color principal</FieldLabelHint>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
                     <input type="color" value={settings.primary_color || '#167D78'}
                       onChange={e => set('primary_color', e.target.value)}
@@ -304,34 +296,34 @@ export default function SettingsPage() {
             ) : (
               <form onSubmit={handleSaveContent} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
                 <div>
-                  <LabelField hint="Texto principal del hero en la página de inicio">Título del hero</LabelField>
+                  <FieldLabelHint hint="Texto principal del hero en la página de inicio">Título del hero</FieldLabelHint>
                   <input className="sett-inp" style={inp} type="text" value={settings.hero_title}
                     onChange={e => set('hero_title', e.target.value)} placeholder="El conocimiento que transforma" />
                 </div>
                 <div>
-                  <LabelField hint="Párrafo descriptivo debajo del título">Subtítulo del hero</LabelField>
+                  <FieldLabelHint hint="Párrafo descriptivo debajo del título">Subtítulo del hero</FieldLabelHint>
                   <textarea className="sett-inp" style={{ ...inp, resize: 'vertical', minHeight: 80 }}
                     value={settings.hero_subtitle}
                     onChange={e => set('hero_subtitle', e.target.value)}
                     placeholder="Cubo Academy convierte experiencia consultiva real en cursos de alto impacto…" />
                 </div>
                 <div>
-                  <LabelField>Email de contacto</LabelField>
+                  <FieldLabelHint>Email de contacto</FieldLabelHint>
                   <input className="sett-inp" style={inp} type="email" value={settings.contact_email}
                     onChange={e => set('contact_email', e.target.value)} placeholder="contacto@cuboacademy.com" />
                 </div>
                 <div>
-                  <LabelField>Instagram URL</LabelField>
+                  <FieldLabelHint>Instagram URL</FieldLabelHint>
                   <input className="sett-inp" style={inp} type="text" value={settings.social_instagram}
                     onChange={e => set('social_instagram', e.target.value)} placeholder="https://instagram.com/..." />
                 </div>
                 <div>
-                  <LabelField>LinkedIn URL</LabelField>
+                  <FieldLabelHint>LinkedIn URL</FieldLabelHint>
                   <input className="sett-inp" style={inp} type="text" value={settings.social_linkedin}
                     onChange={e => set('social_linkedin', e.target.value)} placeholder="https://linkedin.com/company/..." />
                 </div>
                 <div>
-                  <LabelField>YouTube URL</LabelField>
+                  <FieldLabelHint>YouTube URL</FieldLabelHint>
                   <input className="sett-inp" style={inp} type="text" value={settings.social_youtube}
                     onChange={e => set('social_youtube', e.target.value)} placeholder="https://youtube.com/@..." />
                 </div>
