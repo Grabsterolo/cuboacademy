@@ -27,6 +27,7 @@ import InstructorEvaluationsPage from '../../pages/dashboard/instructor/Instruct
 import InstructorReportsPage from '../../pages/dashboard/instructor/InstructorReportsPage'
 import InstructorEarningsPage from '../../pages/dashboard/instructor/InstructorEarningsPage'
 import InstructorSettingsPage from '../../pages/dashboard/instructor/InstructorSettingsPage'
+import InstructorAnnouncementsPage from '../../pages/dashboard/instructor/InstructorAnnouncementsPage'
 
 // Student
 import StudentDashboard from '../../pages/dashboard/StudentDashboard'
@@ -37,6 +38,7 @@ import StudentAchievementsPage from '../../pages/dashboard/student/StudentAchiev
 import StudentCertificatesPage from '../../pages/dashboard/student/StudentCertificatesPage'
 import StudentStorePage from '../../pages/dashboard/student/StudentStorePage'
 import StudentSettingsPage from '../../pages/dashboard/student/StudentSettingsPage'
+import StudentAnnouncementsPage from '../../pages/dashboard/student/StudentAnnouncementsPage'
 
 
 const ANIM_DURATION = 150
@@ -87,7 +89,7 @@ function renderSection(section, role, params) {
       case 'curso-estructura': return <CourseStructurePage />
       case 'estudiantes':   return <InstructorStudentsPage />
       case 'evaluaciones':  return <InstructorEvaluationsPage />
-      case 'comunicados':   return <AnnouncementsPage />
+      case 'comunicados':   return <InstructorAnnouncementsPage />
       case 'reportes':      return <InstructorReportsPage />
       case 'ganancias':     return <InstructorEarningsPage />
       case 'configuracion': return <InstructorSettingsPage />
@@ -100,7 +102,7 @@ function renderSection(section, role, params) {
     case 'perfil':        return <StudentProfilePage />
     case 'cursos':        return <StudentCoursesPage />
     case 'instructores':  return <StudentInstructorsPage />
-    case 'comunicados':   return <AnnouncementsPage />
+    case 'comunicados':   return <StudentAnnouncementsPage />
     case 'logros':        return <StudentAchievementsPage />
     case 'certificados':  return <StudentCertificatesPage />
     case 'tienda':        return <StudentStorePage />
