@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import { IconBtn } from '../../../components/ui'
 import { ADMIN_NAV } from '../../../config/navigation'
 
 const STATUS_META = {
@@ -25,17 +26,6 @@ function LevelBadge({ level }) {
   const m = LEVEL_META[level]
   if (!m) return null
   return <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: m.bg, color: m.color, border: m.border, whiteSpace: 'nowrap' }}>{m.label}</span>
-}
-
-function IconBtn({ onClick, title, danger, children }) {
-  return (
-    <button onClick={onClick} title={title}
-      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 5, borderRadius: 6, color: danger ? '#DC2626' : 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 28, minHeight: 28, transition: 'background .15s, color .15s' }}
-      onMouseEnter={e => { e.currentTarget.style.background = danger ? 'rgba(239,68,68,.09)' : 'var(--jade-soft)'; e.currentTarget.style.color = danger ? '#DC2626' : 'var(--jade)' }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = danger ? '#DC2626' : 'var(--text-2)' }}>
-      {children}
-    </button>
-  )
 }
 
 export default function CoursesPage() {
@@ -145,7 +135,18 @@ export default function CoursesPage() {
 
         {/* Content */}
         {loading ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>Cargando cursos…</div>
+          <div className="cp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', opacity: 1 - i * 0.1 }}>
+                <div style={{ width: '100%', height: 140, background: 'var(--border)' }} />
+                <div style={{ padding: '1.1rem 1.2rem', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+                  <div style={{ height: 14, width: '75%', background: 'var(--border)', borderRadius: 4 }} />
+                  <div style={{ height: 11, width: '45%', background: 'var(--border)', borderRadius: 4 }} />
+                  <div style={{ height: 11, width: '30%', background: 'var(--border)', borderRadius: 4 }} />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : courses.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 60, height: 60, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
