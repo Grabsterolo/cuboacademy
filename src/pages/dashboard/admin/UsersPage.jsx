@@ -42,6 +42,10 @@ export default function UsersPage() {
   const [editLoading, setEditLoading] = useState(false)
   const [editError, setEditError] = useState('')
 
+  // Delete modal
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
   useEffect(() => { loadUsers() }, [])
 
   useEffect(() => {
@@ -155,6 +159,21 @@ export default function UsersPage() {
     closeEdit()
   }
 
+  // ── Delete user ──
+  async function handleDeleteUser() {
+    if (!deleteTarget) return
+    setDeleteLoading(true)
+    const { error } = await supabase.rpc('delete_user_by_id', { target_id: deleteTarget.id })
+    setDeleteLoading(false)
+    if (error) {
+      showToast('Error al eliminar: ' + (error.message || 'inténtalo de nuevo.'))
+    } else {
+      setUsers(us => us.filter(u => u.id !== deleteTarget.id))
+      showToast('Usuario eliminado correctamente.')
+    }
+    setDeleteTarget(null)
+  }
+
   const filtered = users.filter(u => {
     const matchesTab = !activeTab || u.role === activeTab
     const q = search.toLowerCase()
@@ -180,6 +199,7 @@ export default function UsersPage() {
         .users-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(23,26,28,.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; min-width: 30px; min-height: 30px; }
         .icon-btn:hover { background: var(--jade-soft); color: var(--jade); }
+        .icon-btn-danger:hover { background: rgba(220,38,38,.09) !important; color: #dc2626 !important; }
         .toggle-track-u { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
         .toggle-track-u input { opacity: 0; width: 0; height: 0; position: absolute; }
         .toggle-slider-u { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: background .2s; }
@@ -298,6 +318,13 @@ export default function UsersPage() {
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                       </svg>
                     </button>
+
+                    {/* Delete button */}
+                    <button className="icon-btn icon-btn-danger" onClick={() => setDeleteTarget(u)} title="Eliminar usuario" style={{ flexShrink: 0 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                    </button>
                   </div>
                 )
               })}
@@ -414,6 +441,33 @@ export default function UsersPage() {
                 {editLoading ? 'Guardando…' : 'Guardar cambios'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: confirmar eliminación ── */}
+      {deleteTarget && (
+        <div className="users-overlay" onClick={e => { if (e.target === e.currentTarget && !deleteLoading) setDeleteTarget(null) }}>
+          <div className="users-modal" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', width: '100%', maxWidth: 380, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
+            <div style={{ width: 48, height: 48, background: 'rgba(220,38,38,.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+            </div>
+            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', textAlign: 'center', marginBottom: '.5rem' }}>Eliminar usuario</h2>
+            <p style={{ fontSize: '.85rem', color: 'var(--text-2)', textAlign: 'center', lineHeight: 1.5, marginBottom: '1.75rem' }}>
+              ¿Eliminar a <strong style={{ color: 'var(--carbon)' }}>{deleteTarget.full_name || deleteTarget.email}</strong>? Esta acción no se puede deshacer.
+            </p>
+            <div style={{ display: 'flex', gap: '.75rem' }}>
+              <button onClick={() => setDeleteTarget(null)} disabled={deleteLoading}
+                style={{ flex: 1, padding: '.75rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'background .15s' }}>
+                Cancelar
+              </button>
+              <button onClick={handleDeleteUser} disabled={deleteLoading}
+                style={{ flex: 1, padding: '.75rem', background: '#dc2626', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 700, color: 'white', cursor: 'pointer', fontFamily: 'var(--sans)', opacity: deleteLoading ? .6 : 1, transition: 'opacity .15s' }}>
+                {deleteLoading ? 'Eliminando…' : 'Eliminar'}
+              </button>
+            </div>
           </div>
         </div>
       )}
