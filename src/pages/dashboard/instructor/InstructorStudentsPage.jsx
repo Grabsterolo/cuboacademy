@@ -36,14 +36,14 @@ export default function InstructorStudentsPage() {
         // enrollments
         const { data: enr } = await supabase
           .from('enrollments')
-          .select('id, created_at, course_id, user_id')
+          .select('id, created_at, course_id, student_id')
           .in('course_id', ids)
           .order('created_at', { ascending: false })
 
         if (!enr?.length) { setLoading(false); return }
 
         // student profiles
-        const studentIds = [...new Set(enr.map(e => e.user_id))]
+        const studentIds = [...new Set(enr.map(e => e.student_id))]
         const { data: pData } = await supabase
           .from('profiles')
           .select('id, full_name, email, avatar_url')
@@ -57,7 +57,7 @@ export default function InstructorStudentsPage() {
           created_at:  e.created_at,
           course_id:   e.course_id,
           courseTitle: courseMap[e.course_id] || '—',
-          student:     profileMap[e.user_id] || { full_name: 'Estudiante', email: '' },
+          student:     profileMap[e.student_id] || { full_name: 'Estudiante', email: '' },
         })))
         setLoading(false)
       })

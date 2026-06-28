@@ -234,10 +234,10 @@ export default function CourseDetailPage() {
                 {isGratis && <p style={{ fontSize: '.76rem', color: 'var(--jade)', fontWeight: 600, marginBottom: '1.25rem' }}>Sin costo · Acceso inmediato</p>}
 
                 {enrolled ? (
-                  <Link to={`/dashboard/cursos/${course.id}/aprender`}
-                    style={{ display: 'block', width: '100%', padding: '1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--serif)', textDecoration: 'none', textAlign: 'center', boxSizing: 'border-box' }}>
+                  <button onClick={() => navigate('aprender')}
+                    style={{ display: 'block', width: '100%', padding: '1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--serif)', textAlign: 'center', boxSizing: 'border-box' }}>
                     Ir al curso →
-                  </Link>
+                  </button>
                 ) : (
                   <button className="buy-btn" onClick={() => setShowBuyModal(true)}
                     style={{ background: 'var(--jade)', color: 'white' }}>
@@ -267,7 +267,7 @@ export default function CourseDetailPage() {
               {!user && (
                 <div style={{ borderTop: '1px solid var(--border)', padding: '1rem 1.5rem', background: 'var(--cream)', textAlign: 'center' }}>
                   <p style={{ fontSize: '.78rem', color: 'var(--text-2)', marginBottom: '.5rem' }}>¿Ya tienes una cuenta?</p>
-                  <Link to="/login" style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--jade)', textDecoration: 'none' }}>Inicia sesión →</Link>
+                  <button onClick={() => navigate('login')} style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--jade)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Inicia sesión →</button>
                 </div>
               )}
             </div>
