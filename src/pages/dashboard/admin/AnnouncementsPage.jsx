@@ -146,6 +146,11 @@ export default function AnnouncementsPage() {
   // Read modal
   const [readItem, setReadItem] = useState(null)
 
+  // Filtros
+  const [search, setSearch] = useState('')
+  const [filterType, setFilterType] = useState(null)
+  const [filterTarget, setFilterTarget] = useState(null)
+
   useEffect(() => { load() }, [])
 
   useEffect(() => {
@@ -196,6 +201,15 @@ export default function AnnouncementsPage() {
     setDeleteTarget(null)
   }
 
+  const filtered = items.filter(item => {
+    const q = search.toLowerCase()
+    return (
+      (!filterType   || item.type        === filterType) &&
+      (!filterTarget || item.target_role === filterTarget) &&
+      (!q || item.title.toLowerCase().includes(q) || item.content.toLowerCase().includes(q))
+    )
+  })
+
   const OVERLAY = { position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(23,26,28,.55)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
 
   return (
@@ -240,23 +254,69 @@ export default function AnnouncementsPage() {
           </button>
         </div>
 
+        {/* ── Filtros ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', marginBottom: '1.5rem' }}>
+          {/* Búsqueda */}
+          <div style={{ position: 'relative', maxWidth: 360 }}>
+            <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Buscar comunicado…" value={search} onChange={e => setSearch(e.target.value)}
+              style={{ width: '100%', padding: '.58rem .85rem .58rem 2.1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 9, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+              onFocus={e => e.target.style.borderColor = 'var(--jade)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+          </div>
+
+          {/* Tipo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--text-2)', letterSpacing: '.05em', textTransform: 'uppercase', marginRight: '.2rem' }}>Tipo</span>
+            {[{ value: null, label: 'Todos' }, ...TYPES.map(t => ({ value: t.value, label: t.label }))].map(opt => {
+              const active = filterType === opt.value
+              const t = opt.value ? typeInfo(opt.value) : null
+              return (
+                <button key={String(opt.value)} onClick={() => setFilterType(opt.value)}
+                  style={{ padding: '.3rem .75rem', borderRadius: 20, border: `1.5px solid ${active ? (t?.border || 'var(--jade)') : 'var(--border)'}`, background: active ? (t?.bg || 'var(--jade-soft)') : 'white', color: active ? (t?.color || 'var(--jade)') : 'var(--text-2)', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Destinatario */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--text-2)', letterSpacing: '.05em', textTransform: 'uppercase', marginRight: '.2rem' }}>Destinatario</span>
+            {[{ value: null, label: 'Todos' }, ...TARGETS.map(t => ({ value: t.value, label: t.label }))].map(opt => {
+              const active = filterTarget === opt.value
+              const tgt = opt.value ? targetInfo(opt.value) : null
+              return (
+                <button key={String(opt.value)} onClick={() => setFilterTarget(opt.value)}
+                  style={{ padding: '.3rem .75rem', borderRadius: 20, border: `1.5px solid ${active ? (tgt?.border || 'var(--jade)') : 'var(--border)'}`, background: active ? (tgt?.bg || 'var(--jade-soft)') : 'white', color: active ? (tgt?.color || 'var(--jade)') : 'var(--text-2)', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* List */}
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
             {[...Array(4)].map((_, i) => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 90, opacity: 1 - i * 0.18 }} />)}
           </div>
-        ) : items.length === 0 ? (
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center', maxWidth: 420 }}>
+        ) : filtered.length === 0 ? (
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center', maxWidth: 420 }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </div>
-            <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.3rem' }}>Sin comunicados</p>
-            <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)' }}>Crea el primer comunicado para tus usuarios.</p>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.3rem' }}>
+              {items.length === 0 ? 'Sin comunicados' : 'Sin resultados'}
+            </p>
+            <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)' }}>
+              {items.length === 0 ? 'Crea el primer comunicado para tus usuarios.' : 'Prueba con otros filtros o términos de búsqueda.'}
+            </p>
           </div>
         ) : (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
-              {items.map(item => (
+              {filtered.map(item => (
                 <div key={item.id} className="ann-card" onClick={() => setReadItem(item)}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', flexWrap: 'wrap', marginBottom: '.45rem' }}>
@@ -282,7 +342,7 @@ export default function AnnouncementsPage() {
               ))}
             </div>
             <div style={{ marginTop: '.75rem', fontSize: '.75rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
-              {items.length} comunicado{items.length !== 1 ? 's' : ''}
+              {filtered.length} de {items.length} comunicado{items.length !== 1 ? 's' : ''}
             </div>
           </>
         )}
