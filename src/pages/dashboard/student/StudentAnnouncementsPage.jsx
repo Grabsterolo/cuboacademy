@@ -128,7 +128,7 @@ export default function StudentAnnouncementsPage() {
           </div>
         ) : (
           <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', maxWidth: 720 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
             {filtered.map(item => (
               <div key={item.id} className="ann-s-card" onClick={() => setReadItem(item)}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '.55rem' }}>

@@ -40,7 +40,7 @@ import StudentSettingsPage from '../../pages/dashboard/student/StudentSettingsPa
 import StudentAnnouncementsPage from '../../pages/dashboard/student/StudentAnnouncementsPage'
 
 
-const ANIM_DURATION = 150
+const ANIM_DURATION = 140
 
 function LoadingSection() {
   return (
@@ -144,11 +144,12 @@ export default function Portal() {
     <>
       <style>{`
         @keyframes sectionIn {
-          from { opacity: 0; transform: translateY(-6px); }
+          from { opacity: 0; transform: translateY(5px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .portal-section-enter { animation: sectionIn ${ANIM_DURATION}ms ease forwards; }
+        .portal-section-enter { animation: sectionIn 200ms ease forwards; }
+        .portal-section-exit  { opacity: 0; pointer-events: none; transition: opacity ${ANIM_DURATION}ms ease; }
       `}</style>
 
       <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--cream)' }}>
@@ -174,9 +175,8 @@ export default function Portal() {
 
           {/* Section content */}
           <div
-            key={displaySection}
-            className={visible ? 'portal-section-enter' : ''}
-            style={{ flex: 1, opacity: visible ? 1 : 0, transition: `opacity ${ANIM_DURATION}ms ease` }}
+            className={visible ? 'portal-section-enter' : 'portal-section-exit'}
+            style={{ flex: 1 }}
           >
             {renderSection(displaySection, role, displayParams)}
           </div>

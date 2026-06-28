@@ -127,7 +127,7 @@ export default function InstructorAnnouncementsPage() {
                 <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)' }}>{items.length === 0 ? 'No hay comunicados disponibles.' : 'Prueba con otros filtros.'}</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', maxWidth: 720 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
                 {filtered.map(item => (
                   <div key={item.id} className="ann-i-card" onClick={() => setReadItem(item)}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '.55rem' }}>
