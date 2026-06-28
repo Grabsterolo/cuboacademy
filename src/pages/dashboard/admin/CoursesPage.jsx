@@ -3,7 +3,6 @@ import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { IconBtn } from '../../../components/ui'
-import { ADMIN_NAV } from '../../../config/navigation'
 
 const STATUS_META = {
   draft:     { label: 'Borrador',  bg: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
@@ -79,7 +78,7 @@ export default function CoursesPage() {
   })
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`
         .cp-tab { padding: .38rem .9rem; border-radius: 6px; border: none; cursor: pointer; font-size: .82rem; font-weight: 500; font-family: var(--sans); transition: background .15s, color .15s; white-space: nowrap; }
         .cp-course-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .18s; }

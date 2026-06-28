@@ -3,7 +3,6 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
-import { INSTRUCTOR_NAV } from '../../../config/navigation'
 
 const STATUS = {
   published: { label: 'Publicado', bg: 'var(--jade-soft)', color: 'var(--jade)',  border: 'rgba(22,125,120,.25)' },
@@ -67,7 +66,7 @@ export default function InstructorCoursesPage() {
   ]
 
   return (
-    <DashboardLayout navItems={INSTRUCTOR_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .ic-pad { padding: 1.25rem 1rem 2rem !important; } .ic-stats { grid-template-columns: 1fr 1fr !important; } }
         .ic-card { background: white; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; gap: 1rem; padding: .9rem 1.25rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }

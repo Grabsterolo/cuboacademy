@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
-import { STUDENT_NAV } from '../../../config/navigation'
 import { Toast } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
 
@@ -137,7 +136,7 @@ export default function StudentProfilePage() {
   const BOOK_ICON = <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
 
   return (
-    <DashboardLayout navItems={STUDENT_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .prf-pad { padding: 1.25rem 1rem 2rem !important; } .prf-grid { grid-template-columns: 1fr !important; } .prf-name-row { grid-template-columns: 1fr !important; } }
         .prf-inp:focus { border-color: var(--jade) !important; background: white !important; }

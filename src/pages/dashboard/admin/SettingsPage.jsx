@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useSettings } from '../../../context/SettingsContext'
-import { ADMIN_NAV } from '../../../config/navigation'
 
 const DEFAULTS = {
   platform_name: 'Cubo Academy',
@@ -144,7 +143,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`
         .sett-inp:focus { border-color: var(--jade) !important; background: white !important; }
         .sett-sel:focus { border-color: var(--jade) !important; }

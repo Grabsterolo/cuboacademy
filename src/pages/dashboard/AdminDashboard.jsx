@@ -1,6 +1,5 @@
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
-import { ADMIN_NAV } from '../../config/navigation'
 
 const METRICS = [
   { label: 'Total usuarios', value: '—', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
@@ -14,7 +13,7 @@ export default function AdminDashboard() {
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'admin').split(' ')[0]
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <div style={{ padding: '2.5rem 2.5rem 3rem' }}>
         <div style={{ marginBottom: '2.5rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Panel administrativo</p>

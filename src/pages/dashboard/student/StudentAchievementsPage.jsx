@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
-import { STUDENT_NAV } from '../../../config/navigation'
 
 const STAR_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
 const BOOK_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -88,7 +87,7 @@ export default function StudentAchievementsPage() {
   const completed = enrollments.filter(e => e.completed_at || e.status === 'completed').length
 
   return (
-    <DashboardLayout navItems={STUDENT_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .ach-pad { padding: 1.25rem 1rem 2rem !important; } .ach-grid { grid-template-columns: 1fr 1fr !important; } .ach-future { grid-template-columns: 1fr !important; } }
         .ach-badge { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 1.4rem 1.25rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: .75rem; transition: box-shadow .18s; }

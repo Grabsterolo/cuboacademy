@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
-import { INSTRUCTOR_NAV } from '../../../config/navigation'
 
 const USERS = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 
@@ -72,7 +71,7 @@ export default function InstructorStudentsPage() {
   })
 
   return (
-    <DashboardLayout navItems={INSTRUCTOR_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .ist-pad { padding: 1.25rem 1rem 2rem !important; } }
         .ist-row { display: flex; align-items: center; gap: 1rem; padding: .85rem 1.25rem; border-bottom: 1px solid var(--border); transition: background .15s; }

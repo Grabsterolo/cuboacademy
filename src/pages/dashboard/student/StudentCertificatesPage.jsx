@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
-import { STUDENT_NAV } from '../../../config/navigation'
 
 const CERT_ICON_BIG = <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
 const CERT_ICON     = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
@@ -34,7 +33,7 @@ export default function StudentCertificatesPage() {
   }, [user])
 
   return (
-    <DashboardLayout navItems={STUDENT_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .cert-pad { padding: 1.25rem 1rem 2rem !important; } }
         .cert-card { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: box-shadow .18s; }

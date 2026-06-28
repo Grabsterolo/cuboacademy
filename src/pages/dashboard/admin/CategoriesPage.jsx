@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { FieldLabel as LabelField } from '../../../components/ui'
-import { ADMIN_NAV } from '../../../config/navigation'
 
 function slugify(str) {
   return str
@@ -119,7 +118,7 @@ export default function CategoriesPage() {
   }
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`
         .cat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: .65rem; transition: box-shadow .18s; }
         .cat-card:hover { box-shadow: 0 4px 18px rgba(23,26,28,.07); }

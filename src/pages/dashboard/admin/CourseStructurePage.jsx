@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { ADMIN_NAV } from '../../../config/navigation'
 
 const INP = { width: '100%', padding: '.65rem .9rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 7, color: 'var(--carbon)', fontSize: '15px', outline: 'none', fontFamily: 'var(--sans)', transition: 'border-color .2s, background .2s', boxSizing: 'border-box' }
 const INP_SM = { padding: '.45rem .7rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--carbon)', fontSize: '14px', outline: 'none', fontFamily: 'var(--sans)', boxSizing: 'border-box' }
@@ -405,7 +404,7 @@ export default function CourseStructurePage() {
   }
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`
         .csp-mod-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
         .csp-mod-header { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.25rem; cursor: pointer; user-select: none; -webkit-user-select: none; }

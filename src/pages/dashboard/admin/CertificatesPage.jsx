@@ -1,9 +1,8 @@
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { ADMIN_NAV } from '../../../config/navigation'
 
 export default function CertificatesPage() {
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`@media (max-width: 768px) { .stub-pad { padding: 1.25rem 1rem 2rem !important; } }`}</style>
       <div className="stub-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
         <div style={{ marginBottom: '2rem' }}>

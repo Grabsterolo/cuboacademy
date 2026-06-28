@@ -2,7 +2,6 @@ import { useState } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
-import { STUDENT_NAV } from '../../../config/navigation'
 import { supabase } from '../../../lib/supabase'
 
 function Section({ title, desc, children }) {
@@ -60,7 +59,7 @@ export default function StudentSettingsPage() {
   }
 
   return (
-    <DashboardLayout navItems={STUDENT_NAV}>
+    <DashboardLayout>
       <style>{`@media (max-width: 768px) { .cfg-pad { padding: 1.25rem 1rem 2rem !important; } }`}</style>
 
       <div className="cfg-pad" style={{ padding: '2.5rem 2.5rem 3rem', maxWidth: 700 }}>

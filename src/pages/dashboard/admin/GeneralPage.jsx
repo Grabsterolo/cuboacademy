@@ -3,7 +3,6 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { Skeleton } from '../../../components/ui'
-import { ADMIN_NAV } from '../../../config/navigation'
 
 const ROLE_BADGE = {
   admin:      { label: 'Admin',       bg: 'rgba(22,125,120,.12)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
@@ -62,7 +61,7 @@ export default function GeneralPage() {
   ]
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`
         .gp-skel { animation: gp-pulse 1.4s ease-in-out infinite; }
         @keyframes gp-pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }

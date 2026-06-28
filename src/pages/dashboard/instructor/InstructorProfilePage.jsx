@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
-import { INSTRUCTOR_NAV } from '../../../config/navigation'
 import { Toast } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
 
@@ -125,7 +124,7 @@ export default function InstructorProfilePage() {
   const expLabel = EXP_OPTIONS.find(o => o.value === Number(yearsExp))?.label
 
   return (
-    <DashboardLayout navItems={INSTRUCTOR_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .ipr-pad { padding: 1.25rem 1rem 2rem !important; } .ipr-grid { grid-template-columns: 1fr !important; } .ipr-2col { grid-template-columns: 1fr !important; } }
         .ipr-inp:focus { border-color: var(--jade) !important; background: white !important; }

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
-import { INSTRUCTOR_NAV } from '../../config/navigation'
 import { supabase } from '../../lib/supabase'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
@@ -76,7 +75,7 @@ export default function InstructorDashboard() {
   const BELL_ICON = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
 
   return (
-    <DashboardLayout navItems={INSTRUCTOR_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .inst-pad { padding: 1.25rem 1rem 2rem !important; } .inst-stats { grid-template-columns: 1fr 1fr !important; } .inst-main { grid-template-columns: 1fr !important; } }
         .course-row { display: flex; align-items: center; gap: .85rem; padding: .9rem 1.25rem; border-bottom: 1px solid var(--border); transition: background .15s; cursor: pointer; }

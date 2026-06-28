@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { ADMIN_NAV } from '../../../config/navigation'
 import { ModalOverlay, ConfirmModal, Badge, Toast } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
 
@@ -130,7 +129,7 @@ export default function RequestsPage() {
   }
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`
         .rq-tab { padding: .45rem 1rem; border: 1px solid transparent; border-radius: 7px; font-size: .82rem; font-weight: 500; cursor: pointer; transition: background .15s, color .15s, border-color .15s; background: transparent; color: var(--text-2); font-family: var(--sans); }
         .rq-tab:hover { background: var(--cream); }

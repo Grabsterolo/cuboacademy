@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { STUDENT_NAV } from '../../../config/navigation'
 
 const TYPES = {
   general: {
@@ -68,7 +67,7 @@ export default function StudentAnnouncementsPage() {
   }, [])
 
   return (
-    <DashboardLayout navItems={STUDENT_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .ann-s-pad { padding: 1.25rem 1rem 2rem !important; } .ann-s-filters { flex-wrap: wrap !important; } }
         .ann-s-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.35rem 1.5rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }

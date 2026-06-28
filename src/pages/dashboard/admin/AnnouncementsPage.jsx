@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../context/AuthContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { ADMIN_NAV } from '../../../config/navigation'
 
 // ── Tipos de comunicado ─────────────────────────────────────────────────────
 const TYPES = [
@@ -213,7 +212,7 @@ export default function AnnouncementsPage() {
   const OVERLAY = { position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(23,26,28,.55)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`
         .ann-inp { width: 100%; padding: .75rem 1rem; background: #FAFAF8; border: 1.5px solid var(--border); border-radius: 9px; color: var(--carbon); font-size: .93rem; outline: none; font-family: var(--sans); box-sizing: border-box; transition: border-color .18s, background .18s; }
         .ann-inp:focus { border-color: var(--jade); background: white; }

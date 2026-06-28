@@ -1,5 +1,4 @@
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { INSTRUCTOR_NAV } from '../../../config/navigation'
 
 const FEATURES = [
   {
@@ -21,7 +20,7 @@ const FEATURES = [
 
 export default function InstructorEvaluationsPage() {
   return (
-    <DashboardLayout navItems={INSTRUCTOR_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .ev-pad { padding: 1.25rem 1rem 2rem !important; } .ev-grid { grid-template-columns: 1fr !important; } }
         .ev-feat { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: .75rem; }

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { ADMIN_NAV } from '../../../config/navigation'
 
 function generateSlug(title) {
   return title
@@ -152,14 +151,14 @@ export default function CourseFormPage() {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={ADMIN_NAV}>
+      <DashboardLayout>
         <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>Cargando…</div>
       </DashboardLayout>
     )
   }
 
   return (
-    <DashboardLayout navItems={ADMIN_NAV}>
+    <DashboardLayout>
       <style>{`
         .cfp-inp:focus { border-color: var(--jade) !important; background: white !important; }
         .cfp-drop:hover { border-color: var(--jade) !important; background: var(--jade-soft) !important; }

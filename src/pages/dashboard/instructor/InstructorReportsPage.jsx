@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
-import { INSTRUCTOR_NAV } from '../../../config/navigation'
 
 const STATUS_STYLE = {
   published: { label: 'Publicado', bg: 'var(--jade-soft)', color: 'var(--jade)',  border: 'rgba(22,125,120,.25)' },
@@ -78,7 +77,7 @@ export default function InstructorReportsPage() {
   const CHECK_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
 
   return (
-    <DashboardLayout navItems={INSTRUCTOR_NAV}>
+    <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .rp-pad { padding: 1.25rem 1rem 2rem !important; } .rp-stats { grid-template-columns: 1fr 1fr !important; } .rp-main { grid-template-columns: 1fr !important; } }
       `}</style>
