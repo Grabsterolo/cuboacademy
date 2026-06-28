@@ -6,7 +6,6 @@ import Sidebar from './Sidebar'
 
 // Admin
 import GeneralPage from '../../pages/dashboard/admin/GeneralPage'
-import AdminDashboard from '../../pages/dashboard/AdminDashboard'
 import UsersPage from '../../pages/dashboard/admin/UsersPage'
 import CategoriesPage from '../../pages/dashboard/admin/CategoriesPage'
 import CoursesPage from '../../pages/dashboard/admin/CoursesPage'
