@@ -40,8 +40,6 @@ import StudentSettingsPage from '../../pages/dashboard/student/StudentSettingsPa
 import StudentAnnouncementsPage from '../../pages/dashboard/student/StudentAnnouncementsPage'
 
 
-const ANIM_DURATION = 140
-
 function LoadingSection() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'var(--text-2)', fontFamily: 'var(--sans)', fontSize: '.9rem', gap: '.5rem' }}>
@@ -115,22 +113,21 @@ export default function Portal() {
   const { section, params } = useNavigation()
   const isMobile = useIsMobile()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [visible, setVisible] = useState(true)
   const [displaySection, setDisplaySection] = useState(section)
   const [displayParams, setDisplayParams] = useState(params)
+  const [overlay, setOverlay] = useState({ show: false, fading: false })
   const prevSection = useRef(section)
 
-  // Section transition: fade out → swap → fade in
+  // Section transition: instant overlay → swap content (loads behind it) → fade overlay out
   useEffect(() => {
     if (section === prevSection.current) return
-    setVisible(false)
-    const t = setTimeout(() => {
-      setDisplaySection(section)
-      setDisplayParams(params)
-      prevSection.current = section
-      setVisible(true)
-    }, ANIM_DURATION)
-    return () => clearTimeout(t)
+    prevSection.current = section
+    setDisplaySection(section)
+    setDisplayParams(params)
+    setOverlay({ show: true, fading: false })
+    const t1 = setTimeout(() => setOverlay({ show: true, fading: true }), 280)
+    const t2 = setTimeout(() => setOverlay({ show: false, fading: false }), 430)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [section, params])
 
   // Close drawer when switching to desktop
@@ -143,13 +140,7 @@ export default function Portal() {
   return (
     <>
       <style>{`
-        @keyframes sectionIn {
-          from { opacity: 0; transform: translateY(5px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .portal-section-enter { animation: sectionIn 200ms ease forwards; }
-        .portal-section-exit  { opacity: 0; pointer-events: none; transition: opacity ${ANIM_DURATION}ms ease; }
       `}</style>
 
       <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--cream)' }}>
@@ -174,11 +165,16 @@ export default function Portal() {
           )}
 
           {/* Section content */}
-          <div
-            className={visible ? 'portal-section-enter' : 'portal-section-exit'}
-            style={{ flex: 1 }}
-          >
+          <div style={{ flex: 1, position: 'relative' }}>
             {renderSection(displaySection, role, displayParams)}
+            {overlay.show && (
+              <div style={{
+                position: 'absolute', inset: 0, background: 'var(--cream)',
+                opacity: overlay.fading ? 0 : 1,
+                transition: overlay.fading ? 'opacity 150ms ease' : 'none',
+                pointerEvents: 'none', zIndex: 5
+              }} />
+            )}
           </div>
         </div>
       </div>
