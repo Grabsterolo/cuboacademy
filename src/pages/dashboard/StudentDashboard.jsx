@@ -71,8 +71,15 @@ export default function StudentDashboard() {
     })
   }, [user])
 
-  const active = enrollments.filter(e => e.status !== 'completed')
-  const completed = enrollments.filter(e => e.status === 'completed')
+  const active    = enrollments.filter(e => !e.completed_at && e.status !== 'completed')
+  const completed = enrollments.filter(e => e.completed_at  || e.status === 'completed')
+
+  const logrosCount = [
+    enrollments.length >= 1,
+    enrollments.length >= 3,
+    completed.length   >= 1,
+    completed.length   >= 3,
+  ].filter(Boolean).length
 
   const BOOK_ICON = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
   const CHECK_ICON = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -100,8 +107,8 @@ export default function StudentDashboard() {
         <div className="std-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '.85rem', marginBottom: '2rem' }}>
           <StatCard value={active.length} label="Cursos activos" icon={BOOK_ICON} onClick={() => navigate('cursos')} />
           <StatCard value={completed.length} label="Completados" icon={CHECK_ICON} onClick={() => navigate('cursos')} />
-          <StatCard value={0} label="Certificados" icon={CERT_ICON} onClick={() => navigate('certificados')} />
-          <StatCard value={0} label="Logros" icon={STAR_ICON} onClick={() => navigate('logros')} />
+          <StatCard value={completed.length} label="Certificados" icon={CERT_ICON} onClick={() => navigate('certificados')} />
+          <StatCard value={logrosCount} label="Logros" icon={STAR_ICON} onClick={() => navigate('logros')} />
         </div>
 
         {/* Main grid */}
