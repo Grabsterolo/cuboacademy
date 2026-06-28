@@ -384,31 +384,60 @@ export default function AnnouncementsPage() {
       )}
 
       {/* ── Modal: leer comunicado ── */}
-      {readItem && (
-        <div style={OVERLAY} onClick={e => { if (e.target === e.currentTarget) setReadItem(null) }}>
-          <div style={{ background: 'white', borderRadius: 18, width: '100%', maxWidth: 580, maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(23,26,28,.22)', position: 'relative' }}>
-            <div style={{ padding: '1.6rem 2rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '18px 18px 0 0' }}>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.5rem' }}>
+      {readItem && (() => {
+        const t = typeInfo(readItem.type)
+        const tgt = targetInfo(readItem.target_role)
+        return (
+          <div style={OVERLAY} onClick={e => { if (e.target === e.currentTarget) setReadItem(null) }}>
+            <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 580, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 40px 100px rgba(23,26,28,.28)', overflow: 'hidden' }}>
+
+              {/* Barra de acento */}
+              <div style={{ height: 5, background: t.color, flexShrink: 0 }} />
+
+              {/* Cabecera */}
+              <div style={{ padding: '1.75rem 2rem 1.5rem', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                  <div style={{ width: 54, height: 54, borderRadius: 14, background: t.bg, border: `1.5px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: t.color, flexShrink: 0 }}>
+                    <span style={{ transform: 'scale(1.3)', display: 'flex' }}>{t.icon}</span>
+                  </div>
+                  <button onClick={() => setReadItem(null)}
+                    style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 9, padding: '7px', cursor: 'pointer', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '.45rem', flexWrap: 'wrap', marginBottom: '.85rem' }}>
                   <TypeBadge value={readItem.type} />
                   <TargetBadge value={readItem.target_role} />
                 </div>
-                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'var(--carbon)', margin: 0, lineHeight: 1.3 }}>{readItem.title}</h2>
-                <p style={{ fontSize: '.73rem', color: '#B5B2AB', margin: '.4rem 0 0', fontFamily: 'var(--sans)' }}>
-                  {new Date(readItem.created_at).toLocaleDateString('es-CR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
-                </p>
+
+                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.55rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.28, margin: '0 0 1.25rem' }}>{readItem.title}</h2>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.55rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.6rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 9 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span style={{ fontSize: '.78rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', fontWeight: 500 }}>
+                      {new Date(readItem.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.6rem .85rem', background: tgt.bg, border: `1px solid ${tgt.border}`, borderRadius: 9 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={tgt.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span style={{ fontSize: '.78rem', color: tgt.color, fontFamily: 'var(--sans)', fontWeight: 600 }}>{tgt.label}</span>
+                  </div>
+                </div>
               </div>
-              <button onClick={() => setReadItem(null)}
-                style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px', cursor: 'pointer', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            <div style={{ padding: '1.75rem 2rem 2rem' }}>
-              <p style={{ fontSize: '.93rem', color: 'var(--carbon)', lineHeight: 1.75, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 300 }}>{readItem.content}</p>
+
+              {/* Separador */}
+              <div style={{ height: 1, background: 'var(--border)', margin: '0 2rem', flexShrink: 0 }} />
+
+              {/* Contenido */}
+              <div style={{ padding: '1.75rem 2rem 2.25rem', overflowY: 'auto' }}>
+                <p style={{ fontSize: '.96rem', color: 'var(--carbon)', lineHeight: 1.85, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 300 }}>{readItem.content}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* ── Modal: confirmar eliminación ── */}
       {deleteTarget && (
