@@ -33,15 +33,14 @@ export const ADMIN_NAV = [
 ]
 
 export const INSTRUCTOR_NAV = [
-  { key: 'panel',         label: 'Panel general',    icon: ICON.grid },
-  { key: 'perfil',        label: 'Mi perfil',        icon: ICON.person },
-  { key: 'cursos',        label: 'Mis cursos',       icon: ICON.courses },
-  { key: 'estudiantes',   label: 'Mis estudiantes',  icon: ICON.users },
-  { key: 'evaluaciones',  label: 'Evaluaciones',     icon: ICON.evaluations },
-  { key: 'comunicados',   label: 'Comunicados',      icon: ICON.announcements },
-  { key: 'reportes',      label: 'Reportes',         icon: ICON.reports },
-  { key: 'ganancias',     label: 'Mis ganancias',    icon: ICON.earnings },
-  { key: 'configuracion', label: 'Configuración',    icon: ICON.settings },
+  { key: 'panel',         label: 'Panel general',   icon: ICON.grid },
+  { key: 'perfil',        label: 'Mi perfil',       icon: ICON.person },
+  { key: 'comunicados',   label: 'Comunicados',     icon: ICON.announcements },
+  { key: 'cursos',        label: 'Mis cursos',      icon: ICON.courses },
+  { key: 'estudiantes',   label: 'Mis estudiantes', icon: ICON.users },
+  { key: 'evaluaciones',  label: 'Evaluaciones',    icon: ICON.evaluations },
+  { key: 'reportes',      label: 'Reportes',        icon: ICON.reports },
+  { key: 'configuracion', label: 'Configuración',   icon: ICON.settings },
 ]
 
 export const STUDENT_NAV = [
