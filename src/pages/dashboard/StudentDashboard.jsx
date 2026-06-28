@@ -138,7 +138,7 @@ export default function StudentDashboard() {
                   <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1rem', lineHeight: 1.55, fontWeight: 300 }}>
                     {settings.welcome_message || 'Explora el catálogo y empieza a aprender con formación diseñada por consultores activos.'}
                   </p>
-                  <button onClick={() => navigate('courses')} style={{ fontSize: '.82rem', fontWeight: 600, color: 'white', background: 'var(--jade)', border: 'none', cursor: 'pointer', padding: '.55rem 1.25rem', borderRadius: 7, fontFamily: 'var(--sans)' }}>Explorar catálogo</button>
+                  <button onClick={() => navigate('tienda')} style={{ fontSize: '.82rem', fontWeight: 600, color: 'white', background: 'var(--jade)', border: 'none', cursor: 'pointer', padding: '.55rem 1.25rem', borderRadius: 7, fontFamily: 'var(--sans)' }}>Explorar catálogo</button>
                 </div>
               ) : (
                 <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
@@ -148,7 +148,7 @@ export default function StudentDashboard() {
                     const pct = e.progress_pct || 0
                     const initials = (c.profiles?.full_name || '?').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase()
                     return (
-                      <div key={e.id} style={{ display: 'flex', gap: '.85rem', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('tienda')}>
+                      <div key={e.id} style={{ display: 'flex', gap: '.85rem', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('cursos')}>
                         <div style={{ width: 72, height: 52, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                           {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
