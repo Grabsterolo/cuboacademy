@@ -255,44 +255,50 @@ export default function AnnouncementsPage() {
         </div>
 
         {/* ── Filtros ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.75rem', display: 'flex', flexDirection: 'column', gap: '0' }}>
           {/* Búsqueda */}
-          <div style={{ position: 'relative', maxWidth: 360 }}>
+          <div style={{ position: 'relative' }}>
             <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" placeholder="Buscar comunicado…" value={search} onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '.58rem .85rem .58rem 2.1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 9, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+              style={{ width: '100%', padding: '.58rem .85rem .58rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
               onFocus={e => e.target.style.borderColor = 'var(--jade)'}
               onBlur={e => e.target.style.borderColor = 'var(--border)'} />
           </div>
 
+          <div style={{ height: 1, background: 'var(--border)', margin: '.85rem 0' }} />
+
           {/* Tipo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--text-2)', letterSpacing: '.05em', textTransform: 'uppercase', marginRight: '.2rem' }}>Tipo</span>
-            {[{ value: null, label: 'Todos' }, ...TYPES.map(t => ({ value: t.value, label: t.label }))].map(opt => {
-              const active = filterType === opt.value
-              const t = opt.value ? typeInfo(opt.value) : null
-              return (
-                <button key={String(opt.value)} onClick={() => setFilterType(opt.value)}
-                  style={{ padding: '.3rem .75rem', borderRadius: 20, border: `1.5px solid ${active ? (t?.border || 'var(--jade)') : 'var(--border)'}`, background: active ? (t?.bg || 'var(--jade-soft)') : 'white', color: active ? (t?.color || 'var(--jade)') : 'var(--text-2)', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
-                  {opt.label}
-                </button>
-              )
-            })}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.6rem' }}>
+            <span style={{ fontSize: '.7rem', fontWeight: 700, color: 'var(--text-2)', letterSpacing: '.07em', textTransform: 'uppercase', width: 88, flexShrink: 0 }}>Tipo</span>
+            <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
+              {[{ value: null, label: 'Todos' }, ...TYPES.map(t => ({ value: t.value, label: t.label }))].map(opt => {
+                const active = filterType === opt.value
+                const t = opt.value ? typeInfo(opt.value) : null
+                return (
+                  <button key={String(opt.value)} onClick={() => setFilterType(opt.value)}
+                    style={{ padding: '.27rem .7rem', borderRadius: 20, border: `1.5px solid ${active ? (t?.border || 'rgba(22,125,120,.4)') : 'var(--border)'}`, background: active ? (t?.bg || 'var(--jade-soft)') : 'transparent', color: active ? (t?.color || 'var(--jade)') : 'var(--text-2)', fontSize: '.77rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* Destinatario */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--text-2)', letterSpacing: '.05em', textTransform: 'uppercase', marginRight: '.2rem' }}>Destinatario</span>
-            {[{ value: null, label: 'Todos' }, ...TARGETS.map(t => ({ value: t.value, label: t.label }))].map(opt => {
-              const active = filterTarget === opt.value
-              const tgt = opt.value ? targetInfo(opt.value) : null
-              return (
-                <button key={String(opt.value)} onClick={() => setFilterTarget(opt.value)}
-                  style={{ padding: '.3rem .75rem', borderRadius: 20, border: `1.5px solid ${active ? (tgt?.border || 'var(--jade)') : 'var(--border)'}`, background: active ? (tgt?.bg || 'var(--jade-soft)') : 'white', color: active ? (tgt?.color || 'var(--jade)') : 'var(--text-2)', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
-                  {opt.label}
-                </button>
-              )
-            })}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+            <span style={{ fontSize: '.7rem', fontWeight: 700, color: 'var(--text-2)', letterSpacing: '.07em', textTransform: 'uppercase', width: 88, flexShrink: 0 }}>Destinatario</span>
+            <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
+              {[{ value: null, label: 'Todos' }, ...TARGETS.map(t => ({ value: t.value, label: t.label }))].map(opt => {
+                const active = filterTarget === opt.value
+                const tgt = opt.value ? targetInfo(opt.value) : null
+                return (
+                  <button key={String(opt.value)} onClick={() => setFilterTarget(opt.value)}
+                    style={{ padding: '.27rem .7rem', borderRadius: 20, border: `1.5px solid ${active ? (tgt?.border || 'rgba(22,125,120,.4)') : 'var(--border)'}`, background: active ? (tgt?.bg || 'var(--jade-soft)') : 'transparent', color: active ? (tgt?.color || 'var(--jade)') : 'var(--text-2)', fontSize: '.77rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 
