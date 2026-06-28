@@ -76,7 +76,7 @@ export default function InstructorStudentsPage() {
         @media (max-width: 768px) { .ist-pad { padding: 1.25rem 1rem 2rem !important; } }
         .ist-row { display: flex; align-items: center; gap: 1rem; padding: .85rem 1.25rem; border-bottom: 1px solid var(--border); transition: background .15s; }
         .ist-row:last-child { border-bottom: none; }
-        .ist-row:hover { background: #FAFAF8; }
+        .ist-row:hover { background: var(--cream); }
       `}</style>
 
       <div className="ist-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>

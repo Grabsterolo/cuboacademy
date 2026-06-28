@@ -88,7 +88,7 @@ export default function StudentCoursesPage() {
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
             {[
               { label: 'En progreso', value: active.length, color: 'var(--jade)' },
-              { label: 'Completados', value: completed.length, color: '#6B7280' },
+              { label: 'Completados', value: completed.length, color: 'var(--text-2)' },
               { label: 'Total inscripciones', value: enrollments.length, color: 'var(--carbon)' },
             ].map(s => (
               <div key={s.label} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 10, padding: '.75rem 1.25rem', display: 'flex', gap: '.6rem', alignItems: 'baseline' }}>

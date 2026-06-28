@@ -80,7 +80,7 @@ export default function InstructorDashboard() {
         @media (max-width: 768px) { .inst-pad { padding: 1.25rem 1rem 2rem !important; } .inst-stats { grid-template-columns: 1fr 1fr !important; } .inst-main { grid-template-columns: 1fr !important; } }
         .course-row { display: flex; align-items: center; gap: .85rem; padding: .9rem 1.25rem; border-bottom: 1px solid var(--border); transition: background .15s; cursor: pointer; }
         .course-row:last-child { border-bottom: none; }
-        .course-row:hover { background: #FAFAF8; }
+        .course-row:hover { background: var(--cream); }
       `}</style>
       <div className="inst-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
 

@@ -136,7 +136,7 @@ export default function RequestsPage() {
         .rq-tab.active { background: var(--jade-soft); color: var(--jade-dark); border-color: var(--jade-light); font-weight: 600; }
         .rq-row { display: flex; align-items: center; gap: 1rem; padding: .85rem 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
         .rq-row:last-child { border-bottom: none; }
-        .rq-row:hover { background: #FAFAF8; }
+        .rq-row:hover { background: var(--cream); }
         .rq-srch { width: 100%; padding: .6rem .9rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; color: var(--carbon); font-size: .875rem; outline: none; font-family: var(--sans); }
         .rq-srch:focus { border-color: var(--jade); background: white; }
         @media (max-width: 768px) { .rq-row-meta { display: none !important; } .rq-pad { padding: 1.25rem 1rem 2rem !important; } }

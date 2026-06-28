@@ -214,7 +214,7 @@ export default function AnnouncementsPage() {
   return (
     <DashboardLayout>
       <style>{`
-        .ann-inp { width: 100%; padding: .75rem 1rem; background: #FAFAF8; border: 1.5px solid var(--border); border-radius: 9px; color: var(--carbon); font-size: .93rem; outline: none; font-family: var(--sans); box-sizing: border-box; transition: border-color .18s, background .18s; }
+        .ann-inp { width: 100%; padding: .75rem 1rem; background: var(--cream); border: 1.5px solid var(--border); border-radius: 9px; color: var(--carbon); font-size: .93rem; outline: none; font-family: var(--sans); box-sizing: border-box; transition: border-color .18s, background .18s; }
         .ann-inp:focus { border-color: var(--jade); background: white; }
         .ann-icon-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; min-width: 30px; min-height: 30px; }
         .ann-icon-btn:hover { background: rgba(220,38,38,.09); color: #dc2626; }
