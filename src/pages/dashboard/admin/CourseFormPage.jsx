@@ -168,14 +168,15 @@ export default function CourseFormPage() {
       <div className="cfp-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
-          <Link to="/dashboard/cursos" style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.85rem', textDecoration: 'none' }}
+          <button type="button" onClick={() => navigate('cursos')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem', fontSize: '.8rem', color: 'var(--text-2)', marginBottom: '.85rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'var(--sans)' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--jade)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             Cursos
-          </Link>
+          </button>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Gestión</p>
-          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.5rem,3vw,2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.5rem,3vw,2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>
             {isEdit ? 'Editar curso' : 'Nuevo curso'}
           </h1>
         </div>
