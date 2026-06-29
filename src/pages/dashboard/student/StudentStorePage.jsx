@@ -111,25 +111,24 @@ function CatalogTab({ wishlistIds, onToggleWishlist }) {
   return (
     <div>
       {/* Filters */}
-      <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap', marginBottom: '1.25rem', alignItems: 'center' }}>
-        {/* Search */}
+      <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', gap: '.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 180 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"
-            style={{ position: 'absolute', left: '.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+            style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input type="text" placeholder="Buscar cursos…" value={search} onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', padding: '.6rem .75rem .6rem 2.2rem', borderRadius: 8, border: '1px solid var(--border)', background: 'white', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box' }} />
+            style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--cream)', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+            onFocus={e => e.target.style.borderColor = 'var(--jade)'}
+            onBlur={e => e.target.style.borderColor = 'var(--border)'} />
         </div>
-        {/* Category select */}
         <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
-          style={{ padding: '.6rem .85rem', borderRadius: 8, border: '1px solid var(--border)', background: 'white', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', cursor: 'pointer', outline: 'none' }}>
+          style={{ padding: '.55rem .85rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--cream)', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', cursor: 'pointer', outline: 'none' }}>
           <option value="">Todas las categorías</option>
           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-        {/* Level select */}
         <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)}
-          style={{ padding: '.6rem .85rem', borderRadius: 8, border: '1px solid var(--border)', background: 'white', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', cursor: 'pointer', outline: 'none' }}>
+          style={{ padding: '.55rem .85rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--cream)', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', cursor: 'pointer', outline: 'none' }}>
           {LEVEL_OPTS.map(v => <option key={v} value={v}>{LEVEL_NAMES[v]}</option>)}
         </select>
       </div>
