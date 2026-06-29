@@ -15,18 +15,22 @@ function fmt(dateStr) {
 
 export default function StudentCertificatesPage() {
   const { user, profile } = useAuth()
-  const [certs, setCerts] = useState([])
+  const [certs, setCerts]   = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) return
-    supabase.from('enrollments')
-      .select('id, completed_at, enrolled_at, courses(id, title, cover_image_url, level, duration_hours, categories(name), profiles!instructor_id(full_name))')
+    supabase
+      .from('certificates')
+      .select(`
+        id, issued_at, approved_at, unique_code,
+        courses!course_id(id, title, cover_image_url, level, duration_hours, categories(name), profiles!instructor_id(full_name))
+      `)
       .eq('student_id', user.id)
-      .or('status.eq.completed,completed_at.not.is.null')
-      .order('completed_at', { ascending: false })
+      .eq('status', 'approved')
+      .order('approved_at', { ascending: false })
       .then(({ data }) => {
-        setCerts((data || []).filter(e => e.completed_at || e.status === 'completed'))
+        setCerts(data || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -54,28 +58,23 @@ export default function StudentCertificatesPage() {
           </div>
         ) : certs.length === 0 ? (
           <>
-            {/* Empty state */}
             <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '3rem 2.5rem', textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ width: 64, height: 64, background: 'var(--jade-soft)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--jade)' }}>
                 {CERT_ICON_BIG}
               </div>
-              <span style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--jade)', background: 'var(--jade-soft)', padding: '4px 12px', borderRadius: 20, display: 'inline-block', marginBottom: '1rem' }}>
-                Próximamente
-              </span>
               <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.3, marginBottom: '.75rem' }}>
-                Tus certificados aparecerán aquí
+                Aún no tienes certificados
               </h2>
               <p style={{ fontSize: '.875rem', color: 'var(--text-2)', lineHeight: 1.7, fontWeight: 300 }}>
-                Cuando completes un curso recibirás un certificado descargable que acredita tu aprendizaje. Sigue avanzando en tus cursos activos.
+                Completa todas las lecciones de un curso, envía tu evaluación final y espera la aprobación del instructor y del equipo Cubo para obtener tu certificado.
               </p>
             </div>
 
-            {/* Feature preview */}
             {[
               { icon: CERT_ICON, title: 'Certificado descargable', desc: 'Descarga tu certificado en formato PDF listo para compartir.' },
               {
                 icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
-                title: 'Credencial verificable', desc: 'Cada certificado tiene un código único que permite verificar su autenticidad en línea.',
+                title: 'Credencial verificable', desc: 'Cada certificado tiene un código único que permite verificar su autenticidad.',
               },
               {
                 icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>,
@@ -97,18 +96,16 @@ export default function StudentCertificatesPage() {
               {certs.length} certificado{certs.length !== 1 ? 's' : ''} obtenido{certs.length !== 1 ? 's' : ''}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {certs.map(e => {
-                const c = e.courses
+              {certs.map(cert => {
+                const c = cert.courses
                 if (!c) return null
                 const cover       = c.cover_image_url
                 const level       = LEVEL_LABEL[c.level] || ''
                 const category    = c.categories?.name || ''
                 const instructor  = c.profiles?.full_name || ''
                 const studentName = profile?.full_name || user?.email || 'Estudiante'
-
                 return (
-                  <div key={e.id} className="cert-card">
-                    {/* Certificate header band */}
+                  <div key={cert.id} className="cert-card">
                     <div style={{ background: 'linear-gradient(120deg,#0c3a38,var(--jade))', padding: '1.5rem 1.75rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                       <div style={{ width: 48, height: 48, background: 'rgba(255,255,255,.15)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0 }}>
                         {CERT_ICON_BIG}
@@ -126,7 +123,6 @@ export default function StudentCertificatesPage() {
                       )}
                     </div>
 
-                    {/* Certificate body */}
                     <div style={{ padding: '1.25rem 1.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
                       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                         <div>
@@ -140,8 +136,8 @@ export default function StudentCertificatesPage() {
                           </div>
                         )}
                         <div>
-                          <div style={{ fontSize: '.66rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.25rem' }}>Fecha de finalización</div>
-                          <div style={{ fontSize: '.875rem', fontWeight: 700, color: 'var(--carbon)' }}>{fmt(e.completed_at)}</div>
+                          <div style={{ fontSize: '.66rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.25rem' }}>Fecha de aprobación</div>
+                          <div style={{ fontSize: '.875rem', fontWeight: 700, color: 'var(--carbon)' }}>{fmt(cert.approved_at || cert.issued_at)}</div>
                         </div>
                         {(category || level) && (
                           <div>
@@ -149,6 +145,10 @@ export default function StudentCertificatesPage() {
                             <div style={{ fontSize: '.875rem', fontWeight: 700, color: 'var(--carbon)' }}>{[level, category].filter(Boolean).join(' · ')}</div>
                           </div>
                         )}
+                        <div>
+                          <div style={{ fontSize: '.66rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.25rem' }}>Código de verificación</div>
+                          <div style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--carbon)', fontFamily: 'monospace' }}>{cert.unique_code}</div>
+                        </div>
                       </div>
 
                       <button className="cert-download" disabled title="Descarga de certificados próximamente"
