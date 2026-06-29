@@ -1154,7 +1154,7 @@ export default function CourseWizardPage() {
 
     for (const q of evalData.questions) {
       const { data: qRow, error: qErr } = await supabase.from('questions')
-        .insert({ quiz_id: quiz.id, type: q.type, text: q.text.trim(), score: q.score || 1 })
+        .insert({ quiz_id: quiz.id, type: q.type, text: q.text.trim() })
         .select('id').single()
       if (qErr) throw qErr
 
