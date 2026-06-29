@@ -150,16 +150,18 @@ export default function RequestsPage() {
         </div>
 
         {/* Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+        <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+          <div style={{ position: 'relative', maxWidth: 340 }}>
+            <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input className="rq-srch" placeholder="Buscar por nombre o email…" value={search} onChange={e => setSearch(e.target.value)}
+              style={{ width: '100%', paddingLeft: '2.1rem', boxSizing: 'border-box' }} />
+          </div>
           <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
             {TABS.map(t => (
               <button key={t.key} className={`rq-tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>
                 {t.label} {counts[t.key] > 0 && <span style={{ fontSize: '.7rem', fontWeight: 500, opacity: .7 }}>({counts[t.key]})</span>}
               </button>
             ))}
-          </div>
-          <div style={{ marginLeft: 'auto', minWidth: 220 }}>
-            <input className="rq-srch" placeholder="Buscar por nombre o email…" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </div>
 
