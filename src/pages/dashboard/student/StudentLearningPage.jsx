@@ -89,7 +89,9 @@ export default function StudentLearningPage() {
   // completedIds: Set of lesson IDs from lesson_progress table
   const [completedIds, setCompletedIds] = useState(new Set())
   const [expandedMods, setExpandedMods] = useState(new Set())
-  const [marking, setMarking] = useState(false)
+  const [marking, setMarking]           = useState(false)
+  const [examSubmission, setExamSubmission] = useState(null)
+  const [submitting, setSubmitting]     = useState(false)
 
   useEffect(() => { if (!courseId) navigate('cursos') }, [courseId])
 
@@ -134,6 +136,14 @@ export default function StudentLearningPage() {
       if (lpData) completed = new Set(lpData.map(r => r.lesson_id))
     }
     setCompletedIds(completed)
+
+    // Load exam submission for this enrollment
+    const { data: esData } = await supabase
+      .from('exam_submissions')
+      .select('id, status, submitted_at, notes')
+      .eq('enrollment_id', enrollData.id)
+      .maybeSingle()
+    setExamSubmission(esData || null)
 
     // Pick first uncompleted lesson or first lesson
     const allLessons = mods.flatMap(m => m.lessons)
@@ -197,33 +207,42 @@ export default function StudentLearningPage() {
     if (idx > 0) { setActiveLesson(allLessons[idx - 1]); setActiveVideoIdx(0) }
   }
 
+  async function submitExam() {
+    if (!enrollment || submitting) return
+    setSubmitting(true)
+    let esResult
+    if (examSubmission?.status === 'rejected') {
+      const { data, error } = await supabase
+        .from('exam_submissions')
+        .update({ status: 'pending', submitted_at: new Date().toISOString(), notes: null })
+        .eq('id', examSubmission.id)
+        .select('id, status, submitted_at, notes')
+        .single()
+      esResult = { data, error }
+    } else {
+      const { data, error } = await supabase
+        .from('exam_submissions')
+        .insert({ student_id: user.id, course_id: courseId, enrollment_id: enrollment.id })
+        .select('id, status, submitted_at, notes')
+        .single()
+      esResult = { data, error }
+    }
+    if (!esResult.error && esResult.data) setExamSubmission(esResult.data)
+    setSubmitting(false)
+  }
+
   // ── Derived ──────────────────────────────────────────────────────────────────
   const allLessons = modules.flatMap(m => m.lessons)
   const totalLessons = allLessons.length
   const completedCount = completedIds.size
   const progressPct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
 
-  // Reactive safety net: whenever all lessons are marked, set enrollment.completed_at in DB.
-  // This covers: (1) DB write failure in markComplete, (2) lessons marked across sessions.
-  useEffect(() => {
-    if (!enrollment || enrollment.completed_at || totalLessons === 0) return
-    if (completedIds.size >= totalLessons) {
-      const now = new Date().toISOString()
-      supabase
-        .from('enrollments')
-        .update({ completed_at: now })
-        .eq('id', enrollment.id)
-        .then(({ error }) => {
-          if (!error) setEnrollment(e => ({ ...e, completed_at: now }))
-        })
-    }
-  }, [completedIds.size, totalLessons, enrollment?.id, enrollment?.completed_at])
   const activeLinks = activeLesson ? parseLinks(activeLesson.video_url) : []
   const isCompleted = activeLesson ? completedIds.has(activeLesson.id) : false
   const activeIdx = allLessons.findIndex(l => l.id === activeLesson?.id)
   const hasPrev = activeIdx > 0
   const hasNext = activeIdx < allLessons.length - 1
-  const courseCompleted = !!enrollment?.completed_at || progressPct >= 100
+  const courseCompleted = !!enrollment?.completed_at
 
   if (!courseId) return null
 
@@ -401,14 +420,61 @@ export default function StudentLearningPage() {
                 </button>
               </div>
 
+              {/* Exam submission / completion panel */}
+              {progressPct === 100 && !courseCompleted && (
+                <div style={{ marginTop: '1.5rem' }}>
+                  {!examSubmission && (
+                    <div style={{ background: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', border: '1px solid #bbf7d0', borderRadius: 12, padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                      <div style={{ width: 48, height: 48, background: '#22c55e', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 180 }}>
+                        <p style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: '#14532D', margin: '0 0 .2rem' }}>¡Todas las lecciones completadas!</p>
+                        <p style={{ fontSize: '.82rem', color: '#166534', margin: 0 }}>Envía tu solicitud de evaluación final para que el instructor la revise y apruebe.</p>
+                      </div>
+                      <button onClick={submitExam} disabled={submitting}
+                        style={{ padding: '.65rem 1.25rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 9, fontSize: '.85rem', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, opacity: submitting ? .7 : 1, whiteSpace: 'nowrap' }}>
+                        {submitting ? 'Enviando…' : 'Solicitar evaluación'}
+                      </button>
+                    </div>
+                  )}
+                  {examSubmission?.status === 'pending' && (
+                    <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 12, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: 44, height: 44, background: '#FFEDD5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EA580C" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      </div>
+                      <div>
+                        <p style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: '#7C2D12', margin: '0 0 .2rem' }}>Evaluación en revisión</p>
+                        <p style={{ fontSize: '.82rem', color: '#9A3412', margin: 0 }}>Tu solicitud está siendo revisada por el instructor. Te notificaremos cuando sea aprobada.</p>
+                      </div>
+                    </div>
+                  )}
+                  {examSubmission?.status === 'rejected' && (
+                    <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                      <div style={{ width: 48, height: 48, background: '#FEE2E2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 180 }}>
+                        <p style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: '#7F1D1D', margin: '0 0 .2rem' }}>Evaluación no aprobada</p>
+                        {examSubmission.notes && <p style={{ fontSize: '.82rem', color: '#991B1B', margin: '0 0 .4rem' }}>{examSubmission.notes}</p>}
+                        <p style={{ fontSize: '.82rem', color: '#B91C1C', margin: 0 }}>Revisa los comentarios del instructor y vuelve a enviar tu solicitud.</p>
+                      </div>
+                      <button onClick={submitExam} disabled={submitting}
+                        style={{ padding: '.6rem 1.1rem', background: '#DC2626', color: 'white', border: 'none', borderRadius: 9, fontSize: '.82rem', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, opacity: submitting ? .7 : 1, whiteSpace: 'nowrap' }}>
+                        {submitting ? 'Enviando…' : 'Reenviar solicitud'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
               {courseCompleted && (
                 <div style={{ marginTop: '1.5rem', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ width: 44, height: 44, background: '#DCFCE7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </div>
                   <div>
-                    <p style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: '#14532D', margin: '0 0 .2rem' }}>¡Curso completado!</p>
-                    <p style={{ fontSize: '.82rem', color: '#166534', margin: 0 }}>Felicidades, has completado todas las lecciones.</p>
+                    <p style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: '#14532D', margin: '0 0 .2rem' }}>¡Curso aprobado!</p>
+                    <p style={{ fontSize: '.82rem', color: '#166534', margin: 0 }}>El instructor aprobó tu evaluación. Tu certificado está siendo procesado.</p>
                   </div>
                 </div>
               )}
