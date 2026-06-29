@@ -12,22 +12,86 @@ const TABS = [
 
 const BOOK = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
 
+function ProgressBar({ pct }) {
+  const done = pct === 100
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginTop: '.4rem' }}>
+      <div style={{ flex: 1, height: 5, background: 'var(--border)', borderRadius: 3 }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: done ? '#22c55e' : 'var(--jade)', borderRadius: 3, transition: 'width .5s ease' }} />
+      </div>
+      <span style={{ fontSize: '.68rem', fontWeight: 700, color: done ? '#16a34a' : 'var(--jade)', flexShrink: 0, minWidth: 28, textAlign: 'right' }}>{pct}%</span>
+    </div>
+  )
+}
+
 export default function StudentCoursesPage() {
   const { navigate } = useNavigation()
   const { user } = useAuth()
-  const [enrollments, setEnrollments] = useState([])
-  const [loading, setLoading]         = useState(true)
-  const [tab, setTab]                 = useState('active')
-  const [search, setSearch]           = useState('')
+  const [enrollments, setEnrollments]       = useState([])
+  const [progressByCourse, setProgressByCourse] = useState({})
+  const [loading, setLoading]               = useState(true)
+  const [tab, setTab]                       = useState('active')
+  const [search, setSearch]                 = useState('')
 
   useEffect(() => {
     if (!user) return
-    supabase.from('enrollments')
-      .select('id, enrolled_at, completed_at, course_id, courses(id, title, cover_image_url, level, categories(name), profiles!instructor_id(full_name))')
-      .eq('student_id', user.id)
-      .order('enrolled_at', { ascending: false })
-      .then(({ data }) => { setEnrollments(data || []); setLoading(false) })
-      .catch(() => setLoading(false))
+
+    async function load() {
+      const { data: enrData } = await supabase
+        .from('enrollments')
+        .select('id, enrolled_at, completed_at, course_id, courses(id, title, cover_image_url, level, categories(name), profiles!instructor_id(full_name))')
+        .eq('student_id', user.id)
+        .order('enrolled_at', { ascending: false })
+
+      const enrollments = enrData || []
+      setEnrollments(enrollments)
+
+      const courseIds = enrollments.map(e => e.course_id).filter(Boolean)
+      if (courseIds.length === 0) { setLoading(false); return }
+
+      const { data: modData } = await supabase
+        .from('modules')
+        .select('course_id, lessons(id)')
+        .in('course_id', courseIds)
+
+      const lessonCountByCourse = {}
+      const lessonToCourse = {}
+      for (const mod of (modData || [])) {
+        for (const lesson of (mod.lessons || [])) {
+          lessonToCourse[lesson.id] = mod.course_id
+          lessonCountByCourse[mod.course_id] = (lessonCountByCourse[mod.course_id] || 0) + 1
+        }
+      }
+
+      const allLessonIds = Object.keys(lessonToCourse)
+      let completedSet = new Set()
+      if (allLessonIds.length > 0) {
+        const { data: lpData } = await supabase
+          .from('lesson_progress')
+          .select('lesson_id')
+          .eq('student_id', user.id)
+          .eq('completed', true)
+          .in('lesson_id', allLessonIds)
+        completedSet = new Set((lpData || []).map(p => p.lesson_id))
+      }
+
+      const completedByCourse = {}
+      for (const [lid, cid] of Object.entries(lessonToCourse)) {
+        if (completedSet.has(lid)) completedByCourse[cid] = (completedByCourse[cid] || 0) + 1
+      }
+
+      const progress = {}
+      for (const cid of courseIds) {
+        const total = lessonCountByCourse[cid] || 0
+        const done  = completedByCourse[cid]  || 0
+        progress[cid] = total > 0 ? Math.round((done / total) * 100) : 0
+      }
+
+      setProgressByCourse(progress)
+      setLoading(false)
+    }
+
+    load()
   }, [user])
 
   const active    = enrollments.filter(e => !e.completed_at)
@@ -44,8 +108,8 @@ export default function StudentCoursesPage() {
   })
 
   const stats = [
-    { label: 'En progreso',       value: active.length },
-    { label: 'Completados',       value: completed.length },
+    { label: 'En progreso',         value: active.length },
+    { label: 'Completados',         value: completed.length },
     { label: 'Total inscripciones', value: enrollments.length },
   ]
 
@@ -53,7 +117,7 @@ export default function StudentCoursesPage() {
     <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .sc-pad { padding: 1.25rem 1rem 2rem !important; } .sc-stats { grid-template-columns: 1fr 1fr !important; } }
-        .sc-card { background: white; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; gap: 1rem; padding: .9rem 1.25rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
+        .sc-card { background: white; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: flex-start; gap: 1rem; padding: .9rem 1.25rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
         .sc-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.08); border-color: rgba(22,125,120,.2); }
         .sc-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
         .sc-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
@@ -107,7 +171,7 @@ export default function StudentCoursesPage() {
         {/* List */}
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
-            {[1,2,3].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 82, opacity: 1 - i * 0.2 }} />)}
+            {[1,2,3].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 90, opacity: 1 - i * 0.2 }} />)}
           </div>
         ) : shown.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
@@ -129,37 +193,36 @@ export default function StudentCoursesPage() {
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
               {shown.map(enr => {
-                const c    = enr.courses
+                const c   = enr.courses
                 if (!c) return null
+                const pct  = progressByCourse[enr.course_id] ?? 0
                 const done = tab === 'completed'
                 return (
                   <div key={enr.id} className="sc-card" onClick={() => navigate('aprender', { courseId: c.id })}>
                     {/* Thumbnail */}
-                    <div style={{ width: 64, height: 48, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
+                    <div style={{ width: 64, height: 54, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
                       {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
 
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.28rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap', marginBottom: '.4rem' }}>
+                      <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.22rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap', marginBottom: '.3rem' }}>
                         {c.categories?.name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span>}
                         {c.level && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
                         {c.profiles?.full_name && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.profiles.full_name}</span></>}
                       </div>
-                      {done && (
-                        <div style={{ height: 5, background: '#BBF7D0', borderRadius: 3, maxWidth: 200 }} />
-                      )}
+                      <ProgressBar pct={pct} />
                     </div>
 
                     {/* Right */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0, alignSelf: 'center' }}>
                       {done && (
                         <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' }}>✓ Completado</span>
                       )}
                       <button onClick={e => { e.stopPropagation(); navigate('aprender', { courseId: c.id }) }}
                         style={{ padding: '.4rem .9rem', background: done ? 'var(--jade-soft)' : 'var(--jade)', color: done ? 'var(--jade)' : 'white', border: done ? '1px solid rgba(22,125,120,.25)' : 'none', borderRadius: 7, fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
-                        {done ? 'Ver curso' : 'Continuar'}
+                        {done ? 'Ver curso' : pct === 0 ? 'Comenzar' : 'Continuar'}
                       </button>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
