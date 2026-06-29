@@ -278,11 +278,12 @@ function Step2({ modules, setModules }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem', marginBottom: '1rem' }}>
         {modules.map((mod, mIdx) => (
-          <div key={mod.id} draggable onDragStart={e => onModDragStart(e, mIdx)} onDragEnd={onModDragEnd} onDragOver={e => onModDragOver(e, mIdx)}
+          <div key={mod.id} onDragOver={e => onModDragOver(e, mIdx)}
             style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', transition: 'border-color .15s' }}>
             {/* Module header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.85rem 1.1rem', background: 'white' }}>
-              <span style={{ color: 'var(--text-2)', cursor: 'grab', flexShrink: 0 }}>{IC.drag}</span>
+              <span draggable onDragStart={e => onModDragStart(e, mIdx)} onDragEnd={onModDragEnd}
+                style={{ color: 'var(--text-2)', cursor: 'grab', flexShrink: 0 }}>{IC.drag}</span>
               <span style={{ fontSize: '.71rem', fontWeight: 700, color: 'var(--jade)', letterSpacing: '.08em', textTransform: 'uppercase', flexShrink: 0 }}>Módulo {mIdx + 1}</span>
               <input
                 value={mod.title}
@@ -301,9 +302,10 @@ function Step2({ modules, setModules }) {
             {mod.expanded && (
               <div style={{ borderTop: '1px solid var(--border)' }}>
                 {mod.lessons.map((les, lIdx) => (
-                  <div key={les.id} draggable onDragStart={e => onLesDragStart(e, mod.id, lIdx)} onDragEnd={onLesDragEnd} onDragOver={e => onLesDragOver(e, mod.id, lIdx)}
+                  <div key={les.id} onDragOver={e => onLesDragOver(e, mod.id, lIdx)}
                     style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.6rem 1.1rem .6rem 2rem', borderBottom: '1px solid var(--border)', background: '#FAFAF9' }}>
-                    <span style={{ color: '#C9C5BE', cursor: 'grab', flexShrink: 0 }}>{IC.drag}</span>
+                    <span draggable onDragStart={e => onLesDragStart(e, mod.id, lIdx)} onDragEnd={onLesDragEnd}
+                      style={{ color: '#C9C5BE', cursor: 'grab', flexShrink: 0 }}>{IC.drag}</span>
                     <span style={{ color: 'var(--text-2)', flexShrink: 0 }}>{lesTypeIcon[les.type] || IC.video}</span>
                     <input
                       value={les.title}
