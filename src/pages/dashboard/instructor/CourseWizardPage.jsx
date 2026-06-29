@@ -955,21 +955,26 @@ function StepHeader({ n, title, sub }) {
 
 // ─── Wizard sidebar ───────────────────────────────────────────────────────────
 
-function WizardSidebar({ step, completed, courseTitle }) {
+function WizardSidebar({ step, completed, courseTitle, isEdit, onStepClick }) {
   return (
     <div style={{ width: 218, flexShrink: 0, background: 'white', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '1.5rem 1.25rem 1.1rem', borderBottom: '1px solid var(--border)' }}>
-        <p style={{ fontSize: '.68rem', fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', margin: '0 0 .3rem' }}>Nuevo curso</p>
+        <p style={{ fontSize: '.68rem', fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', margin: '0 0 .3rem' }}>{isEdit ? 'Editando curso' : 'Nuevo curso'}</p>
         <p style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.87rem', color: 'var(--carbon)', margin: 0, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {courseTitle || 'Sin título'}
         </p>
       </div>
       <div style={{ flex: 1, padding: '.6rem 0' }}>
         {STEP_DEFS.map(s => {
-          const done    = completed.has(s.n)
-          const current = step === s.n
+          const done      = completed.has(s.n)
+          const current   = step === s.n
+          const clickable = isEdit || done
           return (
-            <div key={s.n} style={{ display: 'flex', alignItems: 'center', gap: '.65rem', padding: '.58rem 1.1rem', background: current ? 'var(--jade-soft)' : 'transparent', transition: 'background .15s' }}>
+            <div key={s.n}
+              onClick={() => clickable && onStepClick(s.n)}
+              style={{ display: 'flex', alignItems: 'center', gap: '.65rem', padding: '.58rem 1.1rem', background: current ? 'var(--jade-soft)' : 'transparent', transition: 'background .15s', cursor: clickable ? 'pointer' : 'default' }}
+              onMouseEnter={e => { if (clickable && !current) e.currentTarget.style.background = '#F5F3EF' }}
+              onMouseLeave={e => { if (!current) e.currentTarget.style.background = 'transparent' }}>
               <div style={{
                 width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: done ? 'var(--jade)' : current ? 'white' : 'transparent',
@@ -988,7 +993,7 @@ function WizardSidebar({ step, completed, courseTitle }) {
       </div>
       <div style={{ padding: '1rem 1.1rem', borderTop: '1px solid var(--border)' }}>
         <div style={{ height: 4, background: 'var(--border)', borderRadius: 4 }}>
-          <div style={{ height: '100%', width: `${(Math.max(...[...completed, step]) / 8) * 100}%`, background: 'var(--jade)', borderRadius: 4, transition: 'width .3s' }} />
+          <div style={{ height: '100%', width: `${(completed.size / 8) * 100}%`, background: 'var(--jade)', borderRadius: 4, transition: 'width .3s' }} />
         </div>
         <p style={{ fontSize: '.69rem', color: 'var(--text-2)', margin: '.4rem 0 0' }}>{completed.size} de 8 completados</p>
       </div>
@@ -999,14 +1004,17 @@ function WizardSidebar({ step, completed, courseTitle }) {
 // ─── Main wizard ──────────────────────────────────────────────────────────────
 
 export default function CourseWizardPage() {
-  const { navigate } = useNavigation()
-  const { profile }  = useAuth()
+  const { params, navigate } = useNavigation()
+  const { profile }          = useAuth()
 
-  const [step, setStep]           = useState(1)
-  const [completed, setCompleted] = useState(new Set())
-  const [courseId, setCourseId]   = useState(null)
-  const [saving, setSaving]       = useState(false)
-  const [error, setError]         = useState('')
+  const isEdit = Boolean(params?.courseId)
+
+  const [step, setStep]             = useState(1)
+  const [completed, setCompleted]   = useState(new Set())
+  const [courseId, setCourseId]     = useState(params?.courseId || null)
+  const [saving, setSaving]         = useState(false)
+  const [loading, setLoading]       = useState(isEdit)
+  const [error, setError]           = useState('')
   const [categories, setCategories]   = useState([])
   const [instructors, setInstructors] = useState([])
   const isAdmin = profile?.role === 'admin'
@@ -1037,7 +1045,58 @@ export default function CourseWizardPage() {
     if (profile?.role === 'admin') {
       supabase.from('users_view').select('id, full_name').in('role', ['instructor', 'admin']).order('full_name').then(({ data }) => setInstructors(data || []))
     }
+    if (isEdit) loadExisting(params.courseId)
   }, [profile?.role])
+
+  // ── load existing course ──────────────────────────────────────────────────
+  async function loadExisting(cId) {
+    setLoading(true)
+    try {
+      const [{ data: course }, { data: mods }, { data: evalMod }] = await Promise.all([
+        supabase.from('courses').select('*').eq('id', cId).single(),
+        supabase.from('modules').select('*, lessons(*)').eq('course_id', cId).neq('title', 'Evaluación Final').order('order_index').order('order_index', { foreignTable: 'lessons' }),
+        supabase.from('modules').select('*, lessons(*, quizzes(*, questions(*, answers(*))))').eq('course_id', cId).eq('title', 'Evaluación Final').maybeSingle(),
+      ])
+
+      if (course) {
+        setInfo({ title: course.title || '', categoryId: course.category_id || '', level: course.level || 'beginner', description: course.description || '', coverUrl: course.cover_image_url || '', instructorId: course.instructor_id || '' })
+        setPricing({ isFree: !course.price || course.price === 0, price: course.price ? String(course.price) : '', discount: '' })
+        setPubStatus(course.status || 'draft')
+      }
+
+      if (mods) {
+        setModules(mods.map(m => ({
+          id: uid(), dbId: m.id, title: m.title, expanded: true,
+          lessons: (m.lessons || []).map(l => {
+            let video_url = ''
+            if (l.video_url) {
+              try { const p = JSON.parse(l.video_url); video_url = Array.isArray(p) ? (p[0]?.url || '') : l.video_url } catch { video_url = l.video_url }
+            }
+            return { id: uid(), dbId: l.id, title: l.title, type: 'video', duration_mins: l.duration_mins != null ? String(l.duration_mins) : '', video_url, content_text: l.description || '', links: [] }
+          }),
+        })))
+      }
+
+      if (evalMod) {
+        const quiz = evalMod.lessons?.[0]?.quizzes?.[0]
+        if (quiz) {
+          setEvalData({
+            hasEval: true, evalType: 'final',
+            minScore: quiz.passing_score || 70, maxAttempts: quiz.max_attempts || 1,
+            showResults: 'grade_only',
+            questions: (quiz.questions || []).map(q => ({
+              id: uid(), type: q.type, text: q.text, score: 1, expanded: false,
+              answers: (q.answers || []).map(a => ({ id: uid(), text: a.text, correct: a.is_correct })),
+            })),
+          })
+        }
+      }
+
+      setCompleted(new Set([1, 2, 3, 4, 5, 6, 7, 8]))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // ── image upload ──────────────────────────────────────────────────────────
   async function handleImgUpload(file) {
@@ -1087,14 +1146,12 @@ export default function CourseWizardPage() {
       category_id: info.categoryId || null,
       cover_image_url: info.coverUrl || null,
       level: info.level,
-      status: 'draft',
-      price: 0,
     }
     if (courseId) {
       const { error } = await supabase.from('courses').update(payload).eq('id', courseId)
       if (error) throw error
     } else {
-      const { data, error } = await supabase.from('courses').insert(payload).select('id').single()
+      const { data, error } = await supabase.from('courses').insert({ ...payload, status: 'draft', price: 0 }).select('id').single()
       if (error) throw error
       setCourseId(data.id)
       return data.id
@@ -1102,10 +1159,10 @@ export default function CourseWizardPage() {
     return courseId
   }
 
-  // ── save step 2 (nuke & re-insert) ───────────────────────────────────────
+  // ── save step 2 (nuke & re-insert, excludes eval module) ─────────────────
   async function saveStep2(cId) {
     if (cId) {
-      const { data: existingMods } = await supabase.from('modules').select('id').eq('course_id', cId)
+      const { data: existingMods } = await supabase.from('modules').select('id').eq('course_id', cId).neq('title', 'Evaluación Final')
       if (existingMods?.length > 0) {
         const modIds = existingMods.map(m => m.id)
         await supabase.from('resources').delete().in('lesson_id',
@@ -1207,19 +1264,23 @@ export default function CourseWizardPage() {
     if (error) throw error
   }
 
-  // ── next handler ──────────────────────────────────────────────────────────
+  // ── save current step to DB ───────────────────────────────────────────────
+  async function persistStep(n, cId) {
+    if (n === 1) await saveStep1()
+    if (n === 2) await saveStep2(cId)
+    if (n === 4) await saveStep4(cId)
+    if (n === 6) await saveStep6(cId)
+  }
+
+  // ── next handler (create mode) ────────────────────────────────────────────
   async function handleNext() {
     const validErr = validateStep(step)
     if (validErr) { setError(validErr); return }
     setError(''); setSaving(true)
-
     try {
       let cId = courseId
       if (step === 1) { cId = await saveStep1() }
-      if (step === 2) { await saveStep2(cId) }
-      if (step === 4) { await saveStep4(cId) }
-      if (step === 6) { await saveStep6(cId) }
-
+      else { await persistStep(step, cId) }
       setCompleted(s => new Set([...s, step]))
       setStep(n => n + 1)
     } catch (e) {
@@ -1229,9 +1290,24 @@ export default function CourseWizardPage() {
     }
   }
 
+  // ── save step handler (edit mode) ─────────────────────────────────────────
+  async function handleSaveStep() {
+    const validErr = validateStep(step)
+    if (validErr) { setError(validErr); return }
+    setError(''); setSaving(true)
+    try {
+      await persistStep(step, courseId)
+      setCompleted(s => new Set([...s, step]))
+    } catch (e) {
+      setError(e.message || 'Error al guardar. Intenta de nuevo.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   function handleBack() { setError(''); setStep(n => n - 1) }
 
-  // ── publish handlers ──────────────────────────────────────────────────────
+  // ── publish / status handlers ─────────────────────────────────────────────
   async function handleDraft() {
     if (!courseId) return
     setSaving(true); setPubError('')
@@ -1244,7 +1320,7 @@ export default function CourseWizardPage() {
   async function handleReview() {
     if (!courseId) return
     setSaving(true); setPubError('')
-    const { error } = await supabase.from('courses').update({ status: 'review' }).eq('id', courseId)
+    const { error } = await supabase.from('courses').update({ status: pubStatus }).eq('id', courseId)
     setSaving(false)
     if (error) { setPubError(error.message); return }
     navigate('cursos')
@@ -1265,6 +1341,18 @@ export default function CourseWizardPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '.6rem', color: 'var(--text-2)', fontFamily: 'var(--sans)', fontSize: '.9rem' }}>
+          <div style={{ width: 18, height: 18, border: '2px solid var(--border)', borderTopColor: 'var(--jade)', borderRadius: '50%', animation: 'wiz-spin .7s linear infinite' }} />
+          Cargando curso…
+        </div>
+        <style>{`@keyframes wiz-spin { to { transform: rotate(360deg); } }`}</style>
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout>
       <style>{`
@@ -1279,7 +1367,7 @@ export default function CourseWizardPage() {
       <div style={{ display: 'flex', minHeight: 'calc(100vh - 110px)', background: 'var(--cream)' }}>
         {/* Sidebar */}
         <div className="wiz-sidebar" style={{ position: 'sticky', top: 0, alignSelf: 'flex-start', height: '100vh', overflowY: 'auto' }}>
-          <WizardSidebar step={step} completed={completed} courseTitle={info.title} />
+          <WizardSidebar step={step} completed={completed} courseTitle={info.title} isEdit={isEdit} onStepClick={n => { setError(''); setStep(n) }} />
         </div>
 
         {/* Main content */}
@@ -1315,28 +1403,39 @@ export default function CourseWizardPage() {
             {renderStep()}
 
             {/* Navigation */}
-            {step < 8 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
-                {step > 1 ? (
-                  <button type="button" onClick={handleBack} disabled={saving}
-                    style={{ display: 'flex', alignItems: 'center', gap: '.45rem', padding: '.65rem 1.2rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.875rem', fontWeight: 500, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--cream)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'white'}>
-                    {IC.arrowL} Anterior
-                  </button>
-                ) : <div />}
-                <button type="button" onClick={handleNext} disabled={saving}
-                  style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.7rem 1.6rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: saving ? .65 : 1, transition: 'background .15s' }}
-                  onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'var(--jade-hover)' }}
-                  onMouseLeave={e => e.currentTarget.style.background = 'var(--jade)'}>
-                  {saving ? (
-                    <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'wiz-spin .7s linear infinite' }} /> Guardando…</>
-                  ) : (
-                    <>Siguiente {IC.arrowR}</>
-                  )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+              {step > 1 ? (
+                <button type="button" onClick={handleBack} disabled={saving}
+                  style={{ display: 'flex', alignItems: 'center', gap: '.45rem', padding: '.65rem 1.2rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.875rem', fontWeight: 500, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--cream)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'white'}>
+                  {IC.arrowL} Anterior
                 </button>
+              ) : <div />}
+
+              <div style={{ display: 'flex', gap: '.6rem' }}>
+                {isEdit && step < 8 && (
+                  <button type="button" onClick={handleSaveStep} disabled={saving}
+                    style={{ display: 'flex', alignItems: 'center', gap: '.45rem', padding: '.65rem 1.2rem', background: 'white', border: '1px solid var(--jade)', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, color: 'var(--jade)', cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: saving ? .65 : 1 }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--jade-soft)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'white'}>
+                    {saving ? 'Guardando…' : 'Guardar paso'}
+                  </button>
+                )}
+                {step < 8 && (
+                  <button type="button" onClick={handleNext} disabled={saving}
+                    style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.7rem 1.6rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: saving ? .65 : 1, transition: 'background .15s' }}
+                    onMouseEnter={e => { if (!saving) e.currentTarget.style.background = 'var(--jade-hover)' }}
+                    onMouseLeave={e => e.currentTarget.style.background = 'var(--jade)'}>
+                    {saving ? (
+                      <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'wiz-spin .7s linear infinite' }} /> Guardando…</>
+                    ) : (
+                      <>{isEdit ? 'Guardar y continuar' : 'Siguiente'} {IC.arrowR}</>
+                    )}
+                  </button>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

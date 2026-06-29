@@ -148,7 +148,7 @@ export default function InstructorCoursesPage() {
                 const st = STATUS[c.status] || STATUS.draft
                 const n  = counts[c.id] || 0
                 return (
-                  <div key={c.id} className="ic-card" onClick={() => navigate('curso-estructura', { courseId: c.id })}>
+                  <div key={c.id} className="ic-card" onClick={() => navigate('curso-wizard', { courseId: c.id })}>
                     <div style={{ width: 64, height: 48, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
                       {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
