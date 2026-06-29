@@ -649,28 +649,34 @@ function QuestionCard({ q, idx, onToggle, onUpdate, onRemove, onAddAnswer, onUpd
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem', marginBottom: '.6rem' }}>
                 {isTrueFalse
-                  ? ['Verdadero', 'Falso'].map((opt, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-                        <input type="radio" name={`q-${q.id}`} checked={q.answers.find(a => a.text === opt)?.correct || false}
-                          onChange={() => {
-                            const answers = [{ id: uid(), text: 'Verdadero', correct: opt === 'Verdadero' }, { id: uid(), text: 'Falso', correct: opt === 'Falso' }]
-                            onUpdate({ answers })
-                          }}
-                          style={{ accentColor: 'var(--jade)', flexShrink: 0 }} />
-                        <span style={{ fontSize: '.875rem', color: 'var(--carbon)' }}>{opt}</span>
-                      </div>
-                    ))
+                  ? ['Verdadero', 'Falso'].map((opt, i) => {
+                      const isCorrect = q.answers.find(a => a.text === opt)?.correct || false
+                      return (
+                        <div key={i} onClick={() => onUpdate({ answers: [{ id: uid(), text: 'Verdadero', correct: opt === 'Verdadero' }, { id: uid(), text: 'Falso', correct: opt === 'Falso' }] })}
+                          style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.6rem .9rem', borderRadius: 8, border: `2px solid ${isCorrect ? 'var(--jade)' : 'var(--border)'}`, background: isCorrect ? 'var(--jade-soft)' : 'white', cursor: 'pointer', transition: 'all .15s' }}>
+                          <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${isCorrect ? 'var(--jade)' : 'var(--border)'}`, background: isCorrect ? 'var(--jade)' : 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {isCorrect && <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'white' }} />}
+                          </div>
+                          <span style={{ fontSize: '.875rem', fontWeight: isCorrect ? 600 : 400, color: isCorrect ? 'var(--jade)' : 'var(--carbon)' }}>{opt}</span>
+                          {isCorrect && <span style={{ marginLeft: 'auto', fontSize: '.71rem', fontWeight: 700, color: 'var(--jade)', letterSpacing: '.05em', textTransform: 'uppercase' }}>Correcta</span>}
+                        </div>
+                      )
+                    })
                   : q.answers.map(ans => (
-                      <div key={ans.id} style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-                        <input
-                          type={isMultiple ? 'checkbox' : 'radio'}
-                          name={`q-${q.id}`}
-                          checked={ans.correct}
-                          onChange={() => onSetCorrect(ans.id)}
-                          style={{ accentColor: 'var(--jade)', flexShrink: 0 }} />
-                        <input style={{ ...INP, flex: 1, padding: '.35rem .65rem', fontSize: '.84rem' }}
-                          value={ans.text} placeholder="Opción…"
+                      <div key={ans.id} style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                        <div onClick={() => onSetCorrect(ans.id)}
+                          title={isMultiple ? (ans.correct ? 'Quitar como correcta' : 'Marcar como correcta') : 'Marcar como correcta'}
+                          style={{ width: 22, height: 22, borderRadius: isMultiple ? 5 : '50%', border: `2px solid ${ans.correct ? 'var(--jade)' : '#C9C5BE'}`, background: ans.correct ? 'var(--jade)' : 'white', flexShrink: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}>
+                          {ans.correct && (
+                            isMultiple
+                              ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              : <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'white' }} />
+                          )}
+                        </div>
+                        <input style={{ ...INP, flex: 1, padding: '.4rem .7rem', fontSize: '.84rem', borderColor: ans.correct ? 'rgba(22,125,120,.4)' : 'var(--border)', background: ans.correct ? 'var(--jade-soft)' : 'var(--cream)' }}
+                          value={ans.text} placeholder="Escribe la opción…"
                           onChange={e => onUpdateAnswer(ans.id, { text: e.target.value })} onFocus={fi} onBlur={fb} />
+                        {ans.correct && <span style={{ fontSize: '.7rem', fontWeight: 700, color: 'var(--jade)', whiteSpace: 'nowrap', letterSpacing: '.04em', textTransform: 'uppercase' }}>✓ Correcta</span>}
                         <SmallBtn danger onClick={() => onRemoveAnswer(ans.id)}>{IC.x}</SmallBtn>
                       </div>
                     ))
