@@ -166,7 +166,7 @@ export default function CourseReviewPage() {
         @media (max-width: 768px) { .crp-pad { padding: 1.25rem 1rem 2rem !important; } .crp-cols { grid-template-columns: 1fr !important; } }
       `}</style>
 
-      <div className="crp-pad" style={{ padding: '2rem 2.5rem 3rem', maxWidth: 900, margin: '0 auto', animation: 'fadeIn .25s ease' }}>
+      <div className="crp-pad" style={{ padding: '2rem 2.5rem 3rem', animation: 'fadeIn .25s ease' }}>
 
         {/* ── Back + header ── */}
         <div style={{ marginBottom: '1.75rem' }}>

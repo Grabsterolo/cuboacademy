@@ -27,12 +27,12 @@ const CHECK = (
 
 function Card({ title, desc, children }) {
   return (
-    <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', marginBottom: '1.25rem' }}>
-      <div style={{ padding: '1.1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
-        <h2 style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{title}</h2>
-        {desc && <p style={{ fontSize: '.78rem', color: 'var(--text-2)', margin: '.2rem 0 0', fontWeight: 300 }}>{desc}</p>}
+    <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '1.4rem 1.75rem', borderBottom: '1px solid var(--border)' }}>
+        <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{title}</h2>
+        {desc && <p style={{ fontSize: '.79rem', color: 'var(--text-2)', margin: '.25rem 0 0', fontWeight: 300, lineHeight: 1.5 }}>{desc}</p>}
       </div>
-      <div style={{ padding: '1.25rem 1.5rem' }}>{children}</div>
+      <div style={{ padding: '1.5rem 1.75rem', flex: 1 }}>{children}</div>
     </div>
   )
 }
@@ -71,9 +71,9 @@ function Field({ label, hint, children }) {
 
 function SaveRow({ loading, success, error }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingTop: '.5rem', borderTop: '1px solid var(--border)', marginTop: '.5rem' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingTop: '.75rem', borderTop: '1px solid var(--border)', marginTop: '.25rem' }}>
       <button type="submit" disabled={loading}
-        style={{ padding: '.6rem 1.4rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.855rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: loading ? .7 : 1, transition: 'opacity .2s' }}>
+        style={{ padding: '.6rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.855rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: loading ? .7 : 1, transition: 'opacity .2s' }}>
         {loading ? 'Guardando…' : 'Guardar cambios'}
       </button>
       {success && (
@@ -81,9 +81,7 @@ function SaveRow({ loading, success, error }) {
           {CHECK} Guardado
         </span>
       )}
-      {error && (
-        <span style={{ fontSize: '.78rem', color: '#c0392b' }}>{error}</span>
-      )}
+      {error && <span style={{ fontSize: '.78rem', color: '#c0392b' }}>{error}</span>}
     </div>
   )
 }
@@ -110,7 +108,7 @@ export default function SettingsPage() {
 
   function set(key, val) { setSettings(prev => ({ ...prev, [key]: val })) }
 
-  async function saveKeys(keys, st, setSt) {
+  async function saveKeys(keys, setSt) {
     setSt({ saving: true, ok: false, err: '' })
     const rows = keys.map(k => ({ key: k, value: settings[k] ?? '' }))
     const { error } = await supabase.from('platform_settings').upsert(rows, { onConflict: 'key' })
@@ -122,19 +120,19 @@ export default function SettingsPage() {
 
   async function handleSavePlatform(e) {
     e.preventDefault()
-    await saveKeys(['platform_name', 'platform_description', 'logo_url', 'primary_color'], s1, setS1)
+    await saveKeys(['platform_name', 'platform_description', 'logo_url', 'primary_color'], setS1)
     if (settings.primary_color) document.documentElement.style.setProperty('--jade', settings.primary_color)
     if (settings.platform_name) document.title = settings.platform_name
   }
 
   async function handleSaveLanding(e) {
     e.preventDefault()
-    await saveKeys(['hero_title', 'hero_subtitle', 'contact_email'], s2, setS2)
+    await saveKeys(['hero_title', 'hero_subtitle', 'contact_email'], setS2)
   }
 
   async function handleSaveSocial(e) {
     e.preventDefault()
-    await saveKeys(['social_instagram', 'social_linkedin', 'social_youtube'], s3, setS3)
+    await saveKeys(['social_instagram', 'social_linkedin', 'social_youtube'], setS3)
   }
 
   async function handleToggle(key, checked) {
@@ -151,10 +149,14 @@ export default function SettingsPage() {
   }
 
   const inp = {
-    width: '100%', padding: '.6rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)',
+    width: '100%', padding: '.65rem .9rem', background: 'var(--cream)', border: '1px solid var(--border)',
     borderRadius: 8, color: 'var(--carbon)', fontSize: '.875rem', outline: 'none',
     fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .18s, background .18s',
   }
+
+  const skel = (w, h = 38) => (
+    <div style={{ height: h, background: 'var(--border)', borderRadius: 7, width: w, opacity: .55 }} />
+  )
 
   return (
     <DashboardLayout>
@@ -162,121 +164,126 @@ export default function SettingsPage() {
         .sett-inp:focus { border-color: var(--jade) !important; background: white !important; }
         .sett-sel { padding: .5rem .75rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; font-size: .84rem; color: var(--carbon); font-family: var(--sans); outline: none; cursor: pointer; transition: border-color .18s; }
         .sett-sel:focus { border-color: var(--jade); }
+        .sett-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+        @media (max-width: 900px) { .sett-grid { grid-template-columns: 1fr !important; } }
         @media (max-width: 768px) { .sett-pad { padding: 1.25rem 1rem 2rem !important; } }
       `}</style>
 
-      <div className="sett-pad" style={{ padding: '2.5rem 2.5rem 3rem', maxWidth: 720 }}>
+      <div className="sett-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
 
         <div style={{ marginBottom: '2rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Administración</p>
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Configuración</h1>
         </div>
 
-        {/* ── 1. Identidad de la plataforma ── */}
-        <Card title="Identidad de la plataforma" desc="Nombre, imagen y color que definen la marca en toda la app.">
-          {loadingInit ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-              {[200, 260, 180, 80].map((w, i) => <div key={i} style={{ height: 38, background: 'var(--border)', borderRadius: 7, width: w, opacity: 1 - i * 0.15 }} />)}
-            </div>
-          ) : (
-            <form onSubmit={handleSavePlatform} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <Field label="Nombre de la plataforma">
-                <input className="sett-inp" style={inp} type="text" value={settings.platform_name}
-                  onChange={e => set('platform_name', e.target.value)} placeholder="Cubo Academy" />
-              </Field>
-              <Field label="Descripción" hint="se muestra en emails y meta tags">
-                <input className="sett-inp" style={inp} type="text" value={settings.platform_description}
-                  onChange={e => set('platform_description', e.target.value)} placeholder="Formación práctica para profesionales consultivos" />
-              </Field>
-              <Field label="URL del logo" hint="imagen pública accesible por URL">
-                <input className="sett-inp" style={inp} type="text" value={settings.logo_url}
-                  onChange={e => set('logo_url', e.target.value)} placeholder="https://..." />
-              </Field>
-              <Field label="Color principal">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
-                  <input type="color" value={settings.primary_color || '#167D78'}
-                    onChange={e => set('primary_color', e.target.value)}
-                    style={{ width: 40, height: 40, padding: 2, border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', background: 'white', flexShrink: 0 }} />
-                  <input className="sett-inp" style={{ ...inp, width: 120, fontFamily: 'monospace', fontSize: '.85rem' }}
-                    type="text" value={settings.primary_color}
-                    onChange={e => set('primary_color', e.target.value)}
-                    placeholder="#167D78" maxLength={7} />
-                </div>
-              </Field>
-              <SaveRow loading={s1.saving} success={s1.ok} error={s1.err} />
-            </form>
-          )}
-        </Card>
+        <div className="sett-grid">
 
-        {/* ── 2. Acceso y registro ── */}
-        <Card title="Acceso y registro" desc="Controla cómo los usuarios pueden crear una cuenta en la plataforma.">
-          <Row label="Registro público" desc="Cualquier visitante puede crear una cuenta sin invitación.">
-            <Toggle on={settings.allow_public_registration === 'true'} onChange={v => handleToggle('allow_public_registration', v)} />
-          </Row>
-          <Row label="Confirmación de email" desc="El usuario debe verificar su correo antes de poder acceder.">
-            <Toggle on={settings.require_email_confirmation === 'true'} onChange={v => handleToggle('require_email_confirmation', v)} />
-          </Row>
-          <Row label="Roles disponibles en registro" desc="Qué roles puede elegir un nuevo usuario al registrarse." last>
-            <select className="sett-sel" value={settings.allowed_registration_roles}
-              onChange={e => handleSelectSetting('allowed_registration_roles', e.target.value)}>
-              <option value="student">Solo estudiantes</option>
-              <option value="student_instructor">Estudiantes e instructores</option>
-            </select>
-          </Row>
-        </Card>
+          {/* ── 1. Identidad ── */}
+          <Card title="Identidad de la plataforma" desc="Nombre, imagen y color que definen la marca en toda la app.">
+            {loadingInit ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                {skel(200)} {skel(260)} {skel(180)} {skel(80)}
+              </div>
+            ) : (
+              <form onSubmit={handleSavePlatform} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                <Field label="Nombre de la plataforma">
+                  <input className="sett-inp" style={inp} type="text" value={settings.platform_name}
+                    onChange={e => set('platform_name', e.target.value)} placeholder="Cubo Academy" />
+                </Field>
+                <Field label="Descripción" hint="meta tags y emails">
+                  <input className="sett-inp" style={inp} type="text" value={settings.platform_description}
+                    onChange={e => set('platform_description', e.target.value)} placeholder="Formación práctica para profesionales consultivos" />
+                </Field>
+                <Field label="URL del logo" hint="imagen pública por URL">
+                  <input className="sett-inp" style={inp} type="text" value={settings.logo_url}
+                    onChange={e => set('logo_url', e.target.value)} placeholder="https://..." />
+                </Field>
+                <Field label="Color principal">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
+                    <input type="color" value={settings.primary_color || '#167D78'}
+                      onChange={e => set('primary_color', e.target.value)}
+                      style={{ width: 40, height: 40, padding: 2, border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', background: 'white', flexShrink: 0 }} />
+                    <input className="sett-inp" style={{ ...inp, width: 120, fontFamily: 'monospace', fontSize: '.85rem' }}
+                      type="text" value={settings.primary_color}
+                      onChange={e => set('primary_color', e.target.value)}
+                      placeholder="#167D78" maxLength={7} />
+                  </div>
+                </Field>
+                <SaveRow loading={s1.saving} success={s1.ok} error={s1.err} />
+              </form>
+            )}
+          </Card>
 
-        {/* ── 3. Landing page ── */}
-        <Card title="Página de inicio" desc="Textos que aparecen en el hero y datos de contacto de la plataforma.">
-          {loadingInit ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-              {[220, 300, 160].map((w, i) => <div key={i} style={{ height: 38, background: 'var(--border)', borderRadius: 7, width: w, opacity: 1 - i * 0.15 }} />)}
-            </div>
-          ) : (
-            <form onSubmit={handleSaveLanding} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <Field label="Título principal">
-                <input className="sett-inp" style={inp} type="text" value={settings.hero_title}
-                  onChange={e => set('hero_title', e.target.value)} placeholder="El conocimiento que transforma" />
-              </Field>
-              <Field label="Subtítulo">
-                <textarea className="sett-inp" style={{ ...inp, resize: 'vertical', minHeight: 80 }}
-                  value={settings.hero_subtitle}
-                  onChange={e => set('hero_subtitle', e.target.value)}
-                  placeholder="Cubo Academy convierte experiencia consultiva real en cursos de alto impacto…" />
-              </Field>
-              <Field label="Email de contacto">
-                <input className="sett-inp" style={inp} type="email" value={settings.contact_email}
-                  onChange={e => set('contact_email', e.target.value)} placeholder="contacto@cuboacademy.com" />
-              </Field>
-              <SaveRow loading={s2.saving} success={s2.ok} error={s2.err} />
-            </form>
-          )}
-        </Card>
+          {/* ── 2. Acceso y registro ── */}
+          <Card title="Acceso y registro" desc="Controla cómo los usuarios pueden crear una cuenta en la plataforma.">
+            <Row label="Registro público" desc="Cualquier visitante puede crear una cuenta sin invitación.">
+              <Toggle on={settings.allow_public_registration === 'true'} onChange={v => handleToggle('allow_public_registration', v)} />
+            </Row>
+            <Row label="Confirmación de email" desc="El usuario debe verificar su correo antes de poder acceder.">
+              <Toggle on={settings.require_email_confirmation === 'true'} onChange={v => handleToggle('require_email_confirmation', v)} />
+            </Row>
+            <Row label="Roles disponibles al registrarse" desc="Qué roles puede elegir un nuevo usuario." last>
+              <select className="sett-sel" value={settings.allowed_registration_roles}
+                onChange={e => handleSelectSetting('allowed_registration_roles', e.target.value)}>
+                <option value="student">Solo estudiantes</option>
+                <option value="student_instructor">Estudiantes e instructores</option>
+              </select>
+            </Row>
+          </Card>
 
-        {/* ── 4. Redes sociales ── */}
-        <Card title="Redes sociales" desc="URLs que aparecen en el footer y la página de inicio.">
-          {loadingInit ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
-              {[180, 200, 160].map((w, i) => <div key={i} style={{ height: 38, background: 'var(--border)', borderRadius: 7, width: w, opacity: 1 - i * 0.15 }} />)}
-            </div>
-          ) : (
-            <form onSubmit={handleSaveSocial} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <Field label="Instagram">
-                <input className="sett-inp" style={inp} type="text" value={settings.social_instagram}
-                  onChange={e => set('social_instagram', e.target.value)} placeholder="https://instagram.com/..." />
-              </Field>
-              <Field label="LinkedIn">
-                <input className="sett-inp" style={inp} type="text" value={settings.social_linkedin}
-                  onChange={e => set('social_linkedin', e.target.value)} placeholder="https://linkedin.com/company/..." />
-              </Field>
-              <Field label="YouTube">
-                <input className="sett-inp" style={inp} type="text" value={settings.social_youtube}
-                  onChange={e => set('social_youtube', e.target.value)} placeholder="https://youtube.com/@..." />
-              </Field>
-              <SaveRow loading={s3.saving} success={s3.ok} error={s3.err} />
-            </form>
-          )}
-        </Card>
+          {/* ── 3. Página de inicio ── */}
+          <Card title="Página de inicio" desc="Textos del hero y datos de contacto de la plataforma.">
+            {loadingInit ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                {skel(220)} {skel(300, 80)} {skel(160)}
+              </div>
+            ) : (
+              <form onSubmit={handleSaveLanding} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                <Field label="Título principal">
+                  <input className="sett-inp" style={inp} type="text" value={settings.hero_title}
+                    onChange={e => set('hero_title', e.target.value)} placeholder="El conocimiento que transforma" />
+                </Field>
+                <Field label="Subtítulo">
+                  <textarea className="sett-inp" style={{ ...inp, resize: 'vertical', minHeight: 90 }}
+                    value={settings.hero_subtitle}
+                    onChange={e => set('hero_subtitle', e.target.value)}
+                    placeholder="Cubo Academy convierte experiencia consultiva real en cursos de alto impacto…" />
+                </Field>
+                <Field label="Email de contacto">
+                  <input className="sett-inp" style={inp} type="email" value={settings.contact_email}
+                    onChange={e => set('contact_email', e.target.value)} placeholder="contacto@cuboacademy.com" />
+                </Field>
+                <SaveRow loading={s2.saving} success={s2.ok} error={s2.err} />
+              </form>
+            )}
+          </Card>
 
+          {/* ── 4. Redes sociales ── */}
+          <Card title="Redes sociales" desc="URLs que aparecen en el footer y la página de inicio.">
+            {loadingInit ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                {skel(180)} {skel(200)} {skel(160)}
+              </div>
+            ) : (
+              <form onSubmit={handleSaveSocial} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                <Field label="Instagram">
+                  <input className="sett-inp" style={inp} type="text" value={settings.social_instagram}
+                    onChange={e => set('social_instagram', e.target.value)} placeholder="https://instagram.com/..." />
+                </Field>
+                <Field label="LinkedIn">
+                  <input className="sett-inp" style={inp} type="text" value={settings.social_linkedin}
+                    onChange={e => set('social_linkedin', e.target.value)} placeholder="https://linkedin.com/company/..." />
+                </Field>
+                <Field label="YouTube">
+                  <input className="sett-inp" style={inp} type="text" value={settings.social_youtube}
+                    onChange={e => set('social_youtube', e.target.value)} placeholder="https://youtube.com/@..." />
+                </Field>
+                <SaveRow loading={s3.saving} success={s3.ok} error={s3.err} />
+              </form>
+            )}
+          </Card>
+
+        </div>
       </div>
     </DashboardLayout>
   )

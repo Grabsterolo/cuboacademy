@@ -426,7 +426,7 @@ export default function CourseStructurePage() {
         @media (max-width: 768px) { .csp-pad { padding: 1.25rem 1rem 2rem !important; } }
       `}</style>
 
-      <div className="csp-pad" style={{ padding: '2.5rem 2.5rem 3rem', maxWidth: 820 }}>
+      <div className="csp-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
         {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
