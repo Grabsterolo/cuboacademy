@@ -78,13 +78,13 @@ export default function InstructorAnnouncementsPage() {
       <div className="ann-i-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
         <div style={{ marginBottom: '2rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Comunicación</p>
-          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Comunicados</h1>
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Comunicados</h1>
         </div>
 
         {/* Filtros */}
         {!loading && (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
-            <div style={{ position: 'relative', maxWidth: 340 }}>
+            <div style={{ position: 'relative' }}>
               <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="text" placeholder="Buscar comunicado…" value={search} onChange={e => setSearch(e.target.value)}
                 style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
@@ -121,7 +121,7 @@ export default function InstructorAnnouncementsPage() {
                 {[...Array(3)].map((_, i) => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 100, opacity: 1 - i * 0.2 }} />)}
               </div>
             ) : filtered.length === 0 ? (
-              <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center', maxWidth: 400 }}>
+              <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
                 <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{BELL}</div>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.3rem' }}>{items.length === 0 ? 'Sin comunicados' : 'Sin resultados'}</p>
                 <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)' }}>{items.length === 0 ? 'No hay comunicados disponibles.' : 'Prueba con otros filtros.'}</p>

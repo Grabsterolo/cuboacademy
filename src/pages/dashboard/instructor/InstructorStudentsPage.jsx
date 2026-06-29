@@ -137,7 +137,7 @@ export default function InstructorStudentsPage() {
             {[1,2,3,4].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 68, opacity: 1 - i * 0.18 }} />)}
           </div>
         ) : rows.length === 0 ? (
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center', maxWidth: 420 }}>
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{USERS}</div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.35rem' }}>Sin estudiantes aún</p>
             <p style={{ fontSize: '.82rem', color: '#B5B2AB' }}>Cuando alguien se inscriba a tus cursos aparecerá aquí.</p>
