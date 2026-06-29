@@ -83,7 +83,7 @@ export default function InstructorCoursesPage() {
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Instructor</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Mis cursos</h1>
           </div>
-          <button onClick={() => navigate('curso-form', { courseId: null })}
+          <button onClick={() => navigate('curso-wizard')}
             style={{ display: 'flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.2rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 9, fontSize: '.865rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', flexShrink: 0 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nuevo curso
@@ -135,7 +135,7 @@ export default function InstructorCoursesPage() {
               {courses.length === 0 ? 'Crea tu primer curso y comparte tu conocimiento.' : 'Prueba con otros filtros o términos.'}
             </p>
             {courses.length === 0 && (
-              <button onClick={() => navigate('curso-form', { courseId: null })}
+              <button onClick={() => navigate('curso-wizard')}
                 style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
                 Crear mi primer curso
               </button>

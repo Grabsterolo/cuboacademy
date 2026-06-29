@@ -19,6 +19,7 @@ import RequestsPage from '../../pages/dashboard/admin/RequestsPage'
 import AnnouncementsPage from '../../pages/dashboard/admin/AnnouncementsPage'
 
 // Instructor
+import CourseWizardPage from '../../pages/dashboard/instructor/CourseWizardPage'
 import InstructorDashboard from '../../pages/dashboard/InstructorDashboard'
 import InstructorProfilePage from '../../pages/dashboard/instructor/InstructorProfilePage'
 import InstructorCoursesPage from '../../pages/dashboard/instructor/InstructorCoursesPage'
@@ -82,6 +83,7 @@ function renderSection(section, role, params) {
       case 'panel':         return <InstructorDashboard />
       case 'perfil':        return <InstructorProfilePage />
       case 'cursos':        return <InstructorCoursesPage />
+      case 'curso-wizard':  return <CourseWizardPage />
       case 'curso-form':    return <CourseFormPage />
       case 'curso-estructura': return <CourseStructurePage />
       case 'estudiantes':   return <InstructorStudentsPage />
