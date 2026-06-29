@@ -55,7 +55,7 @@ export default function StudentCertificatesPage() {
         ) : certs.length === 0 ? (
           <>
             {/* Empty state */}
-            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '3rem 2.5rem', textAlign: 'center', maxWidth: 520, marginBottom: '1.5rem' }}>
+            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '3rem 2.5rem', textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ width: 64, height: 64, background: 'var(--jade-soft)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--jade)' }}>
                 {CERT_ICON_BIG}
               </div>
