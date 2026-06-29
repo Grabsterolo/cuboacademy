@@ -40,6 +40,7 @@ import StudentCertificatesPage from '../../pages/dashboard/student/StudentCertif
 import StudentStorePage from '../../pages/dashboard/student/StudentStorePage'
 import StudentSettingsPage from '../../pages/dashboard/student/StudentSettingsPage'
 import StudentAnnouncementsPage from '../../pages/dashboard/student/StudentAnnouncementsPage'
+import StudentLearningPage from '../../pages/dashboard/student/StudentLearningPage'
 
 
 function LoadingSection() {
@@ -108,7 +109,7 @@ function renderSection(section, role, params) {
     case 'certificados':  return <StudentCertificatesPage />
     case 'tienda':        return <StudentStorePage />
     case 'configuracion': return <StudentSettingsPage />
-    case 'aprender':      return <Placeholder label="Reproductor de clases" />
+    case 'aprender':      return <StudentLearningPage />
     default:              return <Placeholder label={section} />
   }
 }
