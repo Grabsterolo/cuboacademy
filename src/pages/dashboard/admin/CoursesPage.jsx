@@ -4,54 +4,45 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { IconBtn } from '../../../components/ui'
 
-const STATUS_META = {
-  draft:     { label: 'Borrador',   bg: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
-  pending:   { label: 'En revisión', bg: 'rgba(234,88,12,.08)',  color: '#C2410C',       border: '1px solid rgba(234,88,12,.25)' },
-  published: { label: 'Publicado',  bg: 'rgba(22,125,120,.1)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.22)' },
-  archived:  { label: 'Archivado',  bg: 'rgba(217,169,88,.12)', color: '#A87F2A',       border: '1px solid rgba(217,169,88,.3)' },
+const STATUS = {
+  draft:     { label: 'Borrador',    bg: '#F5F5F0',          color: '#9B9894',  border: 'var(--border)' },
+  pending:   { label: 'En revisión', bg: '#FFF7ED',          color: '#C2410C',  border: '#FED7AA' },
+  published: { label: 'Publicado',   bg: 'var(--jade-soft)', color: 'var(--jade)', border: 'rgba(22,125,120,.25)' },
+  archived:  { label: 'Archivado',   bg: '#FEF2F2',          color: '#B91C1C',  border: '#FECACA' },
 }
-const LEVEL_META = {
-  beginner:     { label: 'Básico',     bg: 'rgba(59,130,246,.1)',  color: '#3B7EF6', border: '1px solid rgba(59,130,246,.25)' },
-  intermediate: { label: 'Intermedio', bg: 'rgba(139,92,246,.1)',  color: '#7C3AED', border: '1px solid rgba(139,92,246,.25)' },
-  advanced:     { label: 'Avanzado',   bg: 'rgba(239,68,68,.1)',   color: '#DC2626', border: '1px solid rgba(239,68,68,.25)' },
-}
-const STATUS_TABS = [
-  { label: 'Todos',      value: null },
-  { label: 'En revisión', value: 'pending' },
-  { label: 'Borrador',   value: 'draft' },
-  { label: 'Publicado',  value: 'published' },
-  { label: 'Archivado',  value: 'archived' },
+const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
+const TABS = [
+  { value: null,        label: 'Todos' },
+  { value: 'pending',   label: 'En revisión' },
+  { value: 'published', label: 'Publicados' },
+  { value: 'draft',     label: 'Borradores' },
+  { value: 'archived',  label: 'Archivados' },
 ]
 
-function LevelBadge({ level }) {
-  const m = LEVEL_META[level]
-  if (!m) return null
-  return <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: m.bg, color: m.color, border: m.border, whiteSpace: 'nowrap' }}>{m.label}</span>
-}
+const BOOK = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
 
 export default function CoursesPage() {
   const { navigate } = useNavigation()
-  const [courses, setCourses] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState(null)
-  const [search, setSearch] = useState('')
+  const [courses,       setCourses]       = useState([])
+  const [loading,       setLoading]       = useState(true)
+  const [tab,           setTab]           = useState(null)
+  const [search,        setSearch]        = useState('')
   const [confirmDelete, setConfirmDelete] = useState(null)
 
-  useEffect(() => { loadCourses() }, [])
-
+  useEffect(() => { load() }, [])
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') setConfirmDelete(null) }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
-  async function loadCourses() {
+  async function load() {
     setLoading(true)
     const { data } = await supabase
       .from('courses')
-      .select('id, title, slug, cover_image_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
+      .select('id, title, cover_image_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
       .order('created_at', { ascending: false })
-    if (data) setCourses(data)
+    setCourses(data || [])
     setLoading(false)
   }
 
@@ -69,204 +60,168 @@ export default function CoursesPage() {
   }
 
   const filtered = courses.filter(c => {
-    if (activeTab && c.status !== activeTab) return false
     const q = search.toLowerCase()
-    if (!q) return true
     return (
-      (c.title || '').toLowerCase().includes(q) ||
-      (c.profiles?.full_name || '').toLowerCase().includes(q) ||
-      (c.categories?.name || '').toLowerCase().includes(q)
+      (!tab || c.status === tab) &&
+      (!q || (c.title || '').toLowerCase().includes(q) ||
+             (c.profiles?.full_name || '').toLowerCase().includes(q) ||
+             (c.categories?.name || '').toLowerCase().includes(q))
     )
   })
+
+  const stats = [
+    { label: 'Total cursos',  value: courses.length },
+    { label: 'En revisión',   value: courses.filter(c => c.status === 'pending').length },
+    { label: 'Publicados',    value: courses.filter(c => c.status === 'published').length },
+    { label: 'Borradores',    value: courses.filter(c => c.status === 'draft').length },
+  ]
 
   return (
     <DashboardLayout>
       <style>{`
-        .cp-tab { padding: .38rem .9rem; border-radius: 6px; border: none; cursor: pointer; font-size: .82rem; font-weight: 500; font-family: var(--sans); transition: background .15s, color .15s; white-space: nowrap; }
-        .cp-course-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .18s; }
-        .cp-course-card:hover { box-shadow: 0 4px 18px rgba(23,26,28,.08); }
-        .cp-status-sel { width: 130px; padding: .35rem .6rem; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--carbon); font-size: .78rem; font-weight: 500; font-family: var(--sans); outline: none; cursor: pointer; }
+        @media (max-width: 768px) { .cp-pad { padding: 1.25rem 1rem 2rem !important; } .cp-stats { grid-template-columns: 1fr 1fr !important; } .cp-tabs { overflow-x: auto; scrollbar-width: none; } .cp-tabs::-webkit-scrollbar { display: none; } }
+        .cp-card { background: white; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; gap: 1rem; padding: .9rem 1.25rem; transition: box-shadow .18s, border-color .18s; }
+        .cp-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.08); border-color: rgba(22,125,120,.2); }
+        .cp-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
+        .cp-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
+        .cp-status-sel { padding: .3rem .55rem; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--carbon); font-size: .76rem; font-family: var(--sans); outline: none; cursor: pointer; }
         .cp-status-sel:focus { border-color: var(--jade); }
-        @media (max-width: 768px) {
-          .cp-pad { padding: 1.25rem 1rem 2rem !important; }
-          .cp-toolbar { flex-direction: column !important; align-items: stretch !important; }
-          .cp-search { max-width: 100% !important; }
-          .cp-tabs { overflow-x: auto !important; scrollbar-width: none; }
-          .cp-tabs::-webkit-scrollbar { display: none; }
-          .cp-grid { grid-template-columns: 1fr !important; }
-        }
       `}</style>
 
       <div className="cp-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
+
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.75rem', gap: '1rem', flexWrap: 'wrap' }}>
           <div>
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Gestión</p>
-            <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Cursos</h1>
+            <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Cursos</h1>
           </div>
           <button onClick={() => navigate('curso-wizard')}
-            style={{ display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.5rem 1.1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.855rem', fontWeight: 600, fontFamily: 'var(--sans)', cursor: 'pointer', transition: 'background .2s', whiteSpace: 'nowrap' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--jade-hover)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--jade)'}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+            style={{ display: 'flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.2rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 9, fontSize: '.865rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', flexShrink: 0 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nuevo curso
           </button>
         </div>
 
-        {/* Toolbar */}
-        <div className="cp-toolbar" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          <div className="cp-search" style={{ position: 'relative', flex: '1 1 240px', maxWidth: 340 }}>
-            <svg style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input type="text" placeholder="Buscar cursos..." value={search} onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '.6rem .75rem .6rem 2rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none' }} />
+        {/* Stats */}
+        {!loading && (
+          <div className="cp-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '.75rem', marginBottom: '1.75rem' }}>
+            {stats.map(s => (
+              <div key={s.label} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 10, padding: '.85rem 1.1rem' }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.6rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: '.71rem', color: 'var(--text-2)', marginTop: '.25rem', fontWeight: 500 }}>{s.label}</div>
+              </div>
+            ))}
           </div>
-          <div className="cp-tabs" style={{ display: 'flex', background: 'white', border: '1px solid var(--border)', borderRadius: 8, padding: 3, gap: 2 }}>
-            {STATUS_TABS.map(tab => (
-              <button key={tab.label} className="cp-tab" onClick={() => setActiveTab(tab.value)}
-                style={{ background: activeTab === tab.value ? 'var(--jade-soft)' : 'transparent', color: activeTab === tab.value ? 'var(--jade)' : 'var(--text-2)' }}>
-                {tab.label}
+        )}
+
+        {/* Filters */}
+        <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+          <div style={{ position: 'relative' }}>
+            <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Buscar por título, instructor o categoría…" value={search} onChange={e => setSearch(e.target.value)}
+              style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+              onFocus={e => e.target.style.borderColor = 'var(--jade)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+          </div>
+          <div className="cp-tabs" style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
+            {TABS.map(t => (
+              <button key={String(t.value)} onClick={() => setTab(t.value)} className={`cp-tab${tab === t.value ? ' active' : ''}`}>
+                {t.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Content */}
+        {/* List */}
         {loading ? (
-          <div className="cp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-            {[1,2,3,4,5,6].map(i => (
-              <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', opacity: 1 - i * 0.1 }}>
-                <div style={{ width: '100%', height: 140, background: 'var(--border)' }} />
-                <div style={{ padding: '1.1rem 1.2rem', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
-                  <div style={{ height: 14, width: '75%', background: 'var(--border)', borderRadius: 4 }} />
-                  <div style={{ height: 11, width: '45%', background: 'var(--border)', borderRadius: 4 }} />
-                  <div style={{ height: 11, width: '30%', background: 'var(--border)', borderRadius: 4 }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : courses.length === 0 ? (
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
-            <div style={{ width: 60, height: 60, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-              </svg>
-            </div>
-            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.45rem' }}>Todavía no hay cursos</h2>
-            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.5rem', maxWidth: 320, margin: '0 auto 1.5rem', lineHeight: 1.6 }}>Crea el primer curso de la plataforma y empieza a construir el catálogo.</p>
-            <button onClick={() => navigate('curso-wizard')}
-              style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 600, cursor: 'pointer' }}>
-              Crear primer curso
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
+            {[1,2,3].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 82, opacity: 1 - i * 0.2 }} />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>No se encontraron cursos.</div>
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center', maxWidth: 440 }}>
+            <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{BOOK}</div>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>
+              {courses.length === 0 ? 'Todavía no hay cursos' : 'Sin resultados'}
+            </p>
+            <p style={{ fontSize: '.82rem', color: '#B5B2AB', marginBottom: courses.length === 0 ? '1.5rem' : 0 }}>
+              {courses.length === 0 ? 'Crea el primer curso de la plataforma.' : 'Prueba con otros filtros o términos.'}
+            </p>
+            {courses.length === 0 && (
+              <button onClick={() => navigate('curso-wizard')}
+                style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                Crear primer curso
+              </button>
+            )}
+          </div>
         ) : (
           <>
-            <div className="cp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
               {filtered.map(c => {
-                const sm = STATUS_META[c.status] || STATUS_META.draft
+                const st = STATUS[c.status] || STATUS.draft
                 return (
-                  <div key={c.id} className="cp-course-card">
-                    {/* Cover image */}
-                    {c.cover_image_url ? (
-                      <img src={c.cover_image_url} alt="" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block', borderBottom: '1px solid var(--border)' }} />
-                    ) : (
-                      <div style={{ width: '100%', height: 140, background: 'var(--jade-soft)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                  <div key={c.id} className="cp-card">
+                    {/* Thumbnail */}
+                    <div style={{ width: 64, height: 48, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
+                      {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.28rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap' }}>
+                        {c.profiles?.full_name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.profiles.full_name}</span>}
+                        {c.categories?.name && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span></>}
+                        {c.level && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
+                      <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap' }}>{st.label}</span>
+
+                      <select className="cp-status-sel" value={c.status || 'draft'} onChange={e => handleStatusChange(c.id, e.target.value)}>
+                        <option value="draft">Borrador</option>
+                        <option value="pending">En revisión</option>
+                        <option value="published">Publicado</option>
+                        <option value="archived">Archivado</option>
+                      </select>
+
+                      {c.status === 'pending' && (
+                        <button onClick={() => navigate('curso-revision', { courseId: c.id })}
+                          style={{ display: 'flex', alignItems: 'center', gap: '.3rem', padding: '4px 10px', background: 'rgba(234,88,12,.08)', border: '1.5px solid rgba(234,88,12,.3)', borderRadius: 6, color: '#C2410C', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          Revisar
+                        </button>
+                      )}
+
+                      <IconBtn title="Editar curso" onClick={() => navigate('curso-wizard', { courseId: c.id })}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
-                      </div>
-                    )}
+                      </IconBtn>
 
-                    {/* Body */}
-                    <div style={{ padding: '1.1rem 1.2rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
-                      {/* Title */}
-                      <div>
-                        <div style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.3 }}>{c.title}</div>
-                        {c.slug && <div style={{ fontSize: '.68rem', color: 'var(--text-2)', marginTop: 2 }}>{c.slug}</div>}
-                      </div>
-
-                      {/* Meta row */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
-                        {c.profiles?.full_name && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.78rem', color: 'var(--text-2)' }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            {c.profiles.full_name}
-                          </div>
-                        )}
-                        {c.categories?.name && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.78rem', color: 'var(--text-2)' }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/></svg>
-                            {c.categories.name}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Badges row */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', flexWrap: 'wrap' }}>
-                        <LevelBadge level={c.level} />
-                        <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: sm.bg, color: sm.color, border: sm.border }}>{sm.label}</span>
-                      </div>
-
-                      {/* Footer: price + status select + actions */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '.6rem', borderTop: '1px solid var(--border)' }}>
-                        <span style={{ fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', fontFamily: 'var(--serif)' }}>
-                          {c.price != null ? `$${Number(c.price).toFixed(2)}` : 'Gratis'}
-                        </span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
-                          {/* Inline status select */}
-                          <select className="cp-status-sel" value={c.status || 'draft'}
-                            onChange={e => handleStatusChange(c.id, e.target.value)}>
-                            <option value="draft">Borrador</option>
-                            <option value="pending">En revisión</option>
-                            <option value="published">Publicado</option>
-                            <option value="archived">Archivado</option>
-                          </select>
-
-                          {/* Review button — only for pending courses */}
-                          {c.status === 'pending' && (
-                            <button onClick={() => navigate('curso-revision', { courseId: c.id })}
-                              style={{ display: 'flex', alignItems: 'center', gap: '.3rem', padding: '4px 10px', background: 'rgba(234,88,12,.08)', border: '1.5px solid rgba(234,88,12,.3)', borderRadius: 6, color: '#C2410C', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                              Revisar
-                            </button>
-                          )}
-
-                          {/* Edit */}
-                          <IconBtn title="Editar curso" onClick={() => navigate('curso-form', { courseId: c.id })}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                          </IconBtn>
-
-                          {/* Delete */}
-                          {confirmDelete === c.id ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <button onClick={() => handleDelete(c.id)} style={{ fontSize: '.72rem', fontWeight: 700, color: '#DC2626', background: 'rgba(239,68,68,.09)', border: 'none', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sí</button>
-                              <button onClick={() => setConfirmDelete(null)} style={{ fontSize: '.72rem', color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' }}>No</button>
-                            </div>
-                          ) : (
-                            <IconBtn title="Eliminar curso" danger onClick={() => setConfirmDelete(c.id)}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                                <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                              </svg>
-                            </IconBtn>
-                          )}
+                      {confirmDelete === c.id ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <button onClick={() => handleDelete(c.id)} style={{ fontSize: '.72rem', fontWeight: 700, color: '#DC2626', background: 'rgba(239,68,68,.09)', border: 'none', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sí</button>
+                          <button onClick={() => setConfirmDelete(null)} style={{ fontSize: '.72rem', color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' }}>No</button>
                         </div>
-                      </div>
+                      ) : (
+                        <IconBtn title="Eliminar curso" danger onClick={() => setConfirmDelete(c.id)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                            <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                          </svg>
+                        </IconBtn>
+                      )}
                     </div>
                   </div>
                 )
               })}
             </div>
-            <div style={{ marginTop: '1.25rem', fontSize: '.75rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
-              {filtered.length} curso{filtered.length !== 1 ? 's' : ''}
+            <div style={{ marginTop: '.75rem', fontSize: '.74rem', color: 'var(--text-2)' }}>
+              {filtered.length} de {courses.length} curso{courses.length !== 1 ? 's' : ''}
             </div>
           </>
         )}
