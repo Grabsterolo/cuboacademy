@@ -41,6 +41,7 @@ import StudentStorePage from '../../pages/dashboard/student/StudentStorePage'
 import StudentSettingsPage from '../../pages/dashboard/student/StudentSettingsPage'
 import StudentAnnouncementsPage from '../../pages/dashboard/student/StudentAnnouncementsPage'
 import StudentLearningPage from '../../pages/dashboard/student/StudentLearningPage'
+import CourseDetailPage from '../../pages/dashboard/student/CourseDetailPage'
 
 
 function LoadingSection() {
@@ -110,6 +111,7 @@ function renderSection(section, role, params) {
     case 'tienda':        return <StudentStorePage />
     case 'configuracion': return <StudentSettingsPage />
     case 'aprender':      return <StudentLearningPage />
+    case 'course-detail': return <CourseDetailPage />
     default:              return <Placeholder label={section} />
   }
 }
