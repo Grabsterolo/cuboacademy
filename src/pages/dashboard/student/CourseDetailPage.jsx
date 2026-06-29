@@ -79,8 +79,8 @@ export default function CourseDetailPage() {
         .insert({ student_id: user.id, course_id: course.id, enrolled_at: new Date().toISOString() })
         .select('id, enrolled_at, completed_at').single()
       if (error) { setEnrollError('No se pudo completar la inscripción. Intenta de nuevo.'); setEnrolling(false); return }
-      setEnrollment(enr)
       setEnrolling(false)
+      navigate('aprender', { courseId: course.id })
     } else {
       // Paid: create pending order and show confirmation message
       const { error } = await supabase.from('orders')
