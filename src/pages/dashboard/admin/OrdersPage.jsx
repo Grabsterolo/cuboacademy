@@ -52,10 +52,12 @@ export default function OrdersPage() {
     if (orderErr) { setActing(null); return }
 
     // 2. Create enrollment if not exists (belt-and-suspenders alongside DB trigger)
-    await supabase.from('enrollments').upsert(
-      { student_id: order.student_id, course_id: order.course_id, status: 'active', progress_pct: 0, enrolled_at: new Date().toISOString() },
-      { onConflict: 'student_id,course_id', ignoreDuplicates: true }
-    )
+    const { data: existing } = await supabase.from('enrollments')
+      .select('id').eq('student_id', order.student_id).eq('course_id', order.course_id).maybeSingle()
+    if (!existing) {
+      await supabase.from('enrollments')
+        .insert({ student_id: order.student_id, course_id: order.course_id, enrolled_at: new Date().toISOString() })
+    }
 
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'completed' } : o))
     setActing(null)

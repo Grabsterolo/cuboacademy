@@ -23,15 +23,15 @@ export default function StudentCoursesPage() {
   useEffect(() => {
     if (!user) return
     supabase.from('enrollments')
-      .select('id, status, progress_pct, enrolled_at, completed_at, course_id, courses(id, title, cover_image_url, level, categories(name), profiles!instructor_id(full_name))')
+      .select('id, enrolled_at, completed_at, course_id, courses(id, title, cover_image_url, level, categories(name), profiles!instructor_id(full_name))')
       .eq('student_id', user.id)
       .order('enrolled_at', { ascending: false })
       .then(({ data }) => { setEnrollments(data || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [user])
 
-  const active    = enrollments.filter(e => !e.completed_at && e.status !== 'completed')
-  const completed = enrollments.filter(e => e.completed_at  || e.status === 'completed')
+  const active    = enrollments.filter(e => !e.completed_at)
+  const completed = enrollments.filter(e => !!e.completed_at)
   const base      = tab === 'active' ? active : completed
 
   const q = search.toLowerCase()
@@ -129,9 +129,8 @@ export default function StudentCoursesPage() {
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
               {shown.map(enr => {
-                const c   = enr.courses
+                const c    = enr.courses
                 if (!c) return null
-                const pct  = Math.round(enr.progress_pct || 0)
                 const done = tab === 'completed'
                 return (
                   <div key={enr.id} className="sc-card" onClick={() => navigate('aprender', { courseId: c.id })}>
@@ -148,18 +147,15 @@ export default function StudentCoursesPage() {
                         {c.level && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
                         {c.profiles?.full_name && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.profiles.full_name}</span></>}
                       </div>
-                      {/* Progress bar */}
-                      <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden', maxWidth: 200 }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: 'var(--jade)', borderRadius: 3, transition: 'width .6s ease' }} />
-                      </div>
+                      {done && (
+                        <div style={{ height: 5, background: '#BBF7D0', borderRadius: 3, maxWidth: 200 }} />
+                      )}
                     </div>
 
                     {/* Right */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0 }}>
-                      {done ? (
+                      {done && (
                         <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' }}>✓ Completado</span>
-                      ) : (
-                        <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{pct}%</span>
                       )}
                       <button onClick={e => { e.stopPropagation(); navigate('aprender', { courseId: c.id }) }}
                         style={{ padding: '.4rem .9rem', background: done ? 'var(--jade-soft)' : 'var(--jade)', color: done ? 'var(--jade)' : 'white', border: done ? '1px solid rgba(22,125,120,.25)' : 'none', borderRadius: 7, fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>

@@ -60,7 +60,7 @@ export default function CourseDetailPage() {
 
     // Check existing enrollment
     const { data: enrData } = await supabase.from('enrollments')
-      .select('id, status, progress_pct')
+      .select('id, enrolled_at, completed_at')
       .eq('student_id', user.id).eq('course_id', courseData.id).maybeSingle()
     setEnrollment(enrData || null)
     setLoading(false)
@@ -76,8 +76,8 @@ export default function CourseDetailPage() {
     if (isFree) {
       // Direct enrollment — no payment needed
       const { data: enr, error } = await supabase.from('enrollments')
-        .insert({ student_id: user.id, course_id: course.id, status: 'active', progress_pct: 0, enrolled_at: new Date().toISOString() })
-        .select('id, status, progress_pct').single()
+        .insert({ student_id: user.id, course_id: course.id, enrolled_at: new Date().toISOString() })
+        .select('id, enrolled_at, completed_at').single()
       if (error) { setEnrollError('No se pudo completar la inscripción. Intenta de nuevo.'); setEnrolling(false); return }
       setEnrollment(enr)
       setEnrolling(false)
@@ -89,9 +89,9 @@ export default function CourseDetailPage() {
       setEnrolling(false)
       // Show pending state by refetching
       const { data: enrNew } = await supabase.from('enrollments')
-        .select('id, status, progress_pct')
+        .select('id, enrolled_at, completed_at')
         .eq('student_id', user.id).eq('course_id', course.id).maybeSingle()
-      // Also check if order was auto-enrolled (trigger)
+      // Check if trigger auto-enrolled already
       setEnrollment(enrNew || { status: 'pending_payment' })
     }
   }
@@ -108,7 +108,7 @@ export default function CourseDetailPage() {
   const totalDuration = modules.flatMap(m => m.lessons).reduce((acc, l) => acc + (l.duration_mins || 0), 0)
   const isFree = !course?.price || Number(course?.price) === 0
   const priceDisplay = isFree ? 'Gratis' : `$${Number(course?.price).toFixed(2)}`
-  const isEnrolled = enrollment && enrollment.status !== 'pending_payment'
+  const isEnrolled = enrollment && enrollment.status !== 'pending_payment' && enrollment.enrolled_at
   const isPendingPayment = enrollment?.status === 'pending_payment'
 
   if (!slug) return null
@@ -293,7 +293,7 @@ export default function CourseDetailPage() {
                         style={{ width: '100%', padding: '.85rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 10, fontSize: '.95rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)' }}
                         onMouseEnter={e => e.currentTarget.style.background = 'var(--jade-dark,#0d4a46)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'var(--jade)'}>
-                        {enrollment?.progress_pct > 0 ? 'Continuar curso →' : 'Comenzar curso →'}
+                        {enrollment?.completed_at ? 'Ver curso completado →' : 'Continuar curso →'}
                       </button>
                     </div>
                   ) : isPendingPayment ? (
