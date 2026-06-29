@@ -1140,9 +1140,32 @@ export default function CourseWizardPage() {
 
   // ── save step 4 (evaluation quiz) ─────────────────────────────────────────
   async function saveStep4(cId) {
+    // Always clean up existing evaluation modules first (handles re-runs)
+    const { data: existingEvalMods } = await supabase.from('modules')
+      .select('id').eq('course_id', cId).eq('title', 'Evaluación Final')
+    if (existingEvalMods?.length > 0) {
+      const evalModIds = existingEvalMods.map(m => m.id)
+      const { data: evalLessons } = await supabase.from('lessons').select('id').in('module_id', evalModIds)
+      if (evalLessons?.length > 0) {
+        const evalLesIds = evalLessons.map(l => l.id)
+        const { data: evalQuizzes } = await supabase.from('quizzes').select('id').in('lesson_id', evalLesIds)
+        if (evalQuizzes?.length > 0) {
+          const qzIds = evalQuizzes.map(q => q.id)
+          const { data: evalQs } = await supabase.from('questions').select('id').in('quiz_id', qzIds)
+          if (evalQs?.length > 0) {
+            await supabase.from('answers').delete().in('question_id', evalQs.map(q => q.id))
+          }
+          await supabase.from('questions').delete().in('quiz_id', qzIds)
+        }
+        await supabase.from('quizzes').delete().in('lesson_id', evalLesIds)
+      }
+      await supabase.from('lessons').delete().in('module_id', evalModIds)
+      await supabase.from('modules').delete().in('id', evalModIds)
+    }
+
     if (!evalData.hasEval || evalData.questions.length === 0) return
 
-    // Create/find a special eval module
+    // Create evaluation module
     const { data: evalMod, error: modErr } = await supabase.from('modules')
       .insert({ course_id: cId, title: 'Evaluación Final', order_index: 9999 })
       .select('id').single()
