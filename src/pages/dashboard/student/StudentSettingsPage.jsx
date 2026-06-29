@@ -40,12 +40,12 @@ export default function StudentSettingsPage() {
   const { user } = useAuth()
   const { navigate } = useNavigation()
 
-  const [notifAnnouncements, setNotifAnnouncements] = useState(true)
-  const [notifCourseUpdates, setNotifCourseUpdates]  = useState(true)
-  const [notifNewCourses, setNotifNewCourses]         = useState(false)
+  const [notifAnnouncements,  setNotifAnnouncements]  = useState(true)
+  const [notifCourseUpdates,  setNotifCourseUpdates]  = useState(true)
+  const [notifNewCourses,     setNotifNewCourses]     = useState(false)
 
   const [pwLoading, setPwLoading] = useState(false)
-  const [pwMsg, setPwMsg]         = useState('')
+  const [pwMsg,     setPwMsg]     = useState('')
 
   async function sendPasswordReset() {
     if (!user?.email) return
@@ -70,11 +70,11 @@ export default function StudentSettingsPage() {
         </div>
 
         {/* Cuenta */}
-        <Section title="Cuenta" desc="Información de acceso y seguridad.">
+        <Section title="Cuenta" desc="Información de acceso y seguridad de tu cuenta.">
           <Row label="Correo electrónico" desc={user?.email || '—'}>
             <span style={{ fontSize: '.76rem', color: '#B5B2AB', background: 'var(--cream)', padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>No editable</span>
           </Row>
-          <Row label="Contraseña" desc="Recibe un correo para restablecer tu contraseña." last>
+          <Row label="Contraseña" desc="Recibe un enlace por correo para restablecer tu contraseña." last>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.3rem' }}>
               <button onClick={sendPasswordReset} disabled={pwLoading}
                 style={{ padding: '.45rem 1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', cursor: pwLoading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: pwLoading ? .6 : 1 }}>
@@ -96,31 +96,17 @@ export default function StudentSettingsPage() {
         </Section>
 
         {/* Notificaciones */}
-        <Section title="Notificaciones" desc="Elige qué actualizaciones deseas recibir por correo.">
-          <Row label="Comunicados" desc="Cuando el equipo de Cubo Academy publique un comunicado.">
+        <Section
+          title="Notificaciones por correo"
+          desc="Elige qué actualizaciones deseas recibir en tu bandeja de entrada.">
+          <Row label="Comunicados" desc="Cuando el equipo de Cubo Academy publique un aviso.">
             <Toggle on={notifAnnouncements} onChange={setNotifAnnouncements} />
           </Row>
-          <Row label="Actualizaciones de curso" desc="Cuando un instructor actualice un curso en el que estás inscrito.">
+          <Row label="Actualizaciones de curso" desc="Cuando un instructor actualice contenido de un curso tuyo.">
             <Toggle on={notifCourseUpdates} onChange={setNotifCourseUpdates} />
           </Row>
           <Row label="Nuevos cursos" desc="Cuando haya nuevos cursos disponibles en el catálogo." last>
             <Toggle on={notifNewCourses} onChange={setNotifNewCourses} />
-          </Row>
-        </Section>
-
-        {/* Mis cursos */}
-        <Section title="Aprendizaje" desc="Accesos directos a tu contenido.">
-          <Row label="Ver mis cursos" desc="Revisa todos los cursos en los que estás inscrito.">
-            <button onClick={() => navigate('cursos')}
-              style={{ padding: '.45rem 1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-              Mis cursos →
-            </button>
-          </Row>
-          <Row label="Explorar catálogo" desc="Descubre nuevos cursos disponibles." last>
-            <button onClick={() => navigate('tienda')}
-              style={{ padding: '.45rem 1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-              Ir a la tienda →
-            </button>
           </Row>
         </Section>
 

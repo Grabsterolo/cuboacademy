@@ -37,15 +37,15 @@ function Toggle({ on, onChange }) {
 }
 
 export default function InstructorSettingsPage() {
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
   const { navigate } = useNavigation()
 
-  const [notifNewStudent, setNotifNewStudent] = useState(true)
+  const [notifNewStudent,    setNotifNewStudent]    = useState(true)
   const [notifAnnouncements, setNotifAnnouncements] = useState(true)
-  const [notifReviews, setNotifReviews] = useState(false)
+  const [notifReviews,       setNotifReviews]       = useState(false)
 
   const [pwLoading, setPwLoading] = useState(false)
-  const [pwMsg, setPwMsg] = useState('')
+  const [pwMsg,     setPwMsg]     = useState('')
 
   async function sendPasswordReset() {
     if (!user?.email) return
@@ -70,11 +70,11 @@ export default function InstructorSettingsPage() {
         </div>
 
         {/* Cuenta */}
-        <Section title="Cuenta" desc="Información de acceso y seguridad.">
+        <Section title="Cuenta" desc="Información de acceso y seguridad de tu cuenta.">
           <Row label="Correo electrónico" desc={user?.email || '—'}>
             <span style={{ fontSize: '.76rem', color: '#B5B2AB', background: 'var(--cream)', padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>No editable</span>
           </Row>
-          <Row label="Contraseña" desc="Recibe un correo para restablecer tu contraseña." last>
+          <Row label="Contraseña" desc="Recibe un enlace por correo para restablecer tu contraseña." last>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.3rem' }}>
               <button onClick={sendPasswordReset} disabled={pwLoading}
                 style={{ padding: '.45rem 1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', cursor: pwLoading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: pwLoading ? .6 : 1 }}>
@@ -86,8 +86,8 @@ export default function InstructorSettingsPage() {
         </Section>
 
         {/* Perfil */}
-        <Section title="Perfil público" desc="Información visible para los estudiantes.">
-          <Row label="Editar información" desc="Nombre, foto, biografía, redes sociales y más." last>
+        <Section title="Perfil público" desc="Información visible para los estudiantes en tus cursos.">
+          <Row label="Editar información" desc="Nombre, foto, biografía, redes sociales y especialidad." last>
             <button onClick={() => navigate('perfil')}
               style={{ padding: '.45rem 1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
               Ir a Mi perfil →
@@ -96,31 +96,17 @@ export default function InstructorSettingsPage() {
         </Section>
 
         {/* Notificaciones */}
-        <Section title="Notificaciones" desc="Elige qué eventos te gustaría recibir por correo.">
+        <Section
+          title="Notificaciones por correo"
+          desc="Elige qué eventos te gustaría recibir por email.">
           <Row label="Nuevo estudiante" desc="Cuando alguien se inscriba en uno de tus cursos.">
             <Toggle on={notifNewStudent} onChange={setNotifNewStudent} />
           </Row>
-          <Row label="Comunicados" desc="Cuando el equipo de Cubo Academy publique un comunicado.">
+          <Row label="Comunicados" desc="Cuando el equipo de Cubo Academy publique un aviso.">
             <Toggle on={notifAnnouncements} onChange={setNotifAnnouncements} />
           </Row>
           <Row label="Reseñas" desc="Cuando un estudiante deje una reseña en tu curso." last>
             <Toggle on={notifReviews} onChange={setNotifReviews} />
-          </Row>
-        </Section>
-
-        {/* Cursos */}
-        <Section title="Mis cursos" desc="Accesos directos de gestión.">
-          <Row label="Crear nuevo curso" desc="Agrega un nuevo curso a tu catálogo.">
-            <button onClick={() => navigate('curso-form', { courseId: null })}
-              style={{ padding: '.45rem 1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-              Crear curso
-            </button>
-          </Row>
-          <Row label="Administrar cursos" desc="Ver y editar todos tus cursos." last>
-            <button onClick={() => navigate('cursos')}
-              style={{ padding: '.45rem 1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-              Mis cursos →
-            </button>
           </Row>
         </Section>
 
