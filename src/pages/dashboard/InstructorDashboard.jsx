@@ -6,9 +6,10 @@ import { supabase } from '../../lib/supabase'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const STATUS_STYLE = {
-  published: { label: 'Publicado', bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
-  draft:     { label: 'Borrador',  bg: '#F5F5F0',           color: '#9B9894',           border: '1px solid var(--border)' },
-  archived:  { label: 'Archivado', bg: '#FEF2F2',           color: '#B91C1C',           border: '1px solid #FECACA' },
+  published: { label: 'Publicado',  bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
+  draft:     { label: 'Borrador',   bg: '#F5F5F0',           color: '#9B9894',          border: '1px solid var(--border)' },
+  pending:   { label: 'En revisión',bg: '#FFF7ED',           color: '#C2410C',          border: '1px solid #FED7AA' },
+  archived:  { label: 'Archivado',  bg: '#FEF2F2',           color: '#B91C1C',          border: '1px solid #FECACA' },
 }
 
 function StatCard({ value, label, icon, accent }) {

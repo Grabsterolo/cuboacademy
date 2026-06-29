@@ -88,7 +88,7 @@ function renderSection(section, role, params) {
       case 'cursos':        return <InstructorCoursesPage />
       case 'curso-wizard':  return <CourseWizardPage />
       case 'curso-form':    return <CourseFormPage />
-      case 'curso-estructura': return <CourseWizardPage />
+      case 'curso-estructura': return <CourseStructurePage />
       case 'estudiantes':   return <InstructorStudentsPage />
       case 'evaluaciones':  return <InstructorEvaluationsPage />
       case 'comunicados':   return <InstructorAnnouncementsPage />
