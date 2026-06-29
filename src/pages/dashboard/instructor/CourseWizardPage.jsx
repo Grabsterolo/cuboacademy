@@ -123,7 +123,7 @@ const Q_TYPES = [
 
 // ─── Step 1: Información ──────────────────────────────────────────────────────
 
-function Step1({ info, onChange, categories, imgUploading, onImgUpload }) {
+function Step1({ info, onChange, categories, instructors, isAdmin, imgUploading, onImgUpload }) {
   const fileRef = useRef()
 
   return (
@@ -135,6 +135,14 @@ function Step1({ info, onChange, categories, imgUploading, onImgUpload }) {
             <input style={INP} value={info.title} placeholder="ej. Diseño UX desde cero"
               onChange={e => onChange('title', e.target.value)} onFocus={fi} onBlur={fb} />
           </Field>
+          {isAdmin && (
+            <Field label="Instructor" req hint="El instructor que aparecerá como autor del curso">
+              <select style={SEL} value={info.instructorId} onChange={e => onChange('instructorId', e.target.value)} onFocus={fi} onBlur={fb}>
+                <option value="">— Selecciona un instructor —</option>
+                {instructors.map(i => <option key={i.id} value={i.id}>{i.full_name}</option>)}
+              </select>
+            </Field>
+          )}
           <Field label="Categoría" req>
             <select style={SEL} value={info.categoryId} onChange={e => onChange('categoryId', e.target.value)} onFocus={fi} onBlur={fb}>
               <option value="">— Selecciona una categoría —</option>
@@ -867,7 +875,20 @@ function Step7({ info, modules, eval: ev, cert, pricing }) {
 
 // ─── Step 8: Publicación ──────────────────────────────────────────────────────
 
-function Step8({ status, setStatus, saving, error, onDraft, onReview }) {
+function Step8({ status, setStatus, saving, error, onDraft, onReview, isAdmin }) {
+  const options = isAdmin
+    ? [
+        { value: 'draft',     label: 'Guardar como borrador',    sub: 'El curso queda privado. Puedes seguir editándolo.',      icon: '📝' },
+        { value: 'review',    label: 'Enviar a revisión',         sub: 'Queda pendiente de revisión antes de publicarse.',       icon: '📤' },
+        { value: 'published', label: 'Publicar directamente',     sub: 'El curso queda visible para todos los estudiantes.',     icon: '🚀' },
+      ]
+    : [
+        { value: 'draft',  label: 'Guardar como borrador', sub: 'El curso queda privado. Puedes seguir editándolo.',                       icon: '📝' },
+        { value: 'review', label: 'Enviar a revisión',      sub: 'Un administrador revisará el curso y decidirá si lo publica.', icon: '📤' },
+      ]
+
+  const canSubmit = status === 'review' || (isAdmin && status === 'published')
+
   return (
     <div>
       <StepHeader n={8} title="Publicación" sub="Tu curso está listo. Elige cómo quieres lanzarlo." />
@@ -876,10 +897,7 @@ function Step8({ status, setStatus, saving, error, onDraft, onReview }) {
           <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 8, padding: '.75rem 1rem', fontSize: '.84rem', marginBottom: '1.25rem' }}>{error}</div>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem', marginBottom: '2rem' }}>
-          {[
-            { value: 'draft', label: 'Guardar como borrador', sub: 'El curso queda privado. Puedes seguir editándolo.', icon: '📝' },
-            { value: 'review', label: 'Enviar a revisión', sub: 'Un administrador revisará el curso y decidirá si lo publica.', icon: '📤' },
-          ].map(opt => (
+          {options.map(opt => (
             <div key={opt.value} onClick={() => setStatus(opt.value)}
               style={{ padding: '1.1rem 1.25rem', border: `2px solid ${status === opt.value ? 'var(--jade)' : 'var(--border)'}`, borderRadius: 11, cursor: 'pointer', background: status === opt.value ? 'var(--jade-soft)' : 'white', transition: 'all .15s', display: 'flex', alignItems: 'flex-start', gap: '.9rem' }}>
               <span style={{ fontSize: '1.35rem', lineHeight: 1, flexShrink: 0 }}>{opt.icon}</span>
@@ -901,10 +919,12 @@ function Step8({ status, setStatus, saving, error, onDraft, onReview }) {
             style={{ padding: '.7rem 1.4rem', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', background: 'white', color: 'var(--carbon)', opacity: saving ? .55 : 1 }}>
             Guardar borrador
           </button>
-          <button type="button" onClick={onReview} disabled={saving || status !== 'review'}
+          <button type="button" onClick={onReview} disabled={saving || !canSubmit}
             style={{ padding: '.7rem 1.6rem', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 700, cursor: (saving || status !== 'review') ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', background: 'var(--jade)', color: 'white', opacity: (saving || status !== 'review') ? .55 : 1, display: 'flex', alignItems: 'center', gap: '.45rem' }}>
             {saving ? (
               <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'wiz-spin .7s linear infinite' }} /> Enviando…</>
+            ) : status === 'published' ? (
+              <>{IC.send} Publicar curso</>
             ) : (
               <>{IC.send} Enviar a revisión</>
             )}
@@ -981,10 +1001,12 @@ export default function CourseWizardPage() {
   const [courseId, setCourseId]   = useState(null)
   const [saving, setSaving]       = useState(false)
   const [error, setError]         = useState('')
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories]   = useState([])
+  const [instructors, setInstructors] = useState([])
+  const isAdmin = profile?.role === 'admin'
 
   // Step 1 state
-  const [info, setInfo]            = useState({ title: '', categoryId: '', level: 'beginner', description: '', coverUrl: '' })
+  const [info, setInfo]            = useState({ title: '', categoryId: '', level: 'beginner', description: '', coverUrl: '', instructorId: '' })
   const [imgUploading, setImgUploading] = useState(false)
   const [imgErr, setImgErr]        = useState('')
 
@@ -1006,7 +1028,10 @@ export default function CourseWizardPage() {
 
   useEffect(() => {
     supabase.from('categories').select('id, name').order('name').then(({ data }) => setCategories(data || []))
-  }, [])
+    if (profile?.role === 'admin') {
+      supabase.from('users_view').select('id, full_name').in('role', ['instructor', 'admin']).order('full_name').then(({ data }) => setInstructors(data || []))
+    }
+  }, [profile?.role])
 
   // ── image upload ──────────────────────────────────────────────────────────
   async function handleImgUpload(file) {
@@ -1026,10 +1051,11 @@ export default function CourseWizardPage() {
   function validateStep(n) {
     switch (n) {
       case 1:
-        if (!info.title.trim())       return 'El título del curso es obligatorio.'
-        if (!info.categoryId)         return 'Selecciona una categoría.'
-        if (!info.description.trim()) return 'La descripción es obligatoria.'
-        if (!info.coverUrl)           return 'Sube una imagen de portada.'
+        if (!info.title.trim())                  return 'El título del curso es obligatorio.'
+        if (isAdmin && !info.instructorId)        return 'Selecciona un instructor.'
+        if (!info.categoryId)                     return 'Selecciona una categoría.'
+        if (!info.description.trim())             return 'La descripción es obligatoria.'
+        if (!info.coverUrl)                       return 'Sube una imagen de portada.'
         return null
       case 2:
         if (modules.length === 0)                            return 'Agrega al menos un módulo.'
@@ -1051,7 +1077,7 @@ export default function CourseWizardPage() {
       title: info.title.trim(),
       slug: slug(info.title.trim()),
       description: info.description.trim(),
-      instructor_id: profile.id,
+      instructor_id: (isAdmin && info.instructorId) ? info.instructorId : profile.id,
       category_id: info.categoryId || null,
       cover_image_url: info.coverUrl || null,
       level: info.level,
@@ -1198,14 +1224,14 @@ export default function CourseWizardPage() {
   // ── render ────────────────────────────────────────────────────────────────
   function renderStep() {
     switch (step) {
-      case 1: return <Step1 info={info} onChange={(k, v) => setInfo(i => ({ ...i, [k]: v }))} categories={categories} imgUploading={imgUploading} onImgUpload={handleImgUpload} />
+      case 1: return <Step1 info={info} onChange={(k, v) => setInfo(i => ({ ...i, [k]: v }))} categories={categories} instructors={instructors} isAdmin={isAdmin} imgUploading={imgUploading} onImgUpload={handleImgUpload} />
       case 2: return <Step2 modules={modules} setModules={setModules} />
       case 3: return <Step3 modules={modules} setModules={setModules} />
       case 4: return <Step4 eval={evalData} setEval={setEvalData} />
       case 5: return <Step5 cert={cert} setCert={setCert} />
       case 6: return <Step6 pricing={pricing} setPricing={setPricing} />
       case 7: return <Step7 info={info} modules={modules} eval={evalData} cert={cert} pricing={pricing} />
-      case 8: return <Step8 status={pubStatus} setStatus={setPubStatus} saving={saving} error={pubError} onDraft={handleDraft} onReview={handleReview} />
+      case 8: return <Step8 status={pubStatus} setStatus={setPubStatus} saving={saving} error={pubError} onDraft={handleDraft} onReview={handleReview} isAdmin={isAdmin} />
       default: return null
     }
   }

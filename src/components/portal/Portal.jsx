@@ -67,6 +67,7 @@ function renderSection(section, role, params) {
       case 'solicitudes':   return <RequestsPage />
       case 'usuarios':      return <UsersPage />
       case 'cursos':        return <CoursesPage />
+      case 'curso-wizard':  return <CourseWizardPage />
       case 'curso-form':    return <CourseFormPage />
       case 'curso-estructura': return <CourseStructurePage />
       case 'categorias':    return <CategoriesPage />

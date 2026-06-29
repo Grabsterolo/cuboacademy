@@ -102,7 +102,7 @@ export default function CoursesPage() {
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Gestión</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>Cursos</h1>
           </div>
-          <button onClick={() => navigate('curso-form', { courseId: null })}
+          <button onClick={() => navigate('curso-wizard')}
             style={{ display: 'flex', alignItems: 'center', gap: '.4rem', padding: '.5rem 1.1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.855rem', fontWeight: 600, fontFamily: 'var(--sans)', cursor: 'pointer', transition: 'background .2s', whiteSpace: 'nowrap' }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--jade-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--jade)'}>
@@ -155,7 +155,7 @@ export default function CoursesPage() {
             </div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.45rem' }}>Todavía no hay cursos</h2>
             <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.5rem', maxWidth: 320, margin: '0 auto 1.5rem', lineHeight: 1.6 }}>Crea el primer curso de la plataforma y empieza a construir el catálogo.</p>
-            <button onClick={() => navigate('curso-form', { courseId: null })}
+            <button onClick={() => navigate('curso-wizard')}
               style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 600, cursor: 'pointer' }}>
               Crear primer curso
             </button>
