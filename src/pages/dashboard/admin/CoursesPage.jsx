@@ -5,9 +5,10 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { IconBtn } from '../../../components/ui'
 
 const STATUS_META = {
-  draft:     { label: 'Borrador',  bg: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
-  published: { label: 'Publicado', bg: 'rgba(22,125,120,.1)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.22)' },
-  archived:  { label: 'Archivado', bg: 'rgba(217,169,88,.12)', color: '#A87F2A',       border: '1px solid rgba(217,169,88,.3)' },
+  draft:     { label: 'Borrador',   bg: 'rgba(113,128,126,.1)', color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
+  pending:   { label: 'En revisión', bg: 'rgba(234,88,12,.08)',  color: '#C2410C',       border: '1px solid rgba(234,88,12,.25)' },
+  published: { label: 'Publicado',  bg: 'rgba(22,125,120,.1)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.22)' },
+  archived:  { label: 'Archivado',  bg: 'rgba(217,169,88,.12)', color: '#A87F2A',       border: '1px solid rgba(217,169,88,.3)' },
 }
 const LEVEL_META = {
   beginner:     { label: 'Básico',     bg: 'rgba(59,130,246,.1)',  color: '#3B7EF6', border: '1px solid rgba(59,130,246,.25)' },
@@ -15,10 +16,11 @@ const LEVEL_META = {
   advanced:     { label: 'Avanzado',   bg: 'rgba(239,68,68,.1)',   color: '#DC2626', border: '1px solid rgba(239,68,68,.25)' },
 }
 const STATUS_TABS = [
-  { label: 'Todos',     value: null },
-  { label: 'Borrador',  value: 'draft' },
-  { label: 'Publicado', value: 'published' },
-  { label: 'Archivado', value: 'archived' },
+  { label: 'Todos',      value: null },
+  { label: 'En revisión', value: 'pending' },
+  { label: 'Borrador',   value: 'draft' },
+  { label: 'Publicado',  value: 'published' },
+  { label: 'Archivado',  value: 'archived' },
 ]
 
 function LevelBadge({ level }) {
@@ -220,6 +222,7 @@ export default function CoursesPage() {
                           <select className="cp-status-sel" value={c.status || 'draft'}
                             onChange={e => handleStatusChange(c.id, e.target.value)}>
                             <option value="draft">Borrador</option>
+                            <option value="pending">En revisión</option>
                             <option value="published">Publicado</option>
                             <option value="archived">Archivado</option>
                           </select>

@@ -5,14 +5,16 @@ import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
 
 const STATUS = {
-  published: { label: 'Publicado', bg: 'var(--jade-soft)', color: 'var(--jade)',  border: 'rgba(22,125,120,.25)' },
-  draft:     { label: 'Borrador',  bg: '#F5F5F0',          color: '#9B9894',      border: 'var(--border)' },
-  archived:  { label: 'Archivado', bg: '#FEF2F2',          color: '#B91C1C',      border: '#FECACA' },
+  published: { label: 'Publicado',  bg: 'var(--jade-soft)', color: 'var(--jade)',  border: 'rgba(22,125,120,.25)' },
+  pending:   { label: 'En revisión', bg: '#FFF7ED',          color: '#C2410C',      border: '#FED7AA' },
+  draft:     { label: 'Borrador',   bg: '#F5F5F0',          color: '#9B9894',      border: 'var(--border)' },
+  archived:  { label: 'Archivado',  bg: '#FEF2F2',          color: '#B91C1C',      border: '#FECACA' },
 }
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const TABS  = [
   { value: null,        label: 'Todos' },
   { value: 'published', label: 'Publicados' },
+  { value: 'pending',   label: 'En revisión' },
   { value: 'draft',     label: 'Borradores' },
   { value: 'archived',  label: 'Archivados' },
 ]
