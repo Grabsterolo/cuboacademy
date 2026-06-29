@@ -227,6 +227,15 @@ export default function CoursesPage() {
                             <option value="archived">Archivado</option>
                           </select>
 
+                          {/* Review button — only for pending courses */}
+                          {c.status === 'pending' && (
+                            <button onClick={() => navigate('curso-revision', { courseId: c.id })}
+                              style={{ display: 'flex', alignItems: 'center', gap: '.3rem', padding: '4px 10px', background: 'rgba(234,88,12,.08)', border: '1.5px solid rgba(234,88,12,.3)', borderRadius: 6, color: '#C2410C', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                              Revisar
+                            </button>
+                          )}
+
                           {/* Edit */}
                           <IconBtn title="Editar curso" onClick={() => navigate('curso-form', { courseId: c.id })}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
