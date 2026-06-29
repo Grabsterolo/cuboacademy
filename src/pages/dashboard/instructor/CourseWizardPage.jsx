@@ -1322,7 +1322,9 @@ export default function CourseWizardPage() {
   async function handleReview() {
     if (!courseId) return
     setSaving(true); setPubError('')
-    const { error } = await supabase.from('courses').update({ status: pubStatus }).eq('id', courseId)
+    // 'review' is a UI-only state; map to valid DB enum values
+    const dbStatus = pubStatus === 'review' ? 'draft' : pubStatus
+    const { error } = await supabase.from('courses').update({ status: dbStatus }).eq('id', courseId)
     setSaving(false)
     if (error) { setPubError(error.message); return }
     navigate('cursos')
