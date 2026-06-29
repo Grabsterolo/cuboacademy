@@ -177,13 +177,7 @@ export default function StudentLearningPage() {
     if (alreadyDone) next.delete(activeLesson.id)
     else next.add(activeLesson.id)
     setCompletedIds(next)
-
-    // Check if all lessons completed → mark enrollment completed_at
-    const allLessons = modules.flatMap(m => m.lessons)
-    if (!alreadyDone && next.size >= allLessons.length && enrollment && !enrollment.completed_at) {
-      await supabase.from('enrollments').update({ completed_at: now }).eq('id', enrollment.id)
-      setEnrollment(e => ({ ...e, completed_at: now }))
-    }
+    // enrollment.completed_at is handled reactively by the useEffect above
 
     setMarking(false)
     if (!alreadyDone) goNext(next)
@@ -208,6 +202,22 @@ export default function StudentLearningPage() {
   const totalLessons = allLessons.length
   const completedCount = completedIds.size
   const progressPct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
+
+  // Reactive safety net: whenever all lessons are marked, set enrollment.completed_at in DB.
+  // This covers: (1) DB write failure in markComplete, (2) lessons marked across sessions.
+  useEffect(() => {
+    if (!enrollment || enrollment.completed_at || totalLessons === 0) return
+    if (completedIds.size >= totalLessons) {
+      const now = new Date().toISOString()
+      supabase
+        .from('enrollments')
+        .update({ completed_at: now })
+        .eq('id', enrollment.id)
+        .then(({ error }) => {
+          if (!error) setEnrollment(e => ({ ...e, completed_at: now }))
+        })
+    }
+  }, [completedIds.size, totalLessons, enrollment?.id, enrollment?.completed_at])
   const activeLinks = activeLesson ? parseLinks(activeLesson.video_url) : []
   const isCompleted = activeLesson ? completedIds.has(activeLesson.id) : false
   const activeIdx = allLessons.findIndex(l => l.id === activeLesson?.id)

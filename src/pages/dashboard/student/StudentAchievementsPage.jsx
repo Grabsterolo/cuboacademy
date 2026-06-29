@@ -10,9 +10,10 @@ const FLAME_ICON = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
 const LOCK_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 
 function buildAchievements(enrollments) {
-  const completed = enrollments.filter(e => e.completed_at || e.status === 'completed')
+  // completed_at non-null means the course was completed
+  const completedCount = enrollments.filter(e => !!e.completed_at).length
   const n = enrollments.length
-  const c = completed.length
+  const c = completedCount
 
   return [
     {
@@ -72,19 +73,19 @@ export default function StudentAchievementsPage() {
 
   useEffect(() => {
     if (!user) return
-    supabase.from('enrollments')
-      .select('id, status, progress_pct, enrolled_at, completed_at')
+    supabase
+      .from('enrollments')
+      .select('id, enrolled_at, completed_at')
       .eq('student_id', user.id)
-      .then(({ data }) => {
-        setEnrollments(data || [])
+      .then(({ data, error }) => {
+        if (!error) setEnrollments(data || [])
         setLoading(false)
       })
-      .catch(() => setLoading(false))
   }, [user])
 
-  const achievements = buildAchievements(enrollments)
-  const unlocked = achievements.filter(a => a.unlocked).length
-  const completed = enrollments.filter(e => e.completed_at || e.status === 'completed').length
+  const achievements   = buildAchievements(enrollments)
+  const unlocked       = achievements.filter(a => a.unlocked).length
+  const completedCount = enrollments.filter(e => !!e.completed_at).length
 
   return (
     <DashboardLayout>
@@ -109,10 +110,12 @@ export default function StudentAchievementsPage() {
           </div>
         ) : (
           <>
-            {/* Progress summary */}
+            {/* Summary bar */}
             <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.5rem', marginBottom: '1.75rem', display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <div>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{unlocked}<span style={{ fontSize: '1.1rem', color: 'var(--text-2)' }}>/{achievements.length}</span></div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>
+                  {unlocked}<span style={{ fontSize: '1.1rem', color: 'var(--text-2)' }}>/{achievements.length}</span>
+                </div>
                 <div style={{ fontSize: '.73rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 500 }}>Logros desbloqueados</div>
               </div>
               <div style={{ height: 38, width: 1, background: 'var(--border)' }} />
@@ -122,7 +125,7 @@ export default function StudentAchievementsPage() {
               </div>
               <div style={{ height: 38, width: 1, background: 'var(--border)' }} />
               <div>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{completed}</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{completedCount}</div>
                 <div style={{ fontSize: '.73rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 500 }}>Cursos completados</div>
               </div>
               <div style={{ flex: 1, minWidth: 160 }}>
@@ -136,7 +139,7 @@ export default function StudentAchievementsPage() {
               </div>
             </div>
 
-            {/* Achievements grid */}
+            {/* Grid */}
             <div className="ach-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '.85rem', marginBottom: '2rem' }}>
               {achievements.map(a => (
                 <div key={a.id} className={`ach-badge ${a.unlocked ? '' : 'locked'}`}>
@@ -163,7 +166,7 @@ export default function StudentAchievementsPage() {
               ))}
             </div>
 
-            {/* Próximamente section */}
+            {/* Próximamente */}
             <div style={{ marginBottom: '.85rem' }}>
               <p style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.5rem', margin: 0 }}>
                 {LOCK_ICON} Logros próximamente
