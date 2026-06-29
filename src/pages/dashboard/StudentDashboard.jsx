@@ -7,15 +7,25 @@ import { supabase } from '../../lib/supabase'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
-function StatCard({ value, label, icon, onClick }) {
+// Must stay in sync with StudentAchievementsPage
+const ACHIEVEMENT_DEFS = [
+  { id: 'primer_paso', title: 'Primer paso',              check: (n, c) => n >= 1 },
+  { id: 'curioso',     title: 'Aprendiz curioso',         check: (n, c) => n >= 3 },
+  { id: 'dedicado',    title: 'Dedicado',                  check: (n, c) => c >= 1 },
+  { id: 'maestro',     title: 'Maestro del conocimiento',  check: (n, c) => c >= 3 },
+]
+
+function StatCard({ value, label, icon, sub, onClick }) {
   return (
-    <div onClick={onClick} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '.85rem', transition: 'border-color .2s, box-shadow .2s', cursor: onClick ? 'pointer' : 'default' }}
+    <div onClick={onClick}
+      style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '.85rem', transition: 'border-color .2s, box-shadow .2s', cursor: onClick ? 'pointer' : 'default' }}
       onMouseEnter={e => { if (onClick) { e.currentTarget.style.borderColor = 'rgba(22,125,120,.3)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(23,26,28,.07)' } }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}>
       <div style={{ width: 40, height: 40, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--jade)' }}>{icon}</div>
       <div>
         <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{value}</div>
         <div style={{ fontSize: '.72rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 400 }}>{label}</div>
+        {sub != null && <div style={{ fontSize: '.68rem', color: 'var(--jade)', fontWeight: 600, marginTop: '.1rem' }}>{sub}</div>}
       </div>
     </div>
   )
@@ -29,7 +39,7 @@ function ProgressBar({ pct, height = 5 }) {
   )
 }
 
-async function loadProgressData(userId) {
+async function loadDashboardData(userId) {
   const [enrRes, annRes] = await Promise.all([
     supabase
       .from('enrollments')
@@ -84,7 +94,7 @@ async function loadProgressData(userId) {
   const progressByCourse = {}
   for (const cid of courseIds) {
     const total = lessonCountByCourse[cid] || 0
-    const done = completedByCourse[cid] || 0
+    const done  = completedByCourse[cid]  || 0
     progressByCourse[cid] = total > 0 ? Math.round((done / total) * 100) : 0
   }
 
@@ -96,14 +106,15 @@ export default function StudentDashboard() {
   const { settings } = useSettings()
   const { navigate } = useNavigation()
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'estudiante').split(' ')[0]
-  const [enrollments, setEnrollments] = useState([])
+
+  const [enrollments, setEnrollments]           = useState([])
   const [progressByCourse, setProgressByCourse] = useState({})
-  const [announcements, setAnnouncements] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [announcements, setAnnouncements]       = useState([])
+  const [loading, setLoading]                   = useState(true)
 
   useEffect(() => {
     if (!user) return
-    loadProgressData(user.id).then(({ enrollments, progressByCourse, announcements }) => {
+    loadDashboardData(user.id).then(({ enrollments, progressByCourse, announcements }) => {
       setEnrollments(enrollments)
       setProgressByCourse(progressByCourse)
       setAnnouncements(announcements)
@@ -114,24 +125,28 @@ export default function StudentDashboard() {
   const active    = enrollments.filter(e => !e.completed_at)
   const completed = enrollments.filter(e => !!e.completed_at)
 
-  const logrosCount = [
-    enrollments.length >= 1,
-    enrollments.length >= 3,
-    completed.length >= 1,
-    completed.length >= 3,
-  ].filter(Boolean).length
+  // Achievements derived from enrollment data (same logic as StudentAchievementsPage)
+  const unlockedAchievements = ACHIEVEMENT_DEFS.filter(a => a.check(enrollments.length, completed.length))
+  const logrosCount = unlockedAchievements.length
 
-  const BOOK_ICON = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+  // Average progress across active courses
+  const activePcts = active.map(e => progressByCourse[e.course_id] ?? 0)
+  const avgPct = activePcts.length > 0
+    ? Math.round(activePcts.reduce((a, b) => a + b, 0) / activePcts.length)
+    : 0
+
+  // Hero card = most recently enrolled active course
+  const heroEnrollment = active[0] || null
+  const heroPct  = heroEnrollment ? (progressByCourse[heroEnrollment.course_id] ?? 0) : 0
+  const otherActive = active.slice(1)
+
+  const BOOK_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
   const CHECK_ICON = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-  const CERT_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+  const CHART_ICON = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
   const STAR_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
   const BELL_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  const CERT_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
   const PLAY_ICON  = <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-
-  // Most recent active course shown as hero card
-  const heroEnrollment = active[0] || null
-  const heroPct = heroEnrollment ? (progressByCourse[heroEnrollment.course_id] ?? 0) : 0
-  const otherActive = active.slice(1)
 
   return (
     <DashboardLayout>
@@ -152,16 +167,36 @@ export default function StudentDashboard() {
 
         {/* Stats */}
         <div className="std-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '.85rem', marginBottom: '2rem' }}>
-          <StatCard value={active.length}     label="Cursos activos"  icon={BOOK_ICON}  onClick={() => navigate('cursos')} />
-          <StatCard value={completed.length}  label="Completados"     icon={CHECK_ICON} onClick={() => navigate('cursos')} />
-          <StatCard value={completed.length}  label="Certificados"    icon={CERT_ICON}  onClick={() => navigate('certificados')} />
-          <StatCard value={logrosCount}        label="Logros"          icon={STAR_ICON}  onClick={() => navigate('logros')} />
+          <StatCard
+            value={loading ? '—' : active.length}
+            label="Cursos activos"
+            icon={BOOK_ICON}
+            onClick={() => navigate('cursos')}
+          />
+          <StatCard
+            value={loading ? '—' : completed.length}
+            label="Completados"
+            icon={CHECK_ICON}
+            onClick={() => navigate('cursos')}
+          />
+          <StatCard
+            value={loading ? '—' : `${avgPct}%`}
+            label="Progreso promedio"
+            icon={CHART_ICON}
+            sub={active.length > 0 ? `en ${active.length} curso${active.length !== 1 ? 's' : ''} activo${active.length !== 1 ? 's' : ''}` : null}
+          />
+          <StatCard
+            value={loading ? '—' : `${logrosCount}/${ACHIEVEMENT_DEFS.length}`}
+            label="Logros"
+            icon={STAR_ICON}
+            onClick={() => navigate('logros')}
+          />
         </div>
 
         {/* Main grid */}
         <div className="std-main" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.25rem', alignItems: 'start' }}>
 
-          {/* Left: active courses */}
+          {/* ── Left: courses ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
             {/* Hero — current course */}
@@ -193,22 +228,19 @@ export default function StudentDashboard() {
                 const level = LEVEL_LABEL[c.level] || c.level
                 return (
                   <div style={{ padding: '1.25rem' }}>
-                    {/* Cover */}
                     <div style={{ height: 110, background: c.cover_image_url ? `url(${c.cover_image_url}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', borderRadius: 10, marginBottom: '1rem', position: 'relative', overflow: 'hidden' }}>
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,24,28,.65) 0%, transparent 60%)' }} />
-                      <div style={{ position: 'absolute', bottom: '.75rem', left: '.85rem', right: '.85rem' }}>
-                        <div style={{ fontSize: '.78rem', fontWeight: 700, color: 'white', opacity: .85 }}>{c.categories?.name}</div>
-                      </div>
+                      {c.categories?.name && (
+                        <div style={{ position: 'absolute', bottom: '.75rem', left: '.85rem' }}>
+                          <span style={{ fontSize: '.7rem', fontWeight: 700, color: 'white', opacity: .85 }}>{c.categories.name}</span>
+                        </div>
+                      )}
                     </div>
-
-                    {/* Title + meta */}
                     <div style={{ fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.3rem', lineHeight: 1.3 }}>{c.title}</div>
                     <div style={{ fontSize: '.72rem', color: 'var(--text-2)', marginBottom: '.85rem', display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
                       {c.profiles?.full_name && <span>{c.profiles.full_name}</span>}
                       {level && <><span>·</span><span>{level}</span></>}
                     </div>
-
-                    {/* Progress */}
                     <div style={{ marginBottom: '1rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.35rem' }}>
                         <span style={{ fontSize: '.72rem', color: 'var(--text-2)', fontWeight: 500 }}>Tu progreso</span>
@@ -216,9 +248,7 @@ export default function StudentDashboard() {
                       </div>
                       <ProgressBar pct={heroPct} height={6} />
                     </div>
-
-                    <button
-                      onClick={() => navigate('aprender', { courseId: c.id })}
+                    <button onClick={() => navigate('aprender', { courseId: c.id })}
                       style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem', width: '100%', padding: '.75rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 9, fontSize: '.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--serif)', boxSizing: 'border-box' }}>
                       {PLAY_ICON}
                       {heroPct === 0 ? 'Comenzar curso' : heroPct === 100 ? 'Repasar curso' : 'Continuar curso'}
@@ -232,7 +262,7 @@ export default function StudentDashboard() {
             {!loading && otherActive.length > 0 && (
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
                 <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Mis cursos activos</h2>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Más cursos activos</h2>
                   <button onClick={() => navigate('cursos')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Ver todos →</button>
                 </div>
                 <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
@@ -241,7 +271,8 @@ export default function StudentDashboard() {
                     if (!c) return null
                     const pct = progressByCourse[e.course_id] ?? 0
                     return (
-                      <div key={e.id} className="course-row" style={{ display: 'flex', gap: '.85rem', alignItems: 'center', cursor: 'pointer', padding: '.6rem .75rem', borderRadius: 9, border: '1px solid var(--border)', transition: 'box-shadow .15s, border-color .15s' }}
+                      <div key={e.id} className="course-row"
+                        style={{ display: 'flex', gap: '.85rem', alignItems: 'center', cursor: 'pointer', padding: '.6rem .75rem', borderRadius: 9, border: '1px solid var(--border)', transition: 'box-shadow .15s, border-color .15s' }}
                         onClick={() => navigate('aprender', { courseId: c.id })}>
                         <div style={{ width: 60, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 7, flexShrink: 0, overflow: 'hidden' }}>
                           {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
@@ -260,11 +291,12 @@ export default function StudentDashboard() {
               </div>
             )}
 
-            {/* Completed */}
+            {/* Completed courses */}
             {!loading && completed.length > 0 && (
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-                <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Cursos completados</h2>
+                  <span style={{ fontSize: '.72rem', fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' }}>{completed.length}</span>
                 </div>
                 <div style={{ padding: '.85rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
                   {completed.map(e => {
@@ -272,10 +304,18 @@ export default function StudentDashboard() {
                     if (!c) return null
                     return (
                       <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '.75rem', cursor: 'pointer' }} onClick={() => navigate('aprender', { courseId: c.id })}>
-                        <div style={{ width: 28, height: 28, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--jade)' }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <div style={{ width: 28, height: 28, background: '#DCFCE7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
-                        <span style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 500 }}>{c.title}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
+                          {e.completed_at && (
+                            <div style={{ fontSize: '.68rem', color: 'var(--text-2)' }}>
+                              Completado el {new Date(e.completed_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </div>
+                          )}
+                        </div>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                       </div>
                     )
                   })}
@@ -284,7 +324,7 @@ export default function StudentDashboard() {
             )}
           </div>
 
-          {/* Right column */}
+          {/* ── Right column ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
             {/* Comunicados */}
@@ -293,7 +333,11 @@ export default function StudentDashboard() {
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Comunicados</h2>
                 <button onClick={() => navigate('comunicados')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Ver todos →</button>
               </div>
-              {announcements.length === 0 ? (
+              {loading ? (
+                <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                  {[1,2].map(i => <div key={i} style={{ height: 40, background: 'var(--cream)', borderRadius: 6, opacity: 1 - i * 0.3 }} />)}
+                </div>
+              ) : announcements.length === 0 ? (
                 <div style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
                   <div style={{ color: 'var(--jade)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{BELL_ICON}</div>
                   <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300 }}>Sin comunicados recientes</p>
@@ -310,18 +354,92 @@ export default function StudentDashboard() {
               )}
             </div>
 
-            {/* Logros */}
-            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '2.25rem 1.5rem', textAlign: 'center' }}>
-              <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .9rem', color: 'var(--jade)' }}>{STAR_ICON}</div>
-              <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.1rem', lineHeight: 1.55, fontWeight: 300 }}>Completa cursos y desafíos para ganar logros.</p>
-              <button onClick={() => navigate('logros')} style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--jade)', background: 'transparent', border: '1px solid rgba(22,125,120,.3)', padding: '.45rem 1rem', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--sans)' }}>Ver mis logros</button>
+            {/* Logros — dynamic */}
+            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Mis logros</h2>
+                <button onClick={() => navigate('logros')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Ver todos →</button>
+              </div>
+              {loading ? (
+                <div style={{ padding: '1rem 1.25rem', display: 'flex', gap: '.5rem' }}>
+                  {[1,2,3].map(i => <div key={i} style={{ width: 40, height: 40, background: 'var(--cream)', borderRadius: 10, opacity: 1 - i * 0.25 }} />)}
+                </div>
+              ) : unlockedAchievements.length === 0 ? (
+                <div style={{ padding: '1.5rem 1.25rem', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--jade)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{STAR_ICON}</div>
+                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.5 }}>Completa cursos para desbloquear logros.</p>
+                </div>
+              ) : (
+                <div style={{ padding: '1rem 1.25rem' }}>
+                  {/* Progress bar */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.35rem' }}>
+                      <span style={{ fontSize: '.72rem', color: 'var(--text-2)', fontWeight: 500 }}>Progreso</span>
+                      <span style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--jade)' }}>{logrosCount}/{ACHIEVEMENT_DEFS.length}</span>
+                    </div>
+                    <div style={{ height: 5, background: 'var(--border)', borderRadius: 3 }}>
+                      <div style={{ width: `${(logrosCount / ACHIEVEMENT_DEFS.length) * 100}%`, height: '100%', background: 'var(--jade)', borderRadius: 3, transition: 'width .5s ease' }} />
+                    </div>
+                  </div>
+                  {/* Unlocked list */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                    {unlockedAchievements.map(a => (
+                      <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '.65rem', padding: '.5rem .65rem', background: 'var(--jade-soft)', borderRadius: 8, border: '1px solid rgba(22,125,120,.18)' }}>
+                        <div style={{ width: 22, height: 22, background: 'var(--jade)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <span style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--jade-dark,#0d4a46)' }}>{a.title}</span>
+                        <span style={{ marginLeft: 'auto', fontSize: '.62rem', fontWeight: 700, color: 'var(--jade)', letterSpacing: '.06em', textTransform: 'uppercase' }}>Desbloqueado</span>
+                      </div>
+                    ))}
+                    {ACHIEVEMENT_DEFS.filter(a => !a.check(enrollments.length, completed.length)).length > 0 && (
+                      <div style={{ fontSize: '.74rem', color: 'var(--text-2)', textAlign: 'center', marginTop: '.25rem' }}>
+                        {ACHIEVEMENT_DEFS.filter(a => !a.check(enrollments.length, completed.length)).length} logro{ACHIEVEMENT_DEFS.filter(a => !a.check(enrollments.length, completed.length)).length !== 1 ? 's' : ''} pendiente{ACHIEVEMENT_DEFS.filter(a => !a.check(enrollments.length, completed.length)).length !== 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Certificados */}
-            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '2.25rem 1.5rem', textAlign: 'center' }}>
-              <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .9rem', color: 'var(--jade)' }}>{CERT_ICON}</div>
-              <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.1rem', lineHeight: 1.55, fontWeight: 300 }}>Tus certificados aparecerán aquí al completar un curso.</p>
-              <button onClick={() => navigate('certificados')} style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--jade)', background: 'transparent', border: '1px solid rgba(22,125,120,.3)', padding: '.45rem 1rem', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--sans)' }}>Ver certificados</button>
+            {/* Certificados — dynamic */}
+            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Certificados</h2>
+                <button onClick={() => navigate('certificados')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Ver todos →</button>
+              </div>
+              {loading ? (
+                <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                  {[1,2].map(i => <div key={i} style={{ height: 36, background: 'var(--cream)', borderRadius: 6, opacity: 1 - i * 0.3 }} />)}
+                </div>
+              ) : completed.length === 0 ? (
+                <div style={{ padding: '1.5rem 1.25rem', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--jade)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{CERT_ICON}</div>
+                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.5 }}>Completa un curso para obtener tu certificado.</p>
+                </div>
+              ) : (
+                <div style={{ padding: '.85rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
+                  {completed.map(e => {
+                    const c = e.courses
+                    if (!c) return null
+                    return (
+                      <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '.65rem', padding: '.55rem .7rem', background: 'var(--cream)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                        <div style={{ width: 28, height: 28, background: '#FEF9C3', border: '1px solid #FDE047', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {CERT_ICON}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
+                          {e.completed_at && (
+                            <div style={{ fontSize: '.66rem', color: 'var(--text-2)' }}>
+                              {new Date(e.completed_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
