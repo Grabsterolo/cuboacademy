@@ -56,6 +56,7 @@ export default function CourseReviewPage() {
 
   const [course,   setCourse]   = useState(null)
   const [modules,  setModules]  = useState([])
+  const [evalModule, setEvalModule] = useState(null)
   const [evalInfo, setEvalInfo] = useState(null)
   const [loading,  setLoading]  = useState(true)
   const [expanded, setExpanded] = useState(new Set())
@@ -80,7 +81,7 @@ export default function CourseReviewPage() {
 
     const { data: mods } = await supabase
       .from('modules')
-      .select('*, lessons(id, title, type, duration_mins, order_index)')
+      .select('*, lessons(id, title, type, description, video_url, duration_mins, order_index)')
       .eq('course_id', courseId)
       .order('order_index')
 
@@ -89,6 +90,7 @@ export default function CourseReviewPage() {
 
     // sort lessons
     regularMods.forEach(m => { m.lessons = (m.lessons || []).sort((a, b) => a.order_index - b.order_index) })
+    if (evalMod) evalMod.lessons = (evalMod.lessons || []).sort((a, b) => a.order_index - b.order_index)
 
     // load quiz if eval module exists
     if (evalMod?.lessons?.[0]?.id) {
@@ -103,6 +105,7 @@ export default function CourseReviewPage() {
 
     setCourse(c)
     setModules(regularMods)
+    setEvalModule(evalMod || null)
     setLoading(false)
   }
 
@@ -147,8 +150,10 @@ export default function CourseReviewPage() {
     )
   }
 
-  const totalLessons = modules.reduce((s, m) => s + (m.lessons?.length || 0), 0)
+  const totalModulesCount = modules.length + (evalModule ? 1 : 0)
+  const totalLessons = modules.reduce((s, m) => s + (m.lessons?.length || 0), 0) + (evalModule?.lessons?.length || 0)
   const totalMins    = modules.reduce((s, m) => s + (m.lessons || []).reduce((ls, l) => ls + (Number(l.duration_mins) || 0), 0), 0)
+                      + (evalModule?.lessons || []).reduce((ls, l) => ls + (Number(l.duration_mins) || 0), 0)
 
   // ── render ────────────────────────────────────────────────────────────────
   return (
@@ -203,7 +208,7 @@ export default function CourseReviewPage() {
         {/* ── Quick stats ── */}
         <div className="crp-cols" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '.75rem', marginBottom: '1.5rem' }}>
           {[
-            { label: 'Módulos',   value: modules.length },
+            { label: 'Módulos',   value: totalModulesCount },
             { label: 'Lecciones', value: totalLessons },
             { label: 'Duración',  value: totalMins ? `${Math.round(totalMins / 60 * 10) / 10} h` : '—' },
           ].map(s => (
@@ -224,7 +229,9 @@ export default function CourseReviewPage() {
         {/* ── Structure ── */}
         <Section title="Estructura del curso" icon={IC.book}>
           {modules.length === 0 ? (
-            <p style={{ fontSize: '.83rem', color: 'var(--text-2)', margin: 0 }}>Sin módulos.</p>
+            <p style={{ fontSize: '.83rem', color: 'var(--text-2)', margin: 0 }}>
+              {evalModule ? 'Este curso solo tiene evaluación final, sin módulos de contenido.' : 'Sin módulos.'}
+            </p>
           ) : modules.map((mod, mi) => {
             const open = expanded.has(mod.id)
             return (
@@ -235,21 +242,40 @@ export default function CourseReviewPage() {
                   <span style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: 'var(--carbon)', flex: 1 }}>{mod.title || 'Sin título'}</span>
                   <span style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{mod.lessons?.length || 0} lecciones</span>
                 </div>
-                {open && (mod.lessons || []).map((les, li) => (
-                  <div key={les.id} className="crp-les">
-                    <span style={{ fontSize: '.72rem', color: 'var(--text-2)', minWidth: 28 }}>{li + 1}.</span>
-                    <span style={{ color: 'var(--text-2)' }}>{lesIcon(les.type)}</span>
-                    <span style={{ fontSize: '.84rem', color: 'var(--carbon)', flex: 1 }}>{les.title || 'Sin título'}</span>
-                    <span style={{ fontSize: '.71rem', color: 'var(--text-2)', background: '#F5F4F2', padding: '2px 7px', borderRadius: 5 }}>
-                      {LESSON_TYPE_LABEL[les.type] || les.type}
-                    </span>
-                    {les.duration_mins > 0 && (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '.25rem', fontSize: '.71rem', color: 'var(--text-2)' }}>
-                        {IC.clock} {les.duration_mins} min
-                      </span>
-                    )}
-                  </div>
-                ))}
+                {open && (mod.lessons || []).map((les, li) => {
+                  let videoLinks = []
+                  try { videoLinks = les.video_url ? JSON.parse(les.video_url) : [] } catch { videoLinks = [] }
+                  return (
+                    <div key={les.id} style={{ borderTop: '1px solid var(--border)', background: 'white' }}>
+                      <div className="crp-les" style={{ borderTop: 'none' }}>
+                        <span style={{ fontSize: '.72rem', color: 'var(--text-2)', minWidth: 28 }}>{li + 1}.</span>
+                        <span style={{ color: 'var(--text-2)' }}>{lesIcon(les.type)}</span>
+                        <span style={{ fontSize: '.84rem', color: 'var(--carbon)', flex: 1 }}>{les.title || 'Sin título'}</span>
+                        <span style={{ fontSize: '.71rem', color: 'var(--text-2)', background: '#F5F4F2', padding: '2px 7px', borderRadius: 5 }}>
+                          {LESSON_TYPE_LABEL[les.type] || les.type}
+                        </span>
+                        {les.duration_mins > 0 && (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '.25rem', fontSize: '.71rem', color: 'var(--text-2)' }}>
+                            {IC.clock} {les.duration_mins} min
+                          </span>
+                        )}
+                      </div>
+                      {(les.description || videoLinks.length > 0) && (
+                        <div style={{ padding: '.4rem 1rem .75rem 2.4rem' }}>
+                          {les.description && (
+                            <p style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.65, whiteSpace: 'pre-wrap', margin: '0 0 .4rem' }}>{les.description}</p>
+                          )}
+                          {videoLinks.map((v, vi) => (
+                            <a key={vi} href={v.url} target="_blank" rel="noopener noreferrer"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.76rem', color: 'var(--jade)', textDecoration: 'none', marginRight: '.75rem' }}>
+                              {IC.video} {v.label || v.url}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )
           })}

@@ -178,7 +178,9 @@ export default function CoursesPage() {
 
                     {/* Actions */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
-                      <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap' }}>{st.label}</span>
+                      {c.status !== 'pending' && (
+                        <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap' }}>{st.label}</span>
+                      )}
 
                       <select className="cp-status-sel" value={c.status || 'draft'} onChange={e => handleStatusChange(c.id, e.target.value)}>
                         <option value="draft">Borrador</option>
@@ -188,10 +190,10 @@ export default function CoursesPage() {
                       </select>
 
                       {c.status === 'pending' && (
-                        <button onClick={() => navigate('curso-revision', { courseId: c.id })}
+                        <button onClick={() => navigate('curso-revision', { courseId: c.id })} title="Abrir detalle del curso"
                           style={{ display: 'flex', alignItems: 'center', gap: '.3rem', padding: '4px 10px', background: 'rgba(234,88,12,.08)', border: '1.5px solid rgba(234,88,12,.3)', borderRadius: 6, color: '#C2410C', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                          Revisar
+                          Ver detalle
                         </button>
                       )}
 
