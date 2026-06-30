@@ -91,7 +91,7 @@ export default function InstructorDashboard() {
             <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.3rem' }}>Panel de instructor</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Hola, {firstName}</h1>
           </div>
-          <button onClick={() => navigate('curso-form', { courseId: null })} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.65rem 1.25rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+          <button onClick={() => navigate('curso-wizard')} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.65rem 1.25rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Crear curso
           </button>
@@ -132,7 +132,7 @@ export default function InstructorDashboard() {
                 <p style={{ fontSize: '.86rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.25rem', fontWeight: 300, maxWidth: 300, margin: '0 auto 1.25rem' }}>
                   Comparte tu experiencia consultiva con profesionales que quieren aprender desde la práctica real.
                 </p>
-                <button onClick={() => navigate('curso-form', { courseId: null })} style={{ display: 'inline-block', padding: '.7rem 1.5rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+                <button onClick={() => navigate('curso-wizard')} style={{ display: 'inline-block', padding: '.7rem 1.5rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
                   Crear mi primer curso
                 </button>
               </div>

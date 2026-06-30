@@ -78,12 +78,7 @@ const HOW_STEPS = [
   { num: '4', title: 'Certifícate', desc: 'Certificado digital avalado por Grupo Cubo 130. Listo para tu perfil.' },
 ]
 
-const INSTRUCTORS = [
-  { name: 'María Rojas', role: 'Datos & Analytics', bio: '12 años implementando soluciones BI en banca y retail.', initials: 'MR', bg: 'var(--jade)' },
-  { name: 'Carlos Arias', role: 'Gestión de Procesos', bio: 'Especialista en BPM con más de 80 proyectos de mejora.', initials: 'CA', bg: '#C96E4B' },
-  { name: 'Sofía Mendoza', role: 'Liderazgo & Cambio', bio: 'Coach ejecutiva. Acompañó transformaciones en más de 30 empresas.', initials: 'LV', bg: 'var(--jade-dark)' },
-  { name: 'Jorge Peñaranda', role: 'Estrategia de Datos', bio: 'Ex-director de inteligencia de negocios en Fortune 500.', initials: 'JP', bg: '#104447' },
-]
+const INST_COLORS = ['var(--jade)', '#C96E4B', 'var(--jade-dark)', '#104447']
 
 const TESTIMONIALS = [
   { text: '"Tomé el curso de BPMN y al mes siguiente lo estaba aplicando en un rediseño real. No hay otro lugar donde aprendas esto tan aplicado."', name: 'Andrea Gutiérrez', role: 'Analista de Procesos, ICE', initials: 'AG' },
@@ -126,6 +121,7 @@ export default function HomePage() {
   const [tracks, setTracks] = useState(null)
   const [courses, setCourses] = useState([])
   const [coursesLoading, setCoursesLoading] = useState(true)
+  const [instructors, setInstructors] = useState(null)
   useReveal()
 
   useEffect(() => {
@@ -137,7 +133,7 @@ export default function HomePage() {
   useEffect(() => {
     supabase
       .from('courses')
-      .select('id, title, slug, cover_image_url, price, level, duration_hours, categories(name), profiles!instructor_id(full_name)')
+      .select('id, title, slug, cover_image_url, price, level, duration_hours, categories(name), profiles!instructor_id(full_name, avatar_url)')
       .eq('status', 'published')
       .order('created_at', { ascending: false })
       .limit(6)
@@ -145,6 +141,17 @@ export default function HomePage() {
         setCourses(data || [])
         setCoursesLoading(false)
       })
+  }, [])
+
+  useEffect(() => {
+    supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url, bio, profession, specialty')
+      .eq('role', 'instructor')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(4)
+      .then(({ data }) => setInstructors(data || []))
   }, [])
 
   useEffect(() => {
@@ -500,7 +507,11 @@ export default function HomePage() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '.9rem', borderTop: '1px solid var(--border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'var(--text-2)', minWidth: 0 }}>
-                          <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.58rem', fontWeight: 700, color: 'white' }}>{initials}</div>
+                          {c.profiles?.avatar_url ? (
+                            <img src={c.profiles.avatar_url} alt={c.profiles.full_name || ''} style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.58rem', fontWeight: 700, color: 'white' }}>{initials}</div>
+                          )}
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.profiles?.full_name || '—'}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
