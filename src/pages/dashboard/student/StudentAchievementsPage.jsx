@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
+import { ACHIEVEMENTS } from '../../../utils/achievements'
 
 const STAR_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
 const BOOK_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -9,46 +10,22 @@ const CERT_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
 const FLAME_ICON = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 14.5c-2.5 0-4.5-2-4.5-4.5 0-4 4.5-7 4.5-7s4.5 3 4.5 7c0 2.5-2 4.5-4.5 4.5z"/></svg>
 const LOCK_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 
+const ICON_BY_ID = { primer_paso: STAR_ICON, curioso: BOOK_ICON, dedicado: FLAME_ICON, maestro: CERT_ICON }
+
 function buildAchievements(enrollments) {
   // completed_at non-null means the course was completed
   const completedCount = enrollments.filter(e => !!e.completed_at).length
   const n = enrollments.length
   const c = completedCount
 
-  return [
-    {
-      id: 'primer_paso',
-      icon: STAR_ICON,
-      title: 'Primer paso',
-      desc: 'Te inscribiste en tu primer curso.',
-      unlocked: n >= 1,
-      req: 'Inscríbete en 1 curso',
-    },
-    {
-      id: 'curioso',
-      icon: BOOK_ICON,
-      title: 'Aprendiz curioso',
-      desc: `Alcanzaste 3 inscripciones (${Math.min(n, 3)}/3).`,
-      unlocked: n >= 3,
-      req: 'Inscríbete en 3 cursos',
-    },
-    {
-      id: 'dedicado',
-      icon: FLAME_ICON,
-      title: 'Dedicado',
-      desc: 'Completaste tu primer curso.',
-      unlocked: c >= 1,
-      req: 'Completa 1 curso',
-    },
-    {
-      id: 'maestro',
-      icon: CERT_ICON,
-      title: 'Maestro del conocimiento',
-      desc: `Completaste 3 cursos (${Math.min(c, 3)}/3).`,
-      unlocked: c >= 3,
-      req: 'Completa 3 cursos',
-    },
-  ]
+  return ACHIEVEMENTS.map(a => ({
+    id: a.id,
+    icon: ICON_BY_ID[a.id],
+    title: a.title,
+    desc: a.desc(n, c),
+    unlocked: a.check(n, c),
+    req: a.req,
+  }))
 }
 
 const FUTURE = [

@@ -4,16 +4,9 @@ import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
+import { ACHIEVEMENTS as ACHIEVEMENT_DEFS } from '../../utils/achievements'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
-
-// Must stay in sync with StudentAchievementsPage
-const ACHIEVEMENT_DEFS = [
-  { id: 'primer_paso', title: 'Primer paso',              check: (n, c) => n >= 1 },
-  { id: 'curioso',     title: 'Aprendiz curioso',         check: (n, c) => n >= 3 },
-  { id: 'dedicado',    title: 'Dedicado',                  check: (n, c) => c >= 1 },
-  { id: 'maestro',     title: 'Maestro del conocimiento',  check: (n, c) => c >= 3 },
-]
 
 function StatCard({ value, label, icon, sub, onClick }) {
   return (
