@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import Sidebar from './Sidebar'
+import NotificationBell from './NotificationBell'
 
 // Admin
 import GeneralPage from '../../pages/dashboard/admin/GeneralPage'
@@ -168,12 +169,17 @@ export default function Portal() {
               <div style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: 'var(--carbon)' }}>
                 Cubo <span style={{ color: 'var(--jade)' }}>Academy</span>
               </div>
-              <div style={{ width: 38 }} />
+              <NotificationBell />
             </div>
           )}
 
           {/* Section content */}
           <div style={{ flex: 1, position: 'relative' }}>
+            {!isMobile && (
+              <div style={{ position: 'fixed', top: '1.25rem', right: '1.75rem', zIndex: 60 }}>
+                <NotificationBell />
+              </div>
+            )}
             {renderSection(displaySection, role, displayParams)}
             {overlay.show && (
               <div style={{

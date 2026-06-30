@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { NavigationProvider, useNavigation } from './context/NavigationContext'
+import { NotificationProvider } from './context/NotificationContext'
 
 import Navbar from './components/shared/Navbar'
 import Footer from './components/shared/Footer'
@@ -72,7 +73,9 @@ export default function App() {
     <NavigationProvider>
       <SettingsProvider>
         <AuthProvider>
-          <AppShell />
+          <NotificationProvider>
+            <AppShell />
+          </NotificationProvider>
         </AuthProvider>
       </SettingsProvider>
     </NavigationProvider>
