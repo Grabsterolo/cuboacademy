@@ -3,6 +3,7 @@ import { useNavigation } from '../../../context/NavigationContext'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import LessonQuiz from '../../../components/learning/LessonQuiz'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -401,6 +402,8 @@ export default function StudentLearningPage() {
                   </div>
                 </div>
               )}
+
+              {activeLesson && <LessonQuiz lessonId={activeLesson.id} studentId={user.id} />}
 
               {/* Prev / Next */}
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginTop: '1.25rem' }}>
