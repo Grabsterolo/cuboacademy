@@ -557,16 +557,40 @@ export default function HomePage() {
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>El equipo docente</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Consultores que también enseñan</h2>
           </div>
-          <div className="reveal inst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.15rem' }}>
-            {INSTRUCTORS.map((inst) => (
-              <div key={inst.name} className="inst-card" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto .9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'white', background: inst.bg }}>{inst.initials}</div>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.2rem' }}>{inst.name}</div>
-                <div style={{ fontSize: '.72rem', color: 'var(--jade)', fontWeight: 500, marginBottom: '.5rem', letterSpacing: '.02em' }}>{inst.role}</div>
-                <div style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.6 }}>{inst.bio}</div>
-              </div>
-            ))}
-          </div>
+          {instructors === null ? (
+            <div className="inst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.15rem' }}>
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
+                  <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto .9rem', background: 'var(--border)' }} />
+                  <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, margin: '0 auto .5rem', width: '60%' }} />
+                  <div style={{ height: 12, background: 'var(--border)', borderRadius: 4, width: '80%', margin: '0 auto' }} />
+                </div>
+              ))}
+            </div>
+          ) : instructors.length === 0 ? (
+            <div style={{ padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)', background: 'white', border: '1px solid var(--border)', borderRadius: 14 }}>
+              Pronto presentaremos a nuestro equipo de instructores.
+            </div>
+          ) : (
+            <div className="reveal inst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.15rem' }}>
+              {instructors.map((inst, i) => {
+                const initials = (inst.full_name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+                const role = inst.specialty || inst.profession || 'Instructor'
+                return (
+                  <div key={inst.id} className="inst-card" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
+                    {inst.avatar_url ? (
+                      <img src={inst.avatar_url} alt={inst.full_name} style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', margin: '0 auto .9rem', display: 'block' }} />
+                    ) : (
+                      <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto .9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'white', background: INST_COLORS[i % INST_COLORS.length] }}>{initials}</div>
+                    )}
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.2rem' }}>{inst.full_name}</div>
+                    <div style={{ fontSize: '.72rem', color: 'var(--jade)', fontWeight: 500, marginBottom: '.5rem', letterSpacing: '.02em' }}>{role}</div>
+                    {inst.bio && <div style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.6 }}>{inst.bio}</div>}
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </section>
 
