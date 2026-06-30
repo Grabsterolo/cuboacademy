@@ -1096,6 +1096,7 @@ export default function CourseWizardPage() {
         setInfo({ title: course.title || '', categoryId: course.category_id || '', level: course.level || 'beginner', description: course.description || '', coverUrl: course.cover_image_url || '', instructorId: course.instructor_id || '' })
         setPricing({ isFree: !course.price || course.price === 0, price: course.price ? String(course.price) : '', discount: '' })
         setPubStatus(course.status || 'draft')
+        setCert({ hasCert: course.has_certificate || false, certName: course.certificate_name || '', certCondition: course.certificate_condition || 'complete' })
       }
 
       if (mods) {
@@ -1291,6 +1292,16 @@ export default function CourseWizardPage() {
     }
   }
 
+  // ── save step 5 (certificate) ─────────────────────────────────────────────
+  async function saveStep5(cId) {
+    const { error } = await supabase.from('courses').update({
+      has_certificate: cert.hasCert,
+      certificate_name: cert.hasCert ? (cert.certName.trim() || null) : null,
+      certificate_condition: cert.certCondition,
+    }).eq('id', cId)
+    if (error) throw error
+  }
+
   // ── save step 6 (price) ───────────────────────────────────────────────────
   async function saveStep6(cId) {
     const finalPrice = pricing.isFree ? 0 : (parseFloat(pricing.price) || 0)
@@ -1303,6 +1314,7 @@ export default function CourseWizardPage() {
     if (n === 1) await saveStep1()
     if (n === 2) await saveStep2(cId)
     if (n === 4) await saveStep4(cId)
+    if (n === 5) await saveStep5(cId)
     if (n === 6) await saveStep6(cId)
   }
 
