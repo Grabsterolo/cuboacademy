@@ -3,6 +3,7 @@ import { useNavigation } from '../../../context/NavigationContext'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
@@ -197,7 +198,7 @@ export default function CourseDetailPage() {
               {course.description && (
                 <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem 1.4rem', marginBottom: '1.5rem' }}>
                   <div style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.65rem' }}>Sobre el curso</div>
-                  <p style={{ fontSize: '.9rem', color: 'var(--carbon)', lineHeight: 1.85, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 300 }}>{course.description}</p>
+                  <div style={{ fontSize: '.9rem', color: 'var(--carbon)', lineHeight: 1.85, fontWeight: 300 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }} />
                 </div>
               )}
 

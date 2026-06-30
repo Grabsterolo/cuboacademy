@@ -3,10 +3,13 @@ import { useNavigation } from '../../../context/NavigationContext'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import RichTextEditor from '../../../components/ui/RichTextEditor'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 function uid() { return `_${Date.now()}_${Math.random().toString(36).slice(2, 7)}` }
+
+function stripHtml(html) { return (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }
 
 function slug(t) {
   return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -157,9 +160,8 @@ function Step1({ info, onChange, categories, instructors, isAdmin, imgUploading,
             </div>
           </Field>
           <Field label="Descripción corta" req hint="2-3 oraciones que resuman lo que aprenderá el estudiante.">
-            <textarea style={{ ...INP, resize: 'vertical', minHeight: 100, lineHeight: 1.65 }}
-              value={info.description} placeholder="En este curso aprenderás…"
-              onChange={e => onChange('description', e.target.value)} onFocus={fi} onBlur={fb} />
+            <RichTextEditor value={info.description} placeholder="En este curso aprenderás…"
+              onChange={html => onChange('description', html)} />
           </Field>
         </div>
 
@@ -448,9 +450,8 @@ function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onUpdateLin
             </Field>
           )}
           <Field label="Texto explicativo" hint="Notas o transcripción de la lección">
-            <textarea style={{ ...INP, resize: 'vertical', minHeight: 80, lineHeight: 1.6 }}
-              value={les.content_text || ''} placeholder="Descripción o notas de la lección…"
-              onChange={e => onChange({ content_text: e.target.value })} onFocus={fi} onBlur={fb} />
+            <RichTextEditor value={les.content_text} placeholder="Descripción o notas de la lección…"
+              minHeight={80} onChange={html => onChange({ content_text: html })} />
           </Field>
           <div>
             <label style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: '#9B9894', marginBottom: '.5rem' }}>
@@ -797,7 +798,7 @@ function Step7({ info, modules, eval: ev, cert, pricing }) {
 
   const checks = [
     { label: 'Tiene título',      ok: Boolean(info.title.trim()) },
-    { label: 'Tiene descripción', ok: Boolean(info.description.trim()) },
+    { label: 'Tiene descripción', ok: Boolean(stripHtml(info.description)) },
     { label: 'Tiene portada',     ok: Boolean(info.coverUrl) },
     { label: 'Tiene estructura',  ok: modules.length > 0 && totalLessons > 0 },
     { label: 'Tiene contenido',   ok: modules.some(m => m.lessons.some(l => l.video_url || l.content_text)) },
@@ -821,7 +822,7 @@ function Step7({ info, modules, eval: ev, cert, pricing }) {
               {info.title || 'Sin título'}
             </p>
             <p style={{ fontSize: '.8rem', color: 'var(--text-2)', margin: '0 0 .85rem', lineHeight: 1.5 }}>
-              {info.description?.slice(0, 120) || 'Sin descripción'}
+              {stripHtml(info.description).slice(0, 120) || 'Sin descripción'}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
               {!pricing.isFree && pricing.price ? (
@@ -1154,7 +1155,7 @@ export default function CourseWizardPage() {
         if (!info.title.trim())                  return 'El título del curso es obligatorio.'
         if (isAdmin && !info.instructorId)        return 'Selecciona un instructor.'
         if (!info.categoryId)                     return 'Selecciona una categoría.'
-        if (!info.description.trim())             return 'La descripción es obligatoria.'
+        if (!stripHtml(info.description))         return 'La descripción es obligatoria.'
         if (!info.coverUrl)                       return 'Sube una imagen de portada.'
         return null
       case 2:

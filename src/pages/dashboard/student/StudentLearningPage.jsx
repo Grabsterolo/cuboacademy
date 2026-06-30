@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import LessonQuiz from '../../../components/learning/LessonQuiz'
+import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -381,7 +382,7 @@ export default function StudentLearningPage() {
 
               {activeLesson?.description && (
                 <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', marginBottom: '1rem' }}>
-                  <p style={{ fontSize: '.88rem', color: 'var(--carbon)', lineHeight: 1.8, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 300 }}>{activeLesson.description}</p>
+                  <div style={{ fontSize: '.88rem', color: 'var(--carbon)', lineHeight: 1.8, fontWeight: 300 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeLesson.description) }} />
                 </div>
               )}
 

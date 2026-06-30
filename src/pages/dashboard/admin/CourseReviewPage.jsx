@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const LESSON_TYPE_LABEL = { video: 'Video', text: 'Texto', quiz: 'Quiz', pdf: 'PDF', link: 'Enlace' }
@@ -222,7 +223,7 @@ export default function CourseReviewPage() {
         {/* ── Description ── */}
         {course.description && (
           <Section title="Descripción" icon={IC.text}>
-            <p style={{ fontSize: '.875rem', color: 'var(--carbon)', lineHeight: 1.75, margin: 0, whiteSpace: 'pre-wrap' }}>{course.description}</p>
+            <div style={{ fontSize: '.875rem', color: 'var(--carbon)', lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }} />
           </Section>
         )}
 
@@ -263,7 +264,7 @@ export default function CourseReviewPage() {
                       {(les.description || videoLinks.length > 0) && (
                         <div style={{ padding: '.4rem 1rem .75rem 2.4rem' }}>
                           {les.description && (
-                            <p style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.65, whiteSpace: 'pre-wrap', margin: '0 0 .4rem' }}>{les.description}</p>
+                            <div style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.65, margin: '0 0 .4rem' }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(les.description) }} />
                           )}
                           {videoLinks.map((v, vi) => (
                             <a key={vi} href={v.url} target="_blank" rel="noopener noreferrer"
