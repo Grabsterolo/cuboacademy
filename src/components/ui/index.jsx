@@ -10,17 +10,6 @@ export function FieldLabel({ children }) {
   )
 }
 
-// ─── FieldLabelHint ───────────────────────────────────────────────────────────
-// Label with optional hint line, used by SettingsPage.
-export function FieldLabelHint({ children, hint }) {
-  return (
-    <div style={{ marginBottom: '.35rem' }}>
-      <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', letterSpacing: '.05em', textTransform: 'uppercase' }}>{children}</label>
-      {hint && <span style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.15rem', display: 'block' }}>{hint}</span>}
-    </div>
-  )
-}
-
 // ─── Field ────────────────────────────────────────────────────────────────────
 // Full field wrapper: outer div with margin, label, optional hint, children.
 export function Field({ label, children, hint }) {
@@ -57,35 +46,6 @@ export function IconBtn({ onClick, title, danger, children }) {
       onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = danger ? '#DC2626' : 'var(--text-2)' }}>
       {children}
     </button>
-  )
-}
-
-// ─── PageHeader ───────────────────────────────────────────────────────────────
-export function PageHeader({ eyebrow, title, action }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
-      <div>
-        {eyebrow && <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>{eyebrow}</p>}
-        <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15 }}>{title}</h1>
-      </div>
-      {action}
-    </div>
-  )
-}
-
-// ─── EmptyState ───────────────────────────────────────────────────────────────
-export function EmptyState({ icon, title, description, action }) {
-  return (
-    <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center', maxWidth: 440 }}>
-      {icon && (
-        <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--jade)' }}>
-          {icon}
-        </div>
-      )}
-      {title && <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>{title}</h2>}
-      {description && <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: action ? '1.4rem' : 0, fontWeight: 300 }}>{description}</p>}
-      {action}
-    </div>
   )
 }
 
