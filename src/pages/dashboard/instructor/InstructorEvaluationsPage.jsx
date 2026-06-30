@@ -30,6 +30,9 @@ export default function InstructorEvaluationsPage() {
   const [processing, setProcessing]   = useState(null)
   const [rejectModal, setRejectModal] = useState(null)
   const [rejectNotes, setRejectNotes] = useState('')
+  const [expanded, setExpanded]       = useState(null)
+  const [quizData, setQuizData]       = useState({})
+  const [loadingDetail, setLoadingDetail] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -58,6 +61,69 @@ export default function InstructorEvaluationsPage() {
 
     setSubmissions(data || [])
     setLoading(false)
+  }
+
+  async function toggleExpand(sub) {
+    if (expanded === sub.id) { setExpanded(null); return }
+    setExpanded(sub.id)
+    if (!quizData[sub.id]) await loadQuizDetails(sub)
+  }
+
+  async function loadQuizDetails(sub) {
+    setLoadingDetail(sub.id)
+
+    const { data: modules } = await supabase
+      .from('modules')
+      .select(`
+        id, title, order_index,
+        lessons(id, title, order_index,
+          quizzes(id, title, passing_score,
+            questions(id, text, type, order_index, points,
+              answers(id, text, order_index, is_correct))))
+      `)
+      .eq('course_id', sub.course_id)
+      .order('order_index', { ascending: true })
+
+    const quizzes = []
+    for (const mod of modules || []) {
+      const lessons = [...(mod.lessons || [])].sort((a, b) => a.order_index - b.order_index)
+      for (const lesson of lessons) {
+        for (const quiz of (lesson.quizzes || [])) {
+          quizzes.push({ ...quiz, lessonTitle: lesson.title, moduleTitle: mod.title })
+        }
+      }
+    }
+
+    const quizIds = quizzes.map(q => q.id)
+    let attempts = []
+    let responses = []
+
+    if (quizIds.length) {
+      const { data: attemptsData } = await supabase
+        .from('quiz_attempts')
+        .select('id, quiz_id, score, passed, completed_at')
+        .in('quiz_id', quizIds)
+        .eq('student_id', sub.student_id)
+        .order('completed_at', { ascending: false })
+      attempts = attemptsData || []
+
+      const attemptIds = attempts.map(a => a.id)
+      if (attemptIds.length) {
+        const { data: responsesData } = await supabase
+          .from('quiz_responses')
+          .select('id, attempt_id, question_id, answer_id, open_response')
+          .in('attempt_id', attemptIds)
+        responses = responsesData || []
+      }
+    }
+
+    const latestAttemptByQuiz = {}
+    for (const a of attempts) {
+      if (!latestAttemptByQuiz[a.quiz_id]) latestAttemptByQuiz[a.quiz_id] = a
+    }
+
+    setQuizData(prev => ({ ...prev, [sub.id]: { quizzes, responses, latestAttemptByQuiz } }))
+    setLoadingDetail(null)
   }
 
   async function handleApprove(sub) {
@@ -113,6 +179,77 @@ export default function InstructorEvaluationsPage() {
     setRejectModal(null)
     setRejectNotes('')
     setProcessing(null)
+  }
+
+  function renderQuizReview(sub) {
+    const detail = quizData[sub.id]
+    if (!detail) return null
+
+    if (detail.quizzes.length === 0) {
+      return <p style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>Este curso no tiene quizzes configurados.</p>
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {detail.quizzes.map(quiz => {
+          const attempt = detail.latestAttemptByQuiz[quiz.id]
+          const responses = attempt ? detail.responses.filter(r => r.attempt_id === attempt.id) : []
+          const questions = [...(quiz.questions || [])].sort((a, b) => a.order_index - b.order_index)
+
+          return (
+            <div key={quiz.id} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 10, padding: '1rem 1.1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '.85rem', gap: '.75rem', flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: '.68rem', color: 'var(--text-2)', marginBottom: '.1rem' }}>{quiz.moduleTitle} · {quiz.lessonTitle}</div>
+                  <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.86rem', color: 'var(--carbon)' }}>{quiz.title}</div>
+                </div>
+                {attempt ? (
+                  <span style={{ fontSize: '.74rem', fontWeight: 700, color: attempt.passed ? '#16A34A' : '#DC2626', flexShrink: 0 }}>
+                    {attempt.score}% {attempt.passed ? '· Aprobado' : '· No aprobado'}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '.74rem', color: 'var(--text-2)', flexShrink: 0 }}>Sin intentos</span>
+                )}
+              </div>
+
+              {attempt && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.8rem' }}>
+                  {questions.map((q, qi) => {
+                    const qResponses = responses.filter(r => r.question_id === q.id)
+                    const opts = [...(q.answers || [])].sort((a, b) => a.order_index - b.order_index)
+                    return (
+                      <div key={q.id}>
+                        <p style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.4rem' }}>{qi + 1}. {q.text}</p>
+                        {q.type === 'open' ? (
+                          <div style={{ padding: '.55rem .75rem', background: 'var(--cream)', borderRadius: 7, fontSize: '.8rem', color: 'var(--carbon)' }}>
+                            {qResponses[0]?.open_response || <em style={{ color: 'var(--text-2)' }}>Sin respuesta</em>}
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
+                            {opts.map(opt => {
+                              const chosen = qResponses.some(r => r.answer_id === opt.id)
+                              const bg     = opt.is_correct ? '#F0FDF4' : (chosen ? '#FEF2F2' : 'white')
+                              const border = opt.is_correct ? '#BBF7D0' : (chosen ? '#FECACA' : 'var(--border)')
+                              return (
+                                <div key={opt.id} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.4rem .65rem', borderRadius: 6, border: `1px solid ${border}`, background: bg, fontSize: '.8rem', color: 'var(--carbon)' }}>
+                                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: chosen ? (opt.is_correct ? '#16A34A' : '#DC2626') : 'transparent', border: chosen ? 'none' : '1.5px solid var(--border)', flexShrink: 0 }} />
+                                  <span style={{ flex: 1 }}>{opt.text}</span>
+                                  {opt.is_correct && <span style={{ fontSize: '.66rem', fontWeight: 700, color: '#16A34A' }}>Correcta</span>}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    )
   }
 
   const pending  = submissions.filter(s => s.status === 'pending')
@@ -186,49 +323,68 @@ export default function InstructorEvaluationsPage() {
               const course     = sub.courses
               const isPending  = sub.status === 'pending'
               const isProc     = processing === sub.id
+              const isExpanded = expanded === sub.id
               return (
-                <div key={sub.id} className="ev-card">
-                  <div style={{ width: 52, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
-                    {course?.cover_image_url && <img src={course.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                  </div>
+                <div key={sub.id}>
+                  <div className="ev-card">
+                    <div style={{ width: 52, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
+                      {course?.cover_image_url && <img src={course.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                    </div>
 
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {course?.title || 'Curso'}
-                    </div>
-                    <div style={{ fontSize: '.77rem', color: 'var(--text-2)', marginBottom: '.1rem' }}>
-                      {student?.full_name || student?.email || 'Estudiante'}
-                    </div>
-                    <div style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>
-                      Enviado el {fmtDate(sub.submitted_at)}
-                      {sub.reviewed_at && ` · Revisado el ${fmtDate(sub.reviewed_at)}`}
-                    </div>
-                    {sub.notes && (
-                      <div style={{ fontSize: '.72rem', color: '#991B1B', marginTop: '.25rem', background: '#FEF2F2', borderRadius: 6, padding: '3px 8px', display: 'inline-block' }}>
-                        {sub.notes}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {course?.title || 'Curso'}
                       </div>
+                      <div style={{ fontSize: '.77rem', color: 'var(--text-2)', marginBottom: '.1rem' }}>
+                        {student?.full_name || student?.email || 'Estudiante'}
+                      </div>
+                      <div style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>
+                        Enviado el {fmtDate(sub.submitted_at)}
+                        {sub.reviewed_at && ` · Revisado el ${fmtDate(sub.reviewed_at)}`}
+                      </div>
+                      {sub.notes && (
+                        <div style={{ fontSize: '.72rem', color: '#991B1B', marginTop: '.25rem', background: '#FEF2F2', borderRadius: 6, padding: '3px 8px', display: 'inline-block' }}>
+                          {sub.notes}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => toggleExpand(sub)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', padding: '.45rem .8rem', background: isExpanded ? 'var(--jade-soft)' : 'white', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '.78rem', fontWeight: 600, color: 'var(--jade)', cursor: 'pointer', fontFamily: 'var(--sans)', flexShrink: 0 }}>
+                      {isExpanded ? 'Ocultar' : 'Ver evaluación'}
+                    </button>
+
+                    {isPending ? (
+                      <div style={{ display: 'flex', gap: '.5rem', flexShrink: 0 }}>
+                        <button
+                          onClick={() => { setRejectModal(sub); setRejectNotes('') }}
+                          disabled={!!isProc}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', background: 'white', border: '1.5px solid #FECACA', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, color: '#DC2626', cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1 }}>
+                          {X_ICON} Rechazar
+                        </button>
+                        <button
+                          onClick={() => handleApprove(sub)}
+                          disabled={!!isProc}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', background: 'var(--jade)', border: 'none', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, color: 'white', cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1 }}>
+                          {isProc ? '…' : <>{CHECK_ICON} Aprobar</>}
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={{ padding: '4px 10px', borderRadius: 10, fontSize: '.71rem', fontWeight: 700, background: sub.status === 'approved' ? '#DCFCE7' : '#FEE2E2', color: sub.status === 'approved' ? '#16A34A' : '#DC2626', flexShrink: 0 }}>
+                        {sub.status === 'approved' ? '✓ Aprobada' : '✕ Rechazada'}
+                      </span>
                     )}
                   </div>
 
-                  {isPending ? (
-                    <div style={{ display: 'flex', gap: '.5rem', flexShrink: 0 }}>
-                      <button
-                        onClick={() => { setRejectModal(sub); setRejectNotes('') }}
-                        disabled={!!isProc}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', background: 'white', border: '1.5px solid #FECACA', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, color: '#DC2626', cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1 }}>
-                        {X_ICON} Rechazar
-                      </button>
-                      <button
-                        onClick={() => handleApprove(sub)}
-                        disabled={!!isProc}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', background: 'var(--jade)', border: 'none', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, color: 'white', cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1 }}>
-                        {isProc ? '…' : <>{CHECK_ICON} Aprobar</>}
-                      </button>
+                  {isExpanded && (
+                    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '1.1rem 1.25rem', marginTop: '-8px', paddingTop: '1.5rem' }}>
+                      {loadingDetail === sub.id ? (
+                        <p style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>Cargando evaluación…</p>
+                      ) : (
+                        renderQuizReview(sub)
+                      )}
                     </div>
-                  ) : (
-                    <span style={{ padding: '4px 10px', borderRadius: 10, fontSize: '.71rem', fontWeight: 700, background: sub.status === 'approved' ? '#DCFCE7' : '#FEE2E2', color: sub.status === 'approved' ? '#16A34A' : '#DC2626', flexShrink: 0 }}>
-                      {sub.status === 'approved' ? '✓ Aprobada' : '✕ Rechazada'}
-                    </span>
                   )}
                 </div>
               )
