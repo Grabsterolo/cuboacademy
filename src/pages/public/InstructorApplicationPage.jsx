@@ -63,7 +63,8 @@ export default function InstructorApplicationPage() {
   // Step 2
   const [bio, setBio] = useState('')
   const [linkedin, setLinkedin] = useState('')
-  const [cvUrl, setCvUrl] = useState('')
+  const [cvFile, setCvFile] = useState(null)
+  const [cvErr, setCvErr] = useState('')
 
   // Step 3
   const [courseTitle, setCourseTitle] = useState('')
@@ -71,7 +72,6 @@ export default function InstructorApplicationPage() {
   const [courseDesc, setCourseDesc] = useState('')
   const [courseLevel, setCourseLevel] = useState('')
   const [chkDecl, setChkDecl] = useState(false)
-  const [chkTerms, setChkTerms] = useState(false)
   const [chkReview, setChkReview] = useState(false)
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export default function InstructorApplicationPage() {
 
   function validateStep2() {
     if (!bio.trim()) return 'Escribe tu biografía.'
-    if (!cvUrl.trim()) return 'Pega el enlace a tu documento.'
+    if (!cvFile) return 'Sube tu CV, título o certificación en PDF.'
     return null
   }
 
@@ -103,9 +103,16 @@ export default function InstructorApplicationPage() {
     if (!courseDesc.trim()) return 'Ingresa la descripción del curso.'
     if (!courseLevel) return 'Selecciona el nivel del curso.'
     if (!chkDecl) return 'Debes confirmar que la información es verdadera.'
-    if (!chkTerms) return 'Debes aceptar los términos y condiciones.'
     if (!chkReview) return 'Debes aceptar la revisión de tu perfil.'
     return null
+  }
+
+  function handleCvSelect(file) {
+    if (!file) { setCvFile(null); return }
+    if (file.type !== 'application/pdf') { setCvErr('Solo se aceptan archivos PDF.'); setCvFile(null); return }
+    if (file.size > 8 * 1024 * 1024) { setCvErr('Máximo 8 MB.'); setCvFile(null); return }
+    setCvErr('')
+    setCvFile(file)
   }
 
   function goNext() {
@@ -129,6 +136,10 @@ export default function InstructorApplicationPage() {
     setError('')
     setLoading(true)
 
+    const cvPath = `applications/${Date.now()}-${cvFile.name}`
+    const { error: upErr } = await supabase.storage.from('instructor-documents').upload(cvPath, cvFile)
+    if (upErr) { setLoading(false); setError('Error al subir el documento. Intenta de nuevo.'); return }
+
     const { error: dbErr } = await supabase.from('instructor_applications').insert({
       full_name: nombre.trim(),
       last_name: apellidos.trim(),
@@ -141,7 +152,7 @@ export default function InstructorApplicationPage() {
       current_company: company.trim() || null,
       bio: bio.trim(),
       linkedin_url: linkedin.trim() || null,
-      cv_document_url: cvUrl.trim(),
+      cv_document_url: cvPath,
       course_title: courseTitle.trim(),
       course_category_id: categoryId || null,
       course_description: courseDesc.trim(),
@@ -282,10 +293,19 @@ export default function InstructorApplicationPage() {
                 <Fld label="LinkedIn o portafolio (opcional)">
                   <input className="app-inp" style={INP_STYLE} type="url" placeholder="https://linkedin.com/in/tu-perfil" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
                 </Fld>
-                <Fld label="Enlace a tu CV o documento de respaldo *">
-                  <input className="app-inp" style={INP_STYLE} type="url" placeholder="https://drive.google.com/file/..." value={cvUrl} onChange={e => setCvUrl(e.target.value)} />
+                <Fld label="CV, título o certificación (PDF) *">
+                  <label htmlFor="cv-upload" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.72rem 1rem', background: 'var(--cream)', border: '1px dashed var(--border)', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span style={{ fontSize: '.88rem', color: cvFile ? 'var(--carbon)' : '#9B9894' }}>
+                      {cvFile ? cvFile.name : 'Selecciona un archivo PDF…'}
+                    </span>
+                  </label>
+                  <input id="cv-upload" type="file" accept="application/pdf" onChange={e => handleCvSelect(e.target.files?.[0])} style={{ display: 'none' }} />
+                  {cvErr && <p style={{ fontSize: '.75rem', color: '#c0392b', marginTop: '.4rem' }}>{cvErr}</p>}
                   <p style={{ fontSize: '.75rem', color: '#B5B2AB', marginTop: '.4rem', lineHeight: 1.5 }}>
-                    Sube tu CV, título o certificación a Google Drive o Dropbox y pega el enlace aquí.
+                    Tu documento quedará disponible para que el equipo de Cubo Academy lo revise junto con tu solicitud.
                   </p>
                 </Fld>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.5rem' }}>
@@ -324,10 +344,6 @@ export default function InstructorApplicationPage() {
                   <label style={chkLabel}>
                     <input type="checkbox" className="app-chk" checked={chkDecl} onChange={e => setChkDecl(e.target.checked)} />
                     Declaro que la información proporcionada es verdadera.
-                  </label>
-                  <label style={chkLabel}>
-                    <input type="checkbox" className="app-chk" checked={chkTerms} onChange={e => setChkTerms(e.target.checked)} />
-                    Acepto los <a href="#" style={{ color: 'var(--jade)' }}>términos y condiciones</a> de Cubo Academy.
                   </label>
                   <label style={chkLabel}>
                     <input type="checkbox" className="app-chk" checked={chkReview} onChange={e => setChkReview(e.target.checked)} />

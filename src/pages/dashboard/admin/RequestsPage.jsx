@@ -39,6 +39,28 @@ function DRow({ label, value, isLink }) {
   )
 }
 
+function CvRow({ path }) {
+  const [loading, setLoading] = useState(false)
+  if (!path) return null
+
+  async function openCv() {
+    setLoading(true)
+    const { data, error } = await supabase.storage.from('instructor-documents').createSignedUrl(path, 60 * 5)
+    setLoading(false)
+    if (!error && data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.5rem', fontSize: '.84rem', alignItems: 'center' }}>
+      <span style={{ color: '#9B9894', flexShrink: 0, width: 140 }}>CV / Documento:</span>
+      <button onClick={openCv} disabled={loading}
+        style={{ background: 'none', border: '1px solid var(--jade-light)', color: 'var(--jade)', borderRadius: 6, padding: '.3rem .7rem', fontSize: '.8rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)' }}>
+        {loading ? 'Abriendo…' : 'Ver documento PDF'}
+      </button>
+    </div>
+  )
+}
+
 export default function RequestsPage() {
   const [apps, setApps] = useState([])
   const [loading, setLoading] = useState(true)
@@ -247,7 +269,7 @@ export default function RequestsPage() {
                   {selected.bio}
                 </div>
                 <DRow label="LinkedIn / portafolio" value={selected.linkedin_url} isLink />
-                <DRow label="CV / Documento" value={selected.cv_document_url} isLink />
+                <CvRow path={selected.cv_document_url} />
               </Section>
 
               <Section title="Propuesta de curso">
