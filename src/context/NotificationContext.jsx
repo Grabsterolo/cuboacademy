@@ -52,10 +52,17 @@ export function NotificationProvider({ children }) {
     await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds)
   }
 
+  const markScreensAsRead = useCallback(async (screens) => {
+    const ids = notifications.filter(n => !n.is_read && screens.includes(n.screen)).map(n => n.id)
+    if (ids.length === 0) return
+    setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n))
+    await supabase.from('notifications').update({ is_read: true }).in('id', ids)
+  }, [notifications])
+
   const unreadCount = notifications.filter(n => !n.is_read).length
 
   return (
-    <NotificationContext.Provider value={{ notifications, loading, unreadCount, markAsRead, markAllAsRead }}>
+    <NotificationContext.Provider value={{ notifications, loading, unreadCount, markAsRead, markAllAsRead, markScreensAsRead }}>
       {children}
     </NotificationContext.Provider>
   )

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
+import { useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useNotifications } from '../../context/NotificationContext'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { useIsMobile } from '../../hooks/useIsMobile'
@@ -14,33 +14,16 @@ const LOGO = (
   </svg>
 )
 
-// Live count of courses awaiting review (status = 'pending'), for the admin badge
-function usePendingCoursesCount(enabled) {
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    if (!enabled) { setCount(0); return }
-    let cancelled = false
-
-    async function fetchCount() {
-      const { count: c } = await supabase
-        .from('courses')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-      if (!cancelled) setCount(c || 0)
-    }
-    fetchCount()
-
-    const channel = supabase
-      .channel('pending-courses-badge')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, fetchCount)
-      .subscribe()
-
-    return () => { cancelled = true; supabase.removeChannel(channel) }
-  }, [enabled])
-
-  return count
+// Notification screens that don't have their own sidebar item roll up
+// into the section from which the user reaches them
+const SCREEN_TO_NAV = {
+  'curso-revision':    'cursos',
+  'curso-wizard':      'cursos',
+  'course-detail':     'cursos',
+  'aprender':          'cursos',
+  'quiz-calificacion': 'evaluaciones',
 }
+const navKeyForScreen = screen => SCREEN_TO_NAV[screen] || screen
 
 function NavItem({ item, active, onClick, badge = 0 }) {
   return (
@@ -85,7 +68,24 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
     : profile?.role === 'instructor' ? INSTRUCTOR_NAV
     : STUDENT_NAV
 
-  const pendingCourses = usePendingCoursesCount(profile?.role === 'admin')
+  // Unread notifications grouped by the sidebar section they belong to
+  const { notifications, markScreensAsRead } = useNotifications()
+  const unreadByNav = {}
+  for (const n of notifications) {
+    if (n.is_read || !n.screen) continue
+    const key = navKeyForScreen(n.screen)
+    unreadByNav[key] = (unreadByNav[key] || 0) + 1
+  }
+
+  // Visiting a section clears its notifications (only on section change,
+  // so a notification arriving while you're already there stays visible)
+  const markRef = useRef(markScreensAsRead)
+  markRef.current = markScreensAsRead
+  useEffect(() => {
+    if (!section) return
+    const screens = Object.keys(SCREEN_TO_NAV).filter(s => SCREEN_TO_NAV[s] === section)
+    markRef.current([section, ...screens])
+  }, [section])
 
   const platformName = settings?.platform_name || 'Cubo Academy'
   const spIdx = platformName.indexOf(' ')
@@ -123,7 +123,7 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
       <nav style={{ flex: 1, padding: '.25rem .5rem', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
         {navItems.map(item => (
           <NavItem key={item.key} item={item} active={section === item.key} onClick={handleNav}
-            badge={item.key === 'cursos' && profile?.role === 'admin' ? pendingCourses : 0} />
+            badge={unreadByNav[item.key] || 0} />
         ))}
       </nav>
 
