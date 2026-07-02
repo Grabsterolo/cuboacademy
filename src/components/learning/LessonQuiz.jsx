@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase'
 
 const QUIZ_ICON = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 1 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 
-export default function LessonQuiz({ lessonId, studentId }) {
+export default function LessonQuiz({ lessonId, studentId, onPassed }) {
   const [quiz, setQuiz] = useState(null)
   const [questions, setQuestions] = useState([])
   const [attempts, setAttempts] = useState([])
@@ -55,6 +55,7 @@ export default function LessonQuiz({ lessonId, studentId }) {
 
     setQuestions((qData || []).map(q => ({ ...q, answers: (q.answers || []).sort((a, b) => a.order_index - b.order_index) })))
     setAttempts(attemptsData || [])
+    if ((attemptsData || []).some(a => a.passed)) onPassed?.()
     setLoading(false)
   }
 
@@ -75,7 +76,7 @@ export default function LessonQuiz({ lessonId, studentId }) {
   }
 
   async function handleSubmit() {
-    if (submitting) return
+    if (submitting || !allAnswered) return
     setError('')
     setSubmitting(true)
 

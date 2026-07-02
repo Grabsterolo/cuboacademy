@@ -88,6 +88,8 @@ export default function StudentLearningPage() {
 
   const [activeLesson, setActiveLesson] = useState(null)
   const [activeVideoIdx, setActiveVideoIdx] = useState(0)
+  // lesson IDs that have a quiz attached (drives exam-lesson behavior)
+  const [quizLessonIds, setQuizLessonIds] = useState(new Set())
   // completedIds: Set of lesson IDs from lesson_progress table
   const [completedIds, setCompletedIds] = useState(new Set())
   const [expandedMods, setExpandedMods] = useState(new Set())
@@ -128,6 +130,13 @@ export default function StudentLearningPage() {
 
     // Load completed lessons from DB
     const allLessonIds = mods.flatMap(m => m.lessons).map(l => l.id)
+    if (allLessonIds.length > 0) {
+      const { data: quizRows } = await supabase
+        .from('quizzes')
+        .select('lesson_id')
+        .in('lesson_id', allLessonIds)
+      setQuizLessonIds(new Set((quizRows || []).map(q => q.lesson_id)))
+    }
     let completed = new Set()
     if (allLessonIds.length > 0) {
       const { data: lpData } = await supabase
@@ -210,6 +219,28 @@ export default function StudentLearningPage() {
     if (!alreadyDone) goNext(next)
   }
 
+  // The exam lesson completes itself when the student passes its quiz —
+  // there is no manual toggle for it
+  async function onExamPassed(lessonId) {
+    if (!completedIds.has(lessonId)) {
+      const now = new Date().toISOString()
+      const { error } = await supabase.from('lesson_progress').upsert(
+        { student_id: user.id, lesson_id: lessonId, completed: true, completed_at: now, last_watched_at: now },
+        { onConflict: 'student_id,lesson_id' }
+      )
+      if (!error) setCompletedIds(prev => new Set([...prev, lessonId]))
+    }
+    // the DB trigger (re)submits the evaluation on pass — refresh its status
+    if (enrollment) {
+      const { data } = await supabase
+        .from('exam_submissions')
+        .select('id, status, submitted_at, notes')
+        .eq('enrollment_id', enrollment.id)
+        .maybeSingle()
+      setExamSubmission(data || null)
+    }
+  }
+
   function goNext(doneIds) {
     const allLessons = modules.flatMap(m => m.lessons)
     const idx = allLessons.findIndex(l => l.id === activeLesson.id)
@@ -256,6 +287,11 @@ export default function StudentLearningPage() {
 
   const activeLinks = activeLesson ? parseLinks(activeLesson.video_url) : []
   const isCompleted = activeLesson ? completedIds.has(activeLesson.id) : false
+  // Same convention as CourseWizardPage/CourseReviewPage: the final exam lives
+  // in the module titled 'Evaluación Final' and is the lesson with a quiz
+  const activeModule = modules.find(m => m.lessons.some(l => l.id === activeLesson?.id))
+  const isExamLesson = activeModule?.title === 'Evaluación Final' && quizLessonIds.has(activeLesson?.id)
+  const hasQuizExam = modules.some(m => m.title === 'Evaluación Final' && m.lessons.some(l => quizLessonIds.has(l.id)))
   const activeIdx = allLessons.findIndex(l => l.id === activeLesson?.id)
   const hasPrev = activeIdx > 0
   const hasNext = activeIdx < allLessons.length - 1
@@ -387,11 +423,18 @@ export default function StudentLearningPage() {
                     )}
                   </div>
 
+                  {isExamLesson ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.1rem', borderRadius: 9, fontSize: '.82rem', fontWeight: 600, fontFamily: 'var(--sans)', flexShrink: 0, background: isCompleted ? '#DCFCE7' : 'var(--cream)', color: isCompleted ? '#16A34A' : 'var(--text-2)', border: '1px solid var(--border)' }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      {isCompleted ? 'Examen aprobado' : 'Se completa al aprobar el examen'}
+                    </span>
+                  ) : (
                   <button onClick={markComplete} disabled={marking}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.1rem', borderRadius: 9, fontSize: '.85rem', fontWeight: 600, cursor: marking ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, border: 'none', transition: 'all .2s', opacity: marking ? .7 : 1, background: isCompleted ? '#DCFCE7' : 'var(--jade)', color: isCompleted ? '#16A34A' : 'white' }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                     {isCompleted ? 'Completada' : marking ? 'Guardando…' : 'Marcar completada'}
                   </button>
+                  )}
                 </div>
               </div>
 
@@ -402,11 +445,17 @@ export default function StudentLearningPage() {
                 </div>
               )}
 
-              {activeLesson?.description && (
+              {activeLesson?.description ? (
                 <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', marginBottom: '1rem' }}>
                   <div style={{ fontSize: '.88rem', color: 'var(--carbon)', lineHeight: 1.8, fontWeight: 300 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeLesson.description) }} />
                 </div>
-              )}
+              ) : (activeLinks.length === 0 && activeLesson && !quizLessonIds.has(activeLesson.id) && (
+                <div style={{ background: 'white', border: '1px dashed var(--border)', borderRadius: 12, padding: '1.5rem 1.25rem', marginBottom: '1rem', textAlign: 'center' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="1.7" strokeLinecap="round" style={{ marginBottom: '.5rem' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <p style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', margin: '0 0 .25rem' }}>Contenido pendiente de cargar</p>
+                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', margin: 0 }}>El instructor todavía no ha agregado material a esta lección.</p>
+                </div>
+              ))}
 
               {activeLesson?.resources?.length > 0 && (
                 <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', marginBottom: '1rem' }}>
@@ -426,7 +475,8 @@ export default function StudentLearningPage() {
                 </div>
               )}
 
-              {activeLesson && <LessonQuiz lessonId={activeLesson.id} studentId={user.id} />}
+              {activeLesson && <LessonQuiz lessonId={activeLesson.id} studentId={user.id}
+                onPassed={isExamLesson ? () => onExamPassed(activeLesson.id) : undefined} />}
 
               {/* Prev / Next */}
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginTop: '1.25rem' }}>
@@ -449,7 +499,9 @@ export default function StudentLearningPage() {
               {/* Exam submission / completion panel — solo para cursos que requieren evaluación */}
               {progressPct === 100 && !courseCompleted && course?.certificate_condition !== 'complete' && (
                 <div style={{ marginTop: '1.5rem' }}>
-                  {!examSubmission && (
+                  {/* Manual request only for courses whose final evaluation has no quiz —
+                      with a quiz, the DB trigger submits automatically on pass */}
+                  {!examSubmission && !hasQuizExam && (
                     <div style={{ background: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', border: '1px solid #bbf7d0', borderRadius: 12, padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
                       <div style={{ width: 48, height: 48, background: '#22c55e', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -462,6 +514,17 @@ export default function StudentLearningPage() {
                         style={{ padding: '.65rem 1.25rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 9, fontSize: '.85rem', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, opacity: submitting ? .7 : 1, whiteSpace: 'nowrap' }}>
                         {submitting ? 'Enviando…' : 'Solicitar evaluación'}
                       </button>
+                    </div>
+                  )}
+                  {!examSubmission && hasQuizExam && (
+                    <div style={{ background: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', border: '1px solid #bbf7d0', borderRadius: 12, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: 44, height: 44, background: '#22c55e', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <div>
+                        <p style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: '#14532D', margin: '0 0 .2rem' }}>¡Todas las lecciones completadas!</p>
+                        <p style={{ fontSize: '.82rem', color: '#166534', margin: 0 }}>Al aprobar el examen final, tu evaluación se envía automáticamente al instructor para su revisión.</p>
+                      </div>
                     </div>
                   )}
                   {examSubmission?.status === 'pending' && (
@@ -483,12 +546,18 @@ export default function StudentLearningPage() {
                       <div style={{ flex: 1, minWidth: 180 }}>
                         <p style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: '#7F1D1D', margin: '0 0 .2rem' }}>Evaluación no aprobada</p>
                         {examSubmission.notes && <p style={{ fontSize: '.82rem', color: '#991B1B', margin: '0 0 .4rem' }}>{examSubmission.notes}</p>}
-                        <p style={{ fontSize: '.82rem', color: '#B91C1C', margin: 0 }}>Revisa los comentarios del instructor y vuelve a enviar tu solicitud.</p>
+                        <p style={{ fontSize: '.82rem', color: '#B91C1C', margin: 0 }}>
+                          {hasQuizExam
+                            ? 'Revisa los comentarios del instructor y vuelve a presentar el examen final.'
+                            : 'Revisa los comentarios del instructor y vuelve a enviar tu solicitud.'}
+                        </p>
                       </div>
+                      {!hasQuizExam && (
                       <button onClick={submitExam} disabled={submitting}
                         style={{ padding: '.6rem 1.1rem', background: '#DC2626', color: 'white', border: 'none', borderRadius: 9, fontSize: '.82rem', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, opacity: submitting ? .7 : 1, whiteSpace: 'nowrap' }}>
                         {submitting ? 'Enviando…' : 'Reenviar solicitud'}
                       </button>
+                      )}
                     </div>
                   )}
                 </div>

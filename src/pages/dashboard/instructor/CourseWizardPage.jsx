@@ -1204,7 +1204,9 @@ export default function CourseWizardPage() {
         await supabase.from('resources').delete().in('lesson_id',
           (await supabase.from('lessons').select('id').in('module_id', modIds)).data?.map(l => l.id) || [])
         await supabase.from('lessons').delete().in('module_id', modIds)
-        await supabase.from('modules').delete().eq('course_id', cId)
+        // only the regular modules — deleting by course_id would cascade-destroy
+        // the 'Evaluación Final' module with its quiz and student attempts
+        await supabase.from('modules').delete().in('id', modIds)
       }
     }
     const savedModIds = {}
@@ -1314,6 +1316,7 @@ export default function CourseWizardPage() {
   async function persistStep(n, cId) {
     if (n === 1) await saveStep1()
     if (n === 2) await saveStep2(cId)
+    if (n === 3) await saveStep2(cId) // step 3 edits lesson content held in the same modules state
     if (n === 4) await saveStep4(cId)
     if (n === 5) await saveStep5(cId)
     if (n === 6) await saveStep6(cId)
