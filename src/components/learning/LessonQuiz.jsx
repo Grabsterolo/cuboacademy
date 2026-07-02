@@ -47,7 +47,7 @@ export default function LessonQuiz({ lessonId, studentId }) {
         .order('order_index', { ascending: true }),
       supabase
         .from('quiz_attempts')
-        .select('id, score, passed, completed_at')
+        .select('id, score, passed, completed_at, status')
         .eq('quiz_id', quizData.id)
         .eq('student_id', studentId)
         .order('completed_at', { ascending: false }),
@@ -113,7 +113,9 @@ export default function LessonQuiz({ lessonId, studentId }) {
 
   const attemptsUsed = attempts.length
   const attemptsLeft = quiz.max_attempts - attemptsUsed
-  const bestAttempt = attempts.find(a => a.passed) || attempts[0]
+  const hasPendingReview = attempts.some(a => a.status === 'pending_review')
+  const gradedAttempts = attempts.filter(a => a.status !== 'pending_review')
+  const bestAttempt = gradedAttempts.find(a => a.passed) || gradedAttempts[0]
   const allAnswered = questions.every(q => {
     if (q.type === 'multiple') return (answers[q.id] || []).length > 0
     if (q.type === 'open') return (answers[q.id] || '').trim().length > 0
@@ -139,18 +141,38 @@ export default function LessonQuiz({ lessonId, studentId }) {
         </div>
       )}
 
-      {result && (
-        <div style={{ marginBottom: '1rem', padding: '.85rem 1rem', borderRadius: 9, background: result.passed ? '#F0FDF4' : '#FEF2F2', border: `1px solid ${result.passed ? '#BBF7D0' : '#FECACA'}` }}>
-          <p style={{ margin: 0, fontSize: '.85rem', fontWeight: 700, color: result.passed ? '#16A34A' : '#DC2626' }}>
-            {result.passed ? `¡Aprobaste con ${result.score}%!` : `Obtuviste ${result.score}%, no alcanzaste el mínimo.`}
+      {!result && hasPendingReview && (
+        <div style={{ marginBottom: '1rem', padding: '.75rem 1rem', borderRadius: 9, background: '#FFFBEB', border: '1px solid #FDE68A', display: 'flex', alignItems: 'flex-start', gap: '.55rem' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round" style={{ marginTop: 1, flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p style={{ margin: 0, fontSize: '.82rem', color: '#92400E', lineHeight: 1.5 }}>
+            <strong>Tu quiz está en revisión.</strong> El instructor calificará las preguntas abiertas y recibirás tu resultado cuando termine.
           </p>
         </div>
       )}
 
+      {result && (
+        result.status === 'pending_review' ? (
+          <div style={{ marginBottom: '1rem', padding: '.85rem 1rem', borderRadius: 9, background: '#FFFBEB', border: '1px solid #FDE68A' }}>
+            <p style={{ margin: 0, fontSize: '.85rem', fontWeight: 700, color: '#92400E' }}>
+              Respuestas enviadas — en revisión
+            </p>
+            <p style={{ margin: '.3rem 0 0', fontSize: '.8rem', color: '#92400E', lineHeight: 1.5 }}>
+              Tu quiz tiene preguntas abiertas que el instructor debe calificar manualmente. Tu resultado aparecerá aquí cuando esté listo.
+            </p>
+          </div>
+        ) : (
+          <div style={{ marginBottom: '1rem', padding: '.85rem 1rem', borderRadius: 9, background: result.passed ? '#F0FDF4' : '#FEF2F2', border: `1px solid ${result.passed ? '#BBF7D0' : '#FECACA'}` }}>
+            <p style={{ margin: 0, fontSize: '.85rem', fontWeight: 700, color: result.passed ? '#16A34A' : '#DC2626' }}>
+              {result.passed ? `¡Aprobaste con ${result.score}%!` : `Obtuviste ${result.score}%, no alcanzaste el mínimo.`}
+            </p>
+          </div>
+        )
+      )}
+
       {error && <p style={{ fontSize: '.82rem', color: '#DC2626', marginBottom: '1rem' }}>{error}</p>}
 
-      {attemptsLeft <= 0 ? (
-        <p style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>Has alcanzado el número máximo de intentos para este quiz.</p>
+      {attemptsLeft <= 0 || hasPendingReview ? (
+        !hasPendingReview && <p style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>Has alcanzado el número máximo de intentos para este quiz.</p>
       ) : (
         <>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>

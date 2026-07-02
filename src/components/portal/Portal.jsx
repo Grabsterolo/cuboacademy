@@ -20,6 +20,7 @@ import AnnouncementsPage from '../../pages/dashboard/admin/AnnouncementsPage'
 
 // Instructor
 import CourseWizardPage from '../../pages/dashboard/instructor/CourseWizardPage'
+import QuizGradingPage from '../../pages/dashboard/instructor/QuizGradingPage'
 import InstructorDashboard from '../../pages/dashboard/InstructorDashboard'
 import InstructorProfilePage from '../../pages/dashboard/instructor/InstructorProfilePage'
 import InstructorCoursesPage from '../../pages/dashboard/instructor/InstructorCoursesPage'
@@ -70,7 +71,8 @@ function renderSection(section, role, params) {
       case 'usuarios':      return <UsersPage />
       case 'cursos':        return <CoursesPage />
       case 'curso-wizard':    return <CourseWizardPage />
-      case 'curso-revision':  return <CourseReviewPage />
+      case 'curso-revision':    return <CourseReviewPage />
+      case 'quiz-calificacion': return <QuizGradingPage />
       case 'categorias':    return <CategoriesPage />
       case 'comunicados':   return <AnnouncementsPage />
       case 'pagos':         return <OrdersPage />
@@ -87,7 +89,8 @@ function renderSection(section, role, params) {
       case 'cursos':        return <InstructorCoursesPage />
       case 'curso-wizard':  return <CourseWizardPage />
       case 'estudiantes':   return <InstructorStudentsPage />
-      case 'evaluaciones':  return <InstructorEvaluationsPage />
+      case 'evaluaciones':      return <InstructorEvaluationsPage />
+      case 'quiz-calificacion': return <QuizGradingPage />
       case 'comunicados':   return <InstructorAnnouncementsPage />
       case 'reportes':      return <InstructorReportsPage />
       case 'configuracion': return <InstructorSettingsPage />
