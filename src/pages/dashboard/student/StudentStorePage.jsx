@@ -199,9 +199,9 @@ function PurchasesTab({ user }) {
   }, [user])
 
   const STATUS_STYLE = {
-    completed: { label: 'Pagado', bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
-    pending:   { label: 'Pendiente', bg: '#FFF9E6', color: '#B45309', border: '1px solid #FBBF24' },
-    failed:    { label: 'Fallido', bg: '#FEF2F2', color: '#B91C1C', border: '1px solid #FECACA' },
+    completed: { label: 'Pagado',     hint: null,                                                          bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
+    pending:   { label: 'En revisión', hint: 'Esperando confirmación de pago — te notificaremos al aprobarse.', bg: '#FFFBEB',          color: '#92400E',          border: '1px solid #FDE68A'           },
+    failed:    { label: 'Rechazada',  hint: null,                                                          bg: '#FEF2F2',          color: '#B91C1C',          border: '1px solid #FECACA'           },
   }
 
   if (loading) return (
@@ -227,18 +227,26 @@ function PurchasesTab({ user }) {
         const st = STATUS_STYLE[order.status] || STATUS_STYLE.pending
         const date = new Date(order.created_at).toLocaleDateString('es-CR', { year: 'numeric', month: 'long', day: 'numeric' })
         return (
-          <div key={order.id} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 10, padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            {c?.cover_image_url && <div style={{ width: 52, height: 36, borderRadius: 6, background: `url(${c.cover_image_url}) center/cover no-repeat`, flexShrink: 0 }} />}
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', fontSize: '.9rem', marginBottom: '.2rem' }}>
-                {c ? <span style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }} onClick={() => navigate('course-detail', { slug: c.slug })}>{c.title}</span> : `Orden ${order.id.slice(0,8)}`}
+          <div key={order.id} style={{ background: 'white', border: `1px solid ${order.status === 'pending' ? '#FDE68A' : 'var(--border)'}`, borderRadius: 10, padding: '1rem 1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              {c?.cover_image_url && <div style={{ width: 52, height: 36, borderRadius: 6, background: `url(${c.cover_image_url}) center/cover no-repeat`, flexShrink: 0 }} />}
+              <div style={{ flex: 1, minWidth: 160 }}>
+                <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', fontSize: '.9rem', marginBottom: '.2rem' }}>
+                  {c ? <span style={{ cursor: 'pointer', color: 'inherit' }} onClick={() => navigate('course-detail', { slug: c.slug })}>{c.title}</span> : `Orden ${order.id.slice(0,8)}`}
+                </div>
+                <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{date} {order.payment_provider ? `· ${order.payment_provider}` : ''}</div>
               </div>
-              <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{date} {order.payment_provider ? `· ${order.payment_provider}` : ''}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                {order.amount && <span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.95rem', color: 'var(--carbon)' }}>${Number(order.amount).toFixed(2)}</span>}
+                <span style={{ fontSize: '.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: st.bg, color: st.color, border: st.border, whiteSpace: 'nowrap' }}>{st.label}</span>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              {order.amount && <span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.95rem', color: 'var(--carbon)' }}>${Number(order.amount).toFixed(2)}</span>}
-              <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 8px', borderRadius: 20, background: st.bg, color: st.color, border: st.border }}>{st.label}</span>
-            </div>
+            {st.hint && (
+              <div style={{ marginTop: '.6rem', paddingTop: '.6rem', borderTop: '1px solid #FDE68A', display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span style={{ fontSize: '.73rem', color: '#B45309' }}>{st.hint}</span>
+              </div>
+            )}
           </div>
         )
       })}

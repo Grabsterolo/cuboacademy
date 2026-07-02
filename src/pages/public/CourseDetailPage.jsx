@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { sanitizeHtml } from '../../lib/sanitizeHtml'
+import { enrollCourse } from '../../lib/enrollCourse'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
@@ -19,6 +20,7 @@ export default function CourseDetailPage() {
   const [pendingOrder, setPendingOrder] = useState(false)
   const [expanded, setExpanded] = useState(new Set())
   const [enrolling, setEnrolling] = useState(false)
+  const [enrollError, setEnrollError] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -83,29 +85,11 @@ export default function CourseDetailPage() {
   async function handleEnroll() {
     if (!user || !course) return
     setEnrolling(true)
-    const priceNum = Number(course.price)
-    const isGratisCourse = !course.price || priceNum === 0
-
-    if (isGratisCourse) {
-      const { error } = await supabase.from('enrollments').insert({
-        student_id: user.id,
-        course_id: course.id,
-        enrolled_at: new Date().toISOString(),
-      })
-      if (!error) {
-        setEnrolled(true)
-        navigate('aprender', { courseId: course.id })
-        return
-      }
-    } else {
-      const { error } = await supabase.from('orders').insert({
-        student_id: user.id,
-        course_id: course.id,
-        amount: priceNum,
-        status: 'pending',
-      })
-      if (!error) setPendingOrder(true)
-    }
+    setEnrollError('')
+    const result = await enrollCourse({ userId: user.id, course })
+    if (result.error) { setEnrollError(result.error); setEnrolling(false); return }
+    if (result.enrolled) { setEnrolled(true); navigate('aprender', { courseId: course.id }); return }
+    if (result.pendingOrder) setPendingOrder(true)
     setEnrolling(false)
   }
 
@@ -253,20 +237,26 @@ export default function CourseDetailPage() {
                     Ir al curso →
                   </button>
                 ) : pendingOrder ? (
-                  <div style={{ background: '#FFF9E6', border: '1px solid #FBBF24', borderRadius: 10, padding: '.9rem 1rem', textAlign: 'center' }}>
-                    <p style={{ fontSize: '.82rem', color: '#B45309', fontWeight: 600, marginBottom: '.25rem' }}>Pago pendiente de confirmación</p>
-                    <p style={{ fontSize: '.75rem', color: '#92400E', lineHeight: 1.5 }}>Tu solicitud fue recibida. Un administrador confirmará tu pago pronto.</p>
+                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 10, padding: '1rem 1.1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.4rem' }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <span style={{ fontSize: '.84rem', fontWeight: 700, color: '#92400E' }}>Inscripción solicitada</span>
+                    </div>
+                    <p style={{ fontSize: '.76rem', color: '#B45309', lineHeight: 1.55, margin: 0 }}>Tu solicitud fue registrada. El equipo de Cubo Academy verificará el pago y activará tu acceso. Te notificaremos cuando esté listo.</p>
                   </div>
                 ) : !user ? (
                   <button className="buy-btn" onClick={() => navigate('login')}
                     style={{ background: 'var(--jade)', color: 'white' }}>
-                    {isGratis ? 'Inscribirme gratis' : 'Inscribirme ahora'}
+                    {isGratis ? 'Inscribirme gratis' : 'Solicitar inscripción'}
                   </button>
                 ) : (
-                  <button className="buy-btn" onClick={handleEnroll} disabled={enrolling}
-                    style={{ background: 'var(--jade)', color: 'white', opacity: enrolling ? .7 : 1 }}>
-                    {enrolling ? 'Procesando…' : isGratis ? 'Inscribirme gratis' : 'Inscribirme ahora'}
-                  </button>
+                  <>
+                    {enrollError && <p style={{ fontSize: '.78rem', color: '#B91C1C', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 7, padding: '.5rem .75rem', marginBottom: '.75rem' }}>{enrollError}</p>}
+                    <button className="buy-btn" onClick={handleEnroll} disabled={enrolling}
+                      style={{ background: 'var(--jade)', color: 'white', opacity: enrolling ? .7 : 1 }}>
+                      {enrolling ? 'Procesando…' : isGratis ? 'Inscribirme gratis' : 'Solicitar inscripción'}
+                    </button>
+                  </>
                 )}
               </div>
 
