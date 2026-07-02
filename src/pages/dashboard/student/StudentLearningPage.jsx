@@ -92,6 +92,7 @@ export default function StudentLearningPage() {
   const [completedIds, setCompletedIds] = useState(new Set())
   const [expandedMods, setExpandedMods] = useState(new Set())
   const [marking, setMarking]           = useState(false)
+  const [completeError, setCompleteError] = useState('')
   const [examSubmission, setExamSubmission] = useState(null)
   const [submitting, setSubmitting]     = useState(false)
 
@@ -160,6 +161,7 @@ export default function StudentLearningPage() {
   function selectLesson(lesson) {
     setActiveLesson(lesson)
     setActiveVideoIdx(0)
+    setCompleteError('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -194,8 +196,13 @@ export default function StudentLearningPage() {
     if (!alreadyDone && !enrollment?.completed_at && course?.certificate_condition === 'complete') {
       const allLessonIds = modules.flatMap(m => m.lessons).map(l => l.id)
       if (allLessonIds.length > 0 && allLessonIds.every(id => next.has(id))) {
-        await supabase.from('enrollments').update({ completed_at: now }).eq('id', enrollment.id)
-        setEnrollment(prev => ({ ...prev, completed_at: now }))
+        const { error: enrollErr } = await supabase
+          .from('enrollments').update({ completed_at: now }).eq('id', enrollment.id)
+        if (enrollErr) {
+          setCompleteError('No se pudo registrar el curso como completado. Intenta marcar la lección de nuevo.')
+        } else {
+          setEnrollment(prev => ({ ...prev, completed_at: now }))
+        }
       }
     }
 
@@ -388,6 +395,13 @@ export default function StudentLearningPage() {
                 </div>
               </div>
 
+              {completeError && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.6rem .9rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, marginBottom: '.75rem', fontSize: '.8rem', color: '#B91C1C' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {completeError}
+                </div>
+              )}
+
               {activeLesson?.description && (
                 <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', marginBottom: '1rem' }}>
                   <div style={{ fontSize: '.88rem', color: 'var(--carbon)', lineHeight: 1.8, fontWeight: 300 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeLesson.description) }} />
@@ -432,8 +446,8 @@ export default function StudentLearningPage() {
                 </button>
               </div>
 
-              {/* Exam submission / completion panel */}
-              {progressPct === 100 && !courseCompleted && (
+              {/* Exam submission / completion panel — solo para cursos que requieren evaluación */}
+              {progressPct === 100 && !courseCompleted && course?.certificate_condition !== 'complete' && (
                 <div style={{ marginTop: '1.5rem' }}>
                   {!examSubmission && (
                     <div style={{ background: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', border: '1px solid #bbf7d0', borderRadius: 12, padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
