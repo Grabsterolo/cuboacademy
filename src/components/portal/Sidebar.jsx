@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
@@ -13,7 +14,35 @@ const LOGO = (
   </svg>
 )
 
-function NavItem({ item, active, onClick }) {
+// Live count of courses awaiting review (status = 'pending'), for the admin badge
+function usePendingCoursesCount(enabled) {
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    if (!enabled) { setCount(0); return }
+    let cancelled = false
+
+    async function fetchCount() {
+      const { count: c } = await supabase
+        .from('courses')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+      if (!cancelled) setCount(c || 0)
+    }
+    fetchCount()
+
+    const channel = supabase
+      .channel('pending-courses-badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'courses' }, fetchCount)
+      .subscribe()
+
+    return () => { cancelled = true; supabase.removeChannel(channel) }
+  }, [enabled])
+
+  return count
+}
+
+function NavItem({ item, active, onClick, badge = 0 }) {
   return (
     <button
       onClick={() => onClick(item.key)}
@@ -31,7 +60,17 @@ function NavItem({ item, active, onClick }) {
       onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,.6)' } }}
     >
       <span style={{ flexShrink: 0, opacity: active ? 1 : .7 }}>{item.icon}</span>
-      {item.label}
+      <span style={{ flex: 1 }}>{item.label}</span>
+      {badge > 0 && (
+        <span style={{
+          flexShrink: 0, minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9,
+          background: '#DC2626', color: 'white', fontSize: '.66rem', fontWeight: 700,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          boxSizing: 'border-box', lineHeight: 1,
+        }}>
+          {badge > 9 ? '9+' : badge}
+        </span>
+      )}
     </button>
   )
 }
@@ -45,6 +84,8 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
   const navItems = profile?.role === 'admin' ? ADMIN_NAV
     : profile?.role === 'instructor' ? INSTRUCTOR_NAV
     : STUDENT_NAV
+
+  const pendingCourses = usePendingCoursesCount(profile?.role === 'admin')
 
   const platformName = settings?.platform_name || 'Cubo Academy'
   const spIdx = platformName.indexOf(' ')
@@ -81,7 +122,8 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
       {/* Nav */}
       <nav style={{ flex: 1, padding: '.25rem .5rem', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
         {navItems.map(item => (
-          <NavItem key={item.key} item={item} active={section === item.key} onClick={handleNav} />
+          <NavItem key={item.key} item={item} active={section === item.key} onClick={handleNav}
+            badge={item.key === 'cursos' && profile?.role === 'admin' ? pendingCourses : 0} />
         ))}
       </nav>
 
