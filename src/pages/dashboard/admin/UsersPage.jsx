@@ -92,7 +92,7 @@ export default function UsersPage() {
     const { data, error } = await supabase.auth.signUp({
       email: newEmail,
       password: newPassword,
-      options: { emailRedirectTo: null, data: { full_name: newName, role: newRole } },
+      options: { emailRedirectTo: null, data: { full_name: newName } },
     })
 
     if (error) {
@@ -102,12 +102,31 @@ export default function UsersPage() {
       return
     }
 
-    if (data.user) {
-      await supabase.from('profiles').update({ role: newRole, full_name: newName }).eq('id', data.user.id)
+    // Restaurar la sesión del admin ANTES de tocar profiles,
+    // porque el signUp anterior dejó activa la sesión del usuario nuevo.
+    if (adminSession) {
+      const { error: sessionErr } = await supabase.auth.setSession({
+        access_token: adminSession.access_token,
+        refresh_token: adminSession.refresh_token,
+      })
+      if (sessionErr) {
+        setCreateError('El usuario fue creado, pero no se pudo restaurar tu sesión de admin. Recarga la página e inicia sesión de nuevo.')
+        setCreateLoading(false)
+        return
+      }
     }
 
-    if (adminSession) {
-      await supabase.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token })
+    // Ahora se ejecuta con sesión de admin → RLS permite el UPDATE
+    if (data.user) {
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .update({ role: newRole, full_name: newName })
+        .eq('id', data.user.id)
+      if (profileErr) {
+        setCreateError('El usuario fue creado con rol "student". No se pudo asignar el rol deseado — edítalo manualmente.')
+        setCreateLoading(false)
+        return
+      }
     }
 
     setCreateLoading(false)
