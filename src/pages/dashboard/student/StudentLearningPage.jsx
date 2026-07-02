@@ -106,7 +106,7 @@ export default function StudentLearningPage() {
     setLoading(true)
     const [{ data: courseData }, { data: modulesData }, { data: enrollData }] = await Promise.all([
       supabase.from('courses')
-        .select('id, title, cover_image_url, profiles!instructor_id(full_name)')
+        .select('id, title, cover_image_url, certificate_condition, profiles!instructor_id(full_name)')
         .eq('id', courseId).single(),
       supabase.from('modules')
         .select('id, title, description, order_index, lessons(id, title, description, video_url, duration_mins, is_free_preview, order_index, resources(id, title, file_url, file_type))')
@@ -189,7 +189,15 @@ export default function StudentLearningPage() {
     if (alreadyDone) next.delete(activeLesson.id)
     else next.add(activeLesson.id)
     setCompletedIds(next)
-    // enrollment.completed_at is handled reactively by the useEffect above
+
+    // Auto-complete enrollment when condition is 'complete' and every lesson is now done
+    if (!alreadyDone && !enrollment?.completed_at && course?.certificate_condition === 'complete') {
+      const allLessonIds = modules.flatMap(m => m.lessons).map(l => l.id)
+      if (allLessonIds.length > 0 && allLessonIds.every(id => next.has(id))) {
+        await supabase.from('enrollments').update({ completed_at: now }).eq('id', enrollment.id)
+        setEnrollment(prev => ({ ...prev, completed_at: now }))
+      }
+    }
 
     setMarking(false)
     if (!alreadyDone) goNext(next)

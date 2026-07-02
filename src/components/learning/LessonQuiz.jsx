@@ -42,7 +42,7 @@ export default function LessonQuiz({ lessonId, studentId }) {
     const [{ data: qData }, { data: attemptsData }] = await Promise.all([
       supabase
         .from('questions')
-        .select('id, text, type, order_index, points, answer_options(id, text, order_index)')
+        .select('id, text, type, order_index, points, answers(id, text, order_index)')
         .eq('quiz_id', quizData.id)
         .order('order_index', { ascending: true }),
       supabase
@@ -53,7 +53,7 @@ export default function LessonQuiz({ lessonId, studentId }) {
         .order('completed_at', { ascending: false }),
     ])
 
-    setQuestions((qData || []).map(q => ({ ...q, answer_options: (q.answer_options || []).sort((a, b) => a.order_index - b.order_index) })))
+    setQuestions((qData || []).map(q => ({ ...q, answers: (q.answers || []).sort((a, b) => a.order_index - b.order_index) })))
     setAttempts(attemptsData || [])
     setLoading(false)
   }
@@ -160,7 +160,7 @@ export default function LessonQuiz({ lessonId, studentId }) {
 
                 {(q.type === 'single' || q.type === 'true_false') && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
-                    {q.answer_options.map(opt => (
+                    {q.answers.map(opt => (
                       <label key={opt.id} style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.5rem .7rem', borderRadius: 7, border: `1px solid ${answers[q.id] === opt.id ? 'var(--jade)' : 'var(--border)'}`, background: answers[q.id] === opt.id ? 'var(--jade-soft)' : 'white', cursor: 'pointer', fontSize: '.83rem' }}>
                         <input type="radio" name={q.id} checked={answers[q.id] === opt.id} onChange={() => setSingle(q.id, opt.id)} />
                         {opt.text}
@@ -171,7 +171,7 @@ export default function LessonQuiz({ lessonId, studentId }) {
 
                 {q.type === 'multiple' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
-                    {q.answer_options.map(opt => {
+                    {q.answers.map(opt => {
                       const checked = (answers[q.id] || []).includes(opt.id)
                       return (
                         <label key={opt.id} style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.5rem .7rem', borderRadius: 7, border: `1px solid ${checked ? 'var(--jade)' : 'var(--border)'}`, background: checked ? 'var(--jade-soft)' : 'white', cursor: 'pointer', fontSize: '.83rem' }}>

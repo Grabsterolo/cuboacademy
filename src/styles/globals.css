@@ -31,7 +31,7 @@
 
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
-input, select, textarea { -webkit-appearance: none; border-radius: 0; }
+input:not([type="checkbox"]):not([type="radio"]), select, textarea { -webkit-appearance: none; border-radius: 0; }
 button { touch-action: manipulation; }
 
 body {
