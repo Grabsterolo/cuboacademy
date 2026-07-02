@@ -10,7 +10,6 @@ import GeneralPage from '../../pages/dashboard/admin/GeneralPage'
 import UsersPage from '../../pages/dashboard/admin/UsersPage'
 import CategoriesPage from '../../pages/dashboard/admin/CategoriesPage'
 import CoursesPage from '../../pages/dashboard/admin/CoursesPage'
-import CourseStructurePage from '../../pages/dashboard/admin/CourseStructurePage'
 import CourseReviewPage from '../../pages/dashboard/admin/CourseReviewPage'
 import OrdersPage from '../../pages/dashboard/admin/OrdersPage'
 import CertificatesPage from '../../pages/dashboard/admin/CertificatesPage'
@@ -72,7 +71,6 @@ function renderSection(section, role, params) {
       case 'cursos':        return <CoursesPage />
       case 'curso-wizard':    return <CourseWizardPage />
       case 'curso-revision':  return <CourseReviewPage />
-      case 'curso-estructura': return <CourseStructurePage />
       case 'categorias':    return <CategoriesPage />
       case 'comunicados':   return <AnnouncementsPage />
       case 'pagos':         return <OrdersPage />
@@ -88,7 +86,6 @@ function renderSection(section, role, params) {
       case 'perfil':        return <InstructorProfilePage />
       case 'cursos':        return <InstructorCoursesPage />
       case 'curso-wizard':  return <CourseWizardPage />
-      case 'curso-estructura': return <CourseStructurePage />
       case 'estudiantes':   return <InstructorStudentsPage />
       case 'evaluaciones':  return <InstructorEvaluationsPage />
       case 'comunicados':   return <InstructorAnnouncementsPage />
