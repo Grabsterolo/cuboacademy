@@ -90,7 +90,7 @@ export default function QuizGradingPage() {
     const attemptIds = attemptsData.map(a => a.id)
     const { data: responsesData } = await supabase
       .from('quiz_responses')
-      .select('id, attempt_id, question_id, open_response, points_awarded, questions!question_id(id, text, type, points)')
+      .select('id, attempt_id, question_id, open_response, points_earned, questions!question_id(id, text, type, points)')
       .in('attempt_id', attemptIds)
 
     const openResponses = (responsesData || []).filter(r => r.questions?.type === 'open')
@@ -106,8 +106,8 @@ export default function QuizGradingPage() {
     const inputs = {}
     for (const a of result) {
       for (const r of a.openResponses) {
-        if (r.points_awarded != null) graded.add(r.id)
-        inputs[r.id] = r.points_awarded != null ? String(r.points_awarded) : ''
+        if (r.points_earned != null) graded.add(r.id)
+        inputs[r.id] = r.points_earned != null ? String(r.points_earned) : ''
       }
     }
     setGradedSet(graded)
