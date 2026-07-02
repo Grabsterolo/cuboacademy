@@ -31,6 +31,22 @@ function lesIcon(type) {
   return IC.text
 }
 
+// lessons has no `type` column — derive it from data that does exist
+function deriveLessonType(les, quizLessonIds) {
+  let hasVideo = false
+  if (les.video_url) {
+    try {
+      const parsed = JSON.parse(les.video_url)
+      hasVideo = Array.isArray(parsed) ? parsed.length > 0 : !!parsed
+    } catch {
+      hasVideo = true // plain URL string
+    }
+  }
+  if (hasVideo) return 'video'
+  if (quizLessonIds.has(les.id)) return 'quiz'
+  return 'text'
+}
+
 function Section({ title, icon, children }) {
   return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: '1.25rem' }}>
@@ -82,16 +98,32 @@ export default function CourseReviewPage() {
 
     const { data: mods } = await supabase
       .from('modules')
-      .select('*, lessons(id, title, type, description, video_url, duration_mins, order_index)')
+      .select('*, lessons(id, title, description, video_url, duration_mins, order_index)')
       .eq('course_id', courseId)
       .order('order_index')
 
     const regularMods = (mods || []).filter(m => m.title !== 'Evaluación Final')
     const evalMod     = (mods || []).find(m => m.title === 'Evaluación Final')
 
-    // sort lessons
-    regularMods.forEach(m => { m.lessons = (m.lessons || []).sort((a, b) => a.order_index - b.order_index) })
-    if (evalMod) evalMod.lessons = (evalMod.lessons || []).sort((a, b) => a.order_index - b.order_index)
+    // find which lessons have a quiz, to derive lesson type
+    const allLessonIds = (mods || []).flatMap(m => m.lessons || []).map(l => l.id)
+    let quizLessonIds = new Set()
+    if (allLessonIds.length) {
+      const { data: quizRows } = await supabase
+        .from('quizzes')
+        .select('lesson_id')
+        .in('lesson_id', allLessonIds)
+      quizLessonIds = new Set((quizRows || []).map(q => q.lesson_id))
+    }
+
+    // sort lessons + annotate derived type
+    const prep = m => {
+      m.lessons = (m.lessons || [])
+        .sort((a, b) => a.order_index - b.order_index)
+        .map(l => ({ ...l, type: deriveLessonType(l, quizLessonIds) }))
+    }
+    regularMods.forEach(prep)
+    if (evalMod) prep(evalMod)
 
     // load quiz if eval module exists
     if (evalMod?.lessons?.[0]?.id) {
