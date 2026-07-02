@@ -141,7 +141,7 @@ export default function InstructorDashboard() {
                 const ss = STATUS_STYLE[c.status] || STATUS_STYLE.draft
                 const count = studentCounts[c.id] || 0
                 return (
-                  <div key={c.id} className="course-row" onClick={() => navigate('curso-estructura', { courseId: c.id })}>
+                  <div key={c.id} className="course-row" onClick={() => navigate('curso-wizard', { courseId: c.id })}>
                     <div style={{ width: 60, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
                       {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
