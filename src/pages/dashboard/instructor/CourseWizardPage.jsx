@@ -1140,12 +1140,20 @@ export default function CourseWizardPage() {
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setImgErr('Solo JPG, PNG o WebP.'); return }
     if (file.size > 5 * 1024 * 1024) { setImgErr('Máximo 5 MB.'); return }
     setImgErr(''); setImgUploading(true)
+    const prevUrl = info.coverUrl
     const name = `${Date.now()}-${file.name}`
     const { error: upErr } = await supabase.storage.from('course-images').upload(name, file)
     if (upErr) { setImgErr(upErr.message); setImgUploading(false); return }
     const { data: { publicUrl } } = supabase.storage.from('course-images').getPublicUrl(name)
     setInfo(i => ({ ...i, coverUrl: publicUrl }))
     setImgUploading(false)
+    // best-effort: remove the replaced cover so re-uploads don't accumulate orphans
+    if (prevUrl && prevUrl.includes('/course-images/')) {
+      const prevName = decodeURIComponent(prevUrl.split('/course-images/')[1].split('?')[0])
+      if (prevName && !prevName.startsWith('avatars/')) {
+        await supabase.storage.from('course-images').remove([prevName])
+      }
+    }
   }
 
   // ── step validations ──────────────────────────────────────────────────────
@@ -1209,27 +1217,32 @@ export default function CourseWizardPage() {
         await supabase.from('modules').delete().in('id', modIds)
       }
     }
+    if (modules.length === 0) return
+
+    // batch insert: all modules in one round-trip; returned rows keep insert order
+    const { data: modRows, error: modErr } = await supabase.from('modules')
+      .insert(modules.map((mod, i) => ({ course_id: cId, title: mod.title.trim(), order_index: i + 1 })))
+      .select('id')
+    if (modErr) throw modErr
+
     const savedModIds = {}
-    for (let i = 0; i < modules.length; i++) {
-      const mod = modules[i]
-      const { data: modData, error: modErr } = await supabase.from('modules')
-        .insert({ course_id: cId, title: mod.title.trim(), order_index: i + 1 })
-        .select('id').single()
-      if (modErr) throw modErr
-      savedModIds[mod.id] = modData.id
-      for (let j = 0; j < mod.lessons.length; j++) {
-        const les = mod.lessons[j]
-        const videoUrl = les.video_url ? JSON.stringify([{ url: les.video_url, label: 'Video' }]) : null
-        const { error: lesErr } = await supabase.from('lessons').insert({
-          module_id: modData.id, title: les.title.trim(),
-          description: les.content_text || null,
-          video_url: videoUrl,
-          duration_mins: les.duration_mins !== '' ? parseInt(les.duration_mins) || null : null,
-          is_free_preview: false, order_index: j + 1,
-        })
-        if (lesErr) throw lesErr
-      }
+    modules.forEach((mod, i) => { savedModIds[mod.id] = modRows[i].id })
+
+    // batch insert: all lessons of all modules in one round-trip
+    const lessonRows = modules.flatMap((mod, i) => mod.lessons.map((les, j) => ({
+      module_id: modRows[i].id,
+      title: les.title.trim(),
+      description: les.content_text || null,
+      video_url: les.video_url ? JSON.stringify([{ url: les.video_url, label: 'Video' }]) : null,
+      duration_mins: les.duration_mins !== '' ? parseInt(les.duration_mins) || null : null,
+      is_free_preview: false,
+      order_index: j + 1,
+    })))
+    if (lessonRows.length > 0) {
+      const { error: lesErr } = await supabase.from('lessons').insert(lessonRows)
+      if (lesErr) throw lesErr
     }
+
     setModules(ms => ms.map(m => ({ ...m, dbId: savedModIds[m.id] })))
   }
 
@@ -1276,22 +1289,26 @@ export default function CourseWizardPage() {
       .select('id').single()
     if (qzErr) throw qzErr
 
-    for (const q of evalData.questions) {
-      const { data: qRow, error: qErr } = await supabase.from('questions')
-        .insert({ quiz_id: quiz.id, type: q.type, text: q.text.trim() })
-        .select('id').single()
-      if (qErr) throw qErr
+    // batch insert: all questions in one round-trip; returned rows keep insert order
+    const { data: qRows, error: qErr } = await supabase.from('questions')
+      .insert(evalData.questions.map(q => ({ quiz_id: quiz.id, type: q.type, text: q.text.trim() })))
+      .select('id')
+    if (qErr) throw qErr
 
+    // batch insert: all answers of all questions in one round-trip
+    const answerRows = evalData.questions.flatMap((q, i) => {
+      const questionId = qRows[i].id
       if (q.type === 'true_false' && q.answers.length === 0) {
-        await supabase.from('answers').insert([
-          { question_id: qRow.id, text: 'Verdadero', is_correct: false },
-          { question_id: qRow.id, text: 'Falso', is_correct: false },
-        ])
-      } else {
-        for (const a of q.answers) {
-          await supabase.from('answers').insert({ question_id: qRow.id, text: a.text.trim(), is_correct: a.correct })
-        }
+        return [
+          { question_id: questionId, text: 'Verdadero', is_correct: false },
+          { question_id: questionId, text: 'Falso', is_correct: false },
+        ]
       }
+      return q.answers.map(a => ({ question_id: questionId, text: a.text.trim(), is_correct: a.correct }))
+    })
+    if (answerRows.length > 0) {
+      const { error: ansErr } = await supabase.from('answers').insert(answerRows)
+      if (ansErr) throw ansErr
     }
   }
 
