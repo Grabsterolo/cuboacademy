@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { ModalOverlay, ConfirmModal, Badge, Toast } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
+import { useNavigation } from '../../../context/NavigationContext'
 
 const EXP_LABEL = { 2: '1-2 años', 5: '3-5 años', 10: '6-10 años', 15: '10+ años' }
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
@@ -62,6 +63,7 @@ function CvRow({ path }) {
 }
 
 export default function RequestsPage() {
+  const { navigate } = useNavigation()
   const [apps, setApps] = useState([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('all')
@@ -102,12 +104,33 @@ export default function RequestsPage() {
       .from('instructor_applications')
       .update({ status: 'approved', reviewer_notes: notes || null, reviewed_at: new Date().toISOString() })
       .eq('id', selected.id)
+
+    if (error) { setActionLoading(false); showToast('Error al aprobar.'); return }
+
+    // A DB trigger (notify_instructor_application_approved) reacts to this same
+    // status update: if the applicant's email already has an account, it grants
+    // the instructor role and notifies them there — no client-side write needed.
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .ilike('email', selected.email)
+      .maybeSingle()
+
+    const app = selected
     setActionLoading(false)
-    if (error) { showToast('Error al aprobar.'); return }
-    showToast('Solicitud aprobada. Crea el usuario instructor desde la sección Usuarios.')
     setSelected(null)
     setNotes('')
     loadData()
+
+    if (existingProfile) {
+      showToast('Solicitud aprobada. Se otorgó el rol de instructor a la cuenta existente.')
+      return
+    }
+
+    showToast('Solicitud aprobada. Completa la creación de la cuenta de instructor.')
+    navigate('usuarios', {
+      prefillUser: { full_name: `${app.full_name} ${app.last_name}`.trim(), email: app.email, role: 'instructor' },
+    })
   }
 
   async function handleReject() {

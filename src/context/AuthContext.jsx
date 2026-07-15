@@ -8,39 +8,47 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Sesión inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
-      else setLoading(false)
-    })
+  // Single source of truth for turning a Supabase session into { user, profile } state.
+  // Deactivated accounts are signed out here and never exposed as a truthy `user` —
+  // this runs both from the initial getSession() and from onAuthStateChange, so a
+  // deactivated account can't slip through via whichever one resolves first.
+  async function establishSession(session) {
+    if (!session?.user) {
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+      return { blocked: false }
+    }
 
-    // Escuchar cambios de sesión
+    const { data: profileRow } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
+
+    if (profileRow?.is_active === false) {
+      await supabase.auth.signOut()
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+      return { blocked: true }
+    }
+
+    setUser(session.user)
+    setProfile(profileRow || null)
+    setLoading(false)
+    return { blocked: false }
+  }
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => establishSession(session))
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setUser(session?.user ?? null)
-        if (session?.user) await fetchProfile(session.user.id)
-        else {
-          setProfile(null)
-          setLoading(false)
-        }
-      }
+      (_event, session) => { establishSession(session) }
     )
 
     return () => subscription.unsubscribe()
   }, [])
-
-  async function fetchProfile(userId) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-
-    if (!error) setProfile(data)
-    setLoading(false)
-  }
 
   async function signUp({ email, password, fullName }) {
     const { data, error } = await supabase.auth.signUp({
@@ -58,6 +66,13 @@ export function AuthProvider({ children }) {
       email,
       password
     })
+    if (error) return { data, error }
+
+    const { blocked } = await establishSession(data.session)
+    if (blocked) {
+      return { data: null, error: { message: 'Tu cuenta ha sido desactivada. Contacta a un administrador.' } }
+    }
+
     return { data, error }
   }
 

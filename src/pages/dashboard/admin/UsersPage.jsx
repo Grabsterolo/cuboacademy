@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { FieldLabel as LabelField } from '../../../components/ui'
+import { useNavigation } from '../../../context/NavigationContext'
 
 const ROLE_LABELS = { admin: 'Admin', instructor: 'Instructor', student: 'Estudiante' }
 const ROLE_STYLE = {
@@ -17,6 +18,7 @@ const TABS = [
 ]
 
 export default function UsersPage() {
+  const { params } = useNavigation()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -46,6 +48,16 @@ export default function UsersPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => { loadUsers() }, [])
+
+  // Coming from an approved instructor application: prefill and open the create-user form.
+  useEffect(() => {
+    if (params?.prefillUser) {
+      setNewName(params.prefillUser.full_name || '')
+      setNewEmail(params.prefillUser.email || '')
+      setNewRole(params.prefillUser.role || 'student')
+      setShowCreate(true)
+    }
+  }, [params])
 
   useEffect(() => {
     const onKey = (e) => {

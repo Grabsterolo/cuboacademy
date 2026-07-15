@@ -151,6 +151,11 @@ export default function CourseReviewPage() {
   }
 
   async function handleAction(action) {
+    if (action === 'publish' && (totalModulesCount === 0 || totalLessons === 0)) {
+      setActionErr('Este curso no tiene módulos ni lecciones — no se puede publicar así.')
+      setConfirm(null)
+      return
+    }
     setSaving(true); setActionErr('')
     const status = action === 'publish' ? 'published' : 'draft'
     const { error } = await supabase.from('courses').update({ status }).eq('id', courseId)
@@ -362,8 +367,9 @@ export default function CourseReviewPage() {
             style={{ padding: '.65rem 1.5rem', border: '1.5px solid #FECACA', background: '#FEF2F2', color: '#B91C1C', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.45rem' }}>
             {IC.x} Rechazar
           </button>
-          <button onClick={() => setConfirm('publish')}
-            style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.45rem' }}>
+          <button onClick={() => setConfirm('publish')} disabled={totalModulesCount === 0 || totalLessons === 0}
+            title={(totalModulesCount === 0 || totalLessons === 0) ? 'Agrega al menos un módulo con una lección antes de publicar' : undefined}
+            style={{ padding: '.65rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, cursor: (totalModulesCount === 0 || totalLessons === 0) ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.45rem', opacity: (totalModulesCount === 0 || totalLessons === 0) ? .55 : 1 }}>
             {IC.check} Publicar curso
           </button>
         </div>
