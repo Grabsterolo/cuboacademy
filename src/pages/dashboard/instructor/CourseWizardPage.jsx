@@ -636,11 +636,15 @@ function QuestionCard({ q, idx, onToggle, onUpdate, onRemove, onAddAnswer, onUpd
                 value={q.text} placeholder="Escribe la pregunta aquí…"
                 onChange={e => onUpdate({ text: e.target.value })} onFocus={fi} onBlur={fb} />
             </Field>
-            <div>
+            <div style={{ display: 'flex', gap: '.75rem' }}>
               <Field label="Tipo">
                 <select style={{ ...SEL, width: 'auto' }} value={q.type} onChange={e => onUpdate({ type: e.target.value, answers: [] })} onFocus={fi} onBlur={fb}>
                   {Q_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
+              </Field>
+              <Field label="Puntos">
+                <input type="number" min="1" step="1" style={{ ...INP, width: 72 }} value={q.score}
+                  onChange={e => onUpdate({ score: Math.max(1, parseInt(e.target.value) || 1) })} onFocus={fi} onBlur={fb} />
               </Field>
             </div>
           </div>
@@ -1089,7 +1093,7 @@ export default function CourseWizardPage() {
     try {
       const [{ data: course }, { data: mods }, { data: evalMod }] = await Promise.all([
         supabase.from('courses').select('*').eq('id', cId).single(),
-        supabase.from('modules').select('*, lessons(*)').eq('course_id', cId).neq('title', 'Evaluación Final').order('order_index').order('order_index', { foreignTable: 'lessons' }),
+        supabase.from('modules').select('*, lessons(*, resources(*))').eq('course_id', cId).neq('title', 'Evaluación Final').order('order_index').order('order_index', { foreignTable: 'lessons' }),
         supabase.from('modules').select('*, lessons(*, quizzes(*, questions(*, answers(*))))').eq('course_id', cId).eq('title', 'Evaluación Final').maybeSingle(),
       ])
 
@@ -1108,7 +1112,8 @@ export default function CourseWizardPage() {
             if (l.video_url) {
               try { const p = JSON.parse(l.video_url); video_url = Array.isArray(p) ? (p[0]?.url || '') : l.video_url } catch { video_url = l.video_url }
             }
-            return { id: uid(), dbId: l.id, title: l.title, type: 'video', duration_mins: l.duration_mins != null ? String(l.duration_mins) : '', video_url, content_text: l.description || '', links: [] }
+            const links = (l.resources || []).filter(r => r.file_type === 'link').map(r => ({ id: uid(), url: r.file_url, label: r.title || '' }))
+            return { id: uid(), dbId: l.id, title: l.title, type: 'video', duration_mins: l.duration_mins != null ? String(l.duration_mins) : '', video_url, content_text: l.description || '', links }
           }),
         })))
       }
@@ -1121,7 +1126,7 @@ export default function CourseWizardPage() {
             minScore: quiz.passing_score || 70, maxAttempts: quiz.max_attempts || 1,
             showResults: 'grade_only',
             questions: (quiz.questions || []).map(q => ({
-              id: uid(), type: q.type, text: q.text, score: 1, expanded: false,
+              id: uid(), type: q.type, text: q.text, score: q.points || 1, expanded: false,
               answers: (q.answers || []).map(a => ({ id: uid(), text: a.text, correct: a.is_correct })),
             })),
           })
@@ -1170,6 +1175,7 @@ export default function CourseWizardPage() {
         if (modules.length === 0)                            return 'Agrega al menos un módulo.'
         if (modules.every(m => m.lessons.length === 0))     return 'Agrega al menos una lección.'
         if (modules.some(m => !m.title.trim()))             return 'Todos los módulos necesitan un título.'
+        if (modules.some(m => m.title.trim().toLowerCase() === 'evaluación final')) return '"Evaluación Final" es un nombre reservado para el examen del curso. Renombra ese módulo.'
         if (modules.some(m => m.lessons.some(l => !l.title.trim()))) return 'Todas las lecciones necesitan un título.'
         return null
       case 4:
@@ -1181,10 +1187,26 @@ export default function CourseWizardPage() {
   }
 
   // ── save step 1 ───────────────────────────────────────────────────────────
+  // Retries with a random suffix on a slug collision (courses.slug is unique in
+  // the DB) instead of surfacing a raw constraint-violation error to the instructor.
+  async function withUniqueSlug(baseSlug, attemptFn) {
+    let candidate = baseSlug
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await attemptFn(candidate)
+      } catch (e) {
+        const isSlugClash = e.code === '23505' && /slug/.test(e.message || '')
+        if (!isSlugClash) throw e
+        candidate = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+      }
+    }
+    throw new Error('No se pudo generar una URL única para este curso. Cambia el título e intenta de nuevo.')
+  }
+
   async function saveStep1() {
+    const baseSlug = slug(info.title.trim())
     const payload = {
       title: info.title.trim(),
-      slug: slug(info.title.trim()),
       description: info.description.trim(),
       instructor_id: (isAdmin && info.instructorId) ? info.instructorId : profile.id,
       category_id: info.categoryId || null,
@@ -1192,15 +1214,20 @@ export default function CourseWizardPage() {
       level: info.level,
     }
     if (courseId) {
-      const { error } = await supabase.from('courses').update(payload).eq('id', courseId)
-      if (error) throw error
+      await withUniqueSlug(baseSlug, async candidate => {
+        const { error } = await supabase.from('courses').update({ ...payload, slug: candidate }).eq('id', courseId)
+        if (error) throw error
+      })
+      return courseId
     } else {
-      const { data, error } = await supabase.from('courses').insert({ ...payload, status: 'draft', price: 0 }).select('id').single()
-      if (error) throw error
-      setCourseId(data.id)
-      return data.id
+      const newId = await withUniqueSlug(baseSlug, async candidate => {
+        const { data, error } = await supabase.from('courses').insert({ ...payload, slug: candidate, status: 'draft', price: 0 }).select('id').single()
+        if (error) throw error
+        return data.id
+      })
+      setCourseId(newId)
+      return newId
     }
-    return courseId
   }
 
   // ── save step 2 (nuke & re-insert, excludes eval module) ─────────────────
@@ -1228,7 +1255,7 @@ export default function CourseWizardPage() {
     const savedModIds = {}
     modules.forEach((mod, i) => { savedModIds[mod.id] = modRows[i].id })
 
-    // batch insert: all lessons of all modules in one round-trip
+    // batch insert: all lessons of all modules in one round-trip; returned rows keep insert order
     const lessonRows = modules.flatMap((mod, i) => mod.lessons.map((les, j) => ({
       module_id: modRows[i].id,
       title: les.title.trim(),
@@ -1239,8 +1266,18 @@ export default function CourseWizardPage() {
       order_index: j + 1,
     })))
     if (lessonRows.length > 0) {
-      const { error: lesErr } = await supabase.from('lessons').insert(lessonRows)
+      const { data: lesRows, error: lesErr } = await supabase.from('lessons').insert(lessonRows).select('id')
       if (lesErr) throw lesErr
+
+      // map each saved lesson back to its external links and persist them as resources
+      const flatLessons = modules.flatMap(mod => mod.lessons)
+      const resourceRows = flatLessons.flatMap((les, i) => (les.links || [])
+        .filter(lk => lk.url && lk.url.trim())
+        .map(lk => ({ lesson_id: lesRows[i].id, title: lk.label?.trim() || lk.url.trim(), file_url: lk.url.trim(), file_type: 'link' })))
+      if (resourceRows.length > 0) {
+        const { error: resErr } = await supabase.from('resources').insert(resourceRows)
+        if (resErr) throw resErr
+      }
     }
 
     setModules(ms => ms.map(m => ({ ...m, dbId: savedModIds[m.id] })))
@@ -1291,7 +1328,7 @@ export default function CourseWizardPage() {
 
     // batch insert: all questions in one round-trip; returned rows keep insert order
     const { data: qRows, error: qErr } = await supabase.from('questions')
-      .insert(evalData.questions.map(q => ({ quiz_id: quiz.id, type: q.type, text: q.text.trim() })))
+      .insert(evalData.questions.map((q, i) => ({ quiz_id: quiz.id, type: q.type, text: q.text.trim(), points: q.score || 1, order_index: i + 1 })))
       .select('id')
     if (qErr) throw qErr
 
@@ -1386,6 +1423,11 @@ export default function CourseWizardPage() {
 
   async function handleReview() {
     if (!courseId) return
+    const totalLessons = modules.reduce((s, m) => s + m.lessons.length, 0)
+    if (modules.length === 0 || totalLessons === 0) {
+      setPubError('Tu curso necesita al menos un módulo con una lección antes de enviarlo a revisión o publicarlo.')
+      return
+    }
     setSaving(true); setPubError('')
     // 'review' is a UI-only state; map to valid DB enum values
     const dbStatus = pubStatus === 'review' ? 'pending' : pubStatus
