@@ -23,7 +23,7 @@ export default function StudentCertificatesPage() {
     supabase
       .from('certificates')
       .select(`
-        id, issued_at, approved_at, unique_code,
+        id, issued_at, approved_at, unique_code, pdf_url,
         courses!course_id(id, title, cover_image_url, level, duration_hours, categories(name), profiles!instructor_id(full_name))
       `)
       .eq('student_id', user.id)
@@ -151,12 +151,19 @@ export default function StudentCertificatesPage() {
                         </div>
                       </div>
 
-                      <button className="cert-download" disabled title="Descarga de certificados próximamente"
-                        style={{ padding: '.55rem 1.1rem', background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, cursor: 'not-allowed', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', opacity: .65 }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Descargar PDF
-                        <span style={{ fontSize: '.65rem', fontWeight: 600, background: 'rgba(22,125,120,.15)', padding: '1px 6px', borderRadius: 8, letterSpacing: '.05em' }}>Próximamente</span>
-                      </button>
+                      {cert.pdf_url ? (
+                        <a className="cert-download" href={cert.pdf_url} target="_blank" rel="noopener noreferrer" download
+                          style={{ padding: '.55rem 1.1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', textDecoration: 'none' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                          Descargar PDF
+                        </a>
+                      ) : (
+                        <span className="cert-download" title="El PDF de este certificado todavía no está disponible"
+                          style={{ padding: '.55rem 1.1rem', background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', opacity: .65 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                          PDF no disponible
+                        </span>
+                      )}
                     </div>
                   </div>
                 )

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
+import { Toast } from '../../../components/ui'
 
 const CERT_ICON = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
 
@@ -23,6 +24,12 @@ export default function CertificatesPage() {
   const [processing, setProcessing] = useState(null)
   const [rejectModal, setRejectModal] = useState(null)
   const [rejectNotes, setRejectNotes] = useState('')
+  const [toast, setToast] = useState('')
+
+  function showToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3500)
+  }
 
   useEffect(() => {
     if (!user) return
@@ -47,13 +54,19 @@ export default function CertificatesPage() {
   async function handleApprove(cert) {
     if (processing) return
     setProcessing(cert.id)
-    const now = new Date().toISOString()
-    const { error } = await supabase
-      .from('certificates')
-      .update({ status: 'approved', approved_at: now, approved_by: user.id })
-      .eq('id', cert.id)
-    if (!error) {
-      setCerts(prev => prev.map(c => c.id === cert.id ? { ...c, status: 'approved', approved_at: now } : c))
+    // Runs server-side: generates the certificate PDF, uploads it, and
+    // approves the record in one step (uses the service role to write
+    // storage + pdf_url, which the admin's own session can't do directly).
+    const { data, error } = await supabase.functions.invoke('approve-certificate', {
+      body: { certificateId: cert.id },
+    })
+    if (error || data?.error) {
+      showToast(data?.error || error?.message || 'No se pudo aprobar el certificado.')
+    } else {
+      setCerts(prev => prev.map(c => c.id === cert.id
+        ? { ...c, status: 'approved', approved_at: new Date().toISOString(), pdf_url: data?.pdfUrl }
+        : c
+      ))
     }
     setProcessing(null)
   }
@@ -242,6 +255,8 @@ export default function CertificatesPage() {
           </div>
         </div>
       )}
+
+      <Toast message={toast} />
     </DashboardLayout>
   )
 }
