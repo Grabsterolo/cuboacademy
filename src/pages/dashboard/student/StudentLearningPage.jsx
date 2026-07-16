@@ -99,7 +99,7 @@ export default function StudentLearningPage() {
         .select('id, title, cover_image_url, certificate_condition, profiles!instructor_id(full_name)')
         .eq('id', courseId).single(),
       supabase.from('modules')
-        .select('id, title, description, order_index, lessons(id, title, description, video_url, duration_mins, is_free_preview, order_index, resources(id, title, file_url, file_type))')
+        .select('id, title, description, order_index, lessons(id, title, description, video_url, duration_mins, is_free_preview, order_index, type, resources(id, title, file_url, file_type))')
         .eq('course_id', courseId)
         .order('order_index', { ascending: true })
         .order('order_index', { ascending: true, foreignTable: 'lessons' }),
@@ -381,9 +381,18 @@ export default function StudentLearningPage() {
 
             {/* ── Main content ── */}
             <div>
-              {activeLinks.length > 0 && (
+              {activeLesson?.type === 'document' && activeLesson.video_url ? (
+                <a href={activeLinks[0]?.url || activeLesson.video_url} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: '.85rem', padding: '1.25rem', background: 'white', border: '1px solid var(--border)', borderRadius: 12, textDecoration: 'none' }}>
+                  <span style={{ color: 'var(--jade)', flexShrink: 0 }}>{RES_ICONS.pdf}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--carbon)' }}>Documento de la lección</div>
+                    <div style={{ fontSize: '.78rem', color: 'var(--text-2)' }}>Haz clic para abrirlo</div>
+                  </div>
+                </a>
+              ) : (activeLesson?.type === 'video' && activeLinks.length > 0 && (
                 <VideoPlayer links={activeLinks} activeIdx={activeVideoIdx} onSelectIdx={setActiveVideoIdx} />
-              )}
+              ))}
 
               {/* Lesson header */}
               <div style={{ marginTop: '1.25rem', marginBottom: '1rem' }}>
@@ -433,7 +442,7 @@ export default function StudentLearningPage() {
 
               {activeLesson?.description ? (
                 <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', marginBottom: '1rem' }}>
-                  <div style={{ fontSize: '.88rem', color: 'var(--carbon)', lineHeight: 1.8, fontWeight: 300 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeLesson.description) }} />
+                  <div className="rich-html" style={{ fontSize: '.88rem', color: 'var(--carbon)', lineHeight: 1.8, fontWeight: 300 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeLesson.description) }} />
                 </div>
               ) : (activeLinks.length === 0 && activeLesson && !quizLessonIds.has(activeLesson.id) && (
                 <div style={{ background: 'white', border: '1px dashed var(--border)', borderRadius: 12, padding: '1.5rem 1.25rem', marginBottom: '1rem', textAlign: 'center' }}>

@@ -1160,7 +1160,7 @@ export default function CourseWizardPage() {
               try { const p = JSON.parse(l.video_url); video_url = Array.isArray(p) ? (p[0]?.url || '') : l.video_url } catch { video_url = l.video_url }
             }
             const links = (l.resources || []).filter(r => r.file_type === 'link').map(r => ({ id: uid(), url: r.file_url, label: r.title || '' }))
-            return { id: uid(), dbId: l.id, title: l.title, type: 'video', duration_mins: l.duration_mins != null ? String(l.duration_mins) : '', video_url, content_text: l.description || '', links }
+            return { id: uid(), dbId: l.id, title: l.title, type: l.type || 'video', duration_mins: l.duration_mins != null ? String(l.duration_mins) : '', video_url, content_text: l.description || '', links }
           }),
         })))
       }
@@ -1307,9 +1307,10 @@ export default function CourseWizardPage() {
       module_id: modRows[i].id,
       title: les.title.trim(),
       description: les.content_text || null,
-      video_url: les.video_url ? JSON.stringify([{ url: les.video_url, label: 'Video' }]) : null,
+      video_url: les.video_url ? JSON.stringify([{ url: les.video_url, label: les.type === 'document' ? 'Documento' : 'Video' }]) : null,
       duration_mins: les.duration_mins !== '' ? parseInt(les.duration_mins) || null : null,
       is_free_preview: false,
+      type: les.type || 'video',
       order_index: j + 1,
     })))
     if (lessonRows.length > 0) {

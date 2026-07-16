@@ -5,7 +5,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
-const LESSON_TYPE_LABEL = { video: 'Video', text: 'Texto', quiz: 'Quiz', pdf: 'PDF', link: 'Enlace' }
+const LESSON_TYPE_LABEL = { video: 'Video', text: 'Texto', document: 'Documento', quiz: 'Quiz' }
 const Q_TYPE_LABEL = { single: 'Opción única', multiple: 'Múltiple', true_false: 'Verdadero / Falso', open: 'Abierta' }
 
 // ── icons ────────────────────────────────────────────────────────────────────
@@ -14,6 +14,7 @@ const IC = {
   video:   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>,
   text:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>,
   quiz:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  doc:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
   chevD:   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>,
   book:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
   clock:   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
@@ -28,23 +29,15 @@ const IC = {
 function lesIcon(type) {
   if (type === 'video') return IC.video
   if (type === 'quiz')  return IC.quiz
+  if (type === 'document') return IC.doc
   return IC.text
 }
 
-// lessons has no `type` column — derive it from data that does exist
+// A quiz attached to the lesson (e.g. the final exam) always takes display
+// priority over the lesson's own stored type.
 function deriveLessonType(les, quizLessonIds) {
-  let hasVideo = false
-  if (les.video_url) {
-    try {
-      const parsed = JSON.parse(les.video_url)
-      hasVideo = Array.isArray(parsed) ? parsed.length > 0 : !!parsed
-    } catch {
-      hasVideo = true // plain URL string
-    }
-  }
-  if (hasVideo) return 'video'
   if (quizLessonIds.has(les.id)) return 'quiz'
-  return 'text'
+  return les.type || 'video'
 }
 
 function Section({ title, icon, children }) {
@@ -98,7 +91,7 @@ export default function CourseReviewPage() {
 
     const { data: mods } = await supabase
       .from('modules')
-      .select('*, lessons(id, title, description, video_url, duration_mins, order_index)')
+      .select('*, lessons(id, title, description, video_url, duration_mins, order_index, type)')
       .eq('course_id', courseId)
       .order('order_index')
 
@@ -263,7 +256,7 @@ export default function CourseReviewPage() {
         {/* ── Description ── */}
         {course.description && (
           <Section title="Descripción" icon={IC.text}>
-            <div style={{ fontSize: '.875rem', color: 'var(--carbon)', lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }} />
+            <div className="rich-html" style={{ fontSize: '.875rem', color: 'var(--carbon)', lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }} />
           </Section>
         )}
 
@@ -304,7 +297,7 @@ export default function CourseReviewPage() {
                       {(les.description || videoLinks.length > 0) && (
                         <div style={{ padding: '.4rem 1rem .75rem 2.4rem' }}>
                           {les.description && (
-                            <div style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.65, margin: '0 0 .4rem' }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(les.description) }} />
+                            <div className="rich-html" style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.65, margin: '0 0 .4rem' }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(les.description) }} />
                           )}
                           {videoLinks.map((v, vi) => (
                             <a key={vi} href={v.url} target="_blank" rel="noopener noreferrer"

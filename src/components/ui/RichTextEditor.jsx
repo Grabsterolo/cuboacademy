@@ -22,6 +22,10 @@ const RTE_IC = {
 function ToolBtn({ active, disabled, onClick, title, children }) {
   return (
     <button type="button" title={title} disabled={disabled} onClick={onClick}
+      // Toolbar buttons must not steal focus from the editor on mousedown —
+      // otherwise the current selection collapses before onClick runs, so a
+      // second click (e.g. to un-bold already-bold text) has nothing to act on.
+      onMouseDown={e => e.preventDefault()}
       className="rte-btn" style={{ ...BTN, ...(active ? BTN_ACTIVE : {}) }}>
       {children}
     </button>
@@ -63,6 +67,10 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         .rte-content p { margin: 0 0 .6rem; }
         .rte-content p:last-child { margin-bottom: 0; }
         .rte-content ul, .rte-content ol { margin: 0 0 .6rem; padding-left: 1.3rem; }
+        .rte-content ul { list-style-type: disc; }
+        .rte-content ol { list-style-type: decimal; }
+        .rte-content li { margin-bottom: .2rem; }
+        .rte-content li p { margin: 0; }
         .rte-content a { color: var(--jade); }
         .rte-content h3 { font-family: var(--serif); font-size: 1.02rem; margin: 0 0 .4rem; }
         .rte-content.is-empty:before { content: attr(data-placeholder); color: #B5B2AB; pointer-events: none; }

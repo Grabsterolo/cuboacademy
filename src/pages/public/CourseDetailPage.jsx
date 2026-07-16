@@ -160,7 +160,7 @@ export default function CourseDetailPage() {
             {course.description && (
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem 1.75rem' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.85rem' }}>Descripción del curso</h2>
-                <div style={{ fontSize: '.9rem', color: 'var(--text-2)', lineHeight: 1.75, fontWeight: 300 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }} />
+                <div className="rich-html" style={{ fontSize: '.9rem', color: 'var(--text-2)', lineHeight: 1.75, fontWeight: 300 }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(course.description) }} />
               </div>
             )}
 
