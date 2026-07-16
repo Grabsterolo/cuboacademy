@@ -2,7 +2,7 @@ import { StepHeader } from '../components/StepHeader'
 import { Field, PillSelector, Toggle, SmallBtn, IC, INP, SEL, fi, fb, Q_TYPES, uid } from '../components/shared'
 
 export function Step4Evaluation({ eval: ev, setEval }) {
-  const { hasEval, evalType, minScore, maxAttempts, showResults, questions } = ev
+  const { hasEval, minScore, maxAttempts, questions } = ev
   const set = (k, v) => setEval(e => ({ ...e, [k]: v }))
 
   function addQuestion() {
@@ -66,11 +66,6 @@ export function Step4Evaluation({ eval: ev, setEval }) {
           {/* Config */}
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem', marginBottom: '1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }} className="wiz-grid">
             <div>
-              <Field label="Tipo de evaluación">
-                <PillSelector
-                  options={[{ value: 'quiz', label: 'Quiz' }, { value: 'final', label: 'Examen final' }, { value: 'both', label: 'Ambos' }]}
-                  value={evalType} onChange={v => set('evalType', v)} />
-              </Field>
               <Field label="Puntaje mínimo para aprobar (%)">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
                   <input type="range" min="0" max="100" value={minScore} onChange={e => set('minScore', parseInt(e.target.value))}
@@ -84,11 +79,6 @@ export function Step4Evaluation({ eval: ev, setEval }) {
                 <PillSelector
                   options={[{ value: 1, label: '1 intento' }, { value: 2, label: '2 intentos' }, { value: 0, label: 'Ilimitado' }]}
                   value={maxAttempts} onChange={v => set('maxAttempts', v)} />
-              </Field>
-              <Field label="Mostrar resultados">
-                <PillSelector
-                  options={[{ value: 'grade_only', label: 'Solo nota' }, { value: 'show_correct', label: '+ Respuestas' }, { value: 'show_explanation', label: '+ Explicación' }]}
-                  value={showResults} onChange={v => set('showResults', v)} />
               </Field>
             </div>
           </div>

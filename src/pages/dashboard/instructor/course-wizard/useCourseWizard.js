@@ -30,7 +30,7 @@ export function useCourseWizard() {
   const [modules, setModules]      = useState([])
 
   // Step 4 state
-  const [evalData, setEvalData]    = useState({ hasEval: false, evalType: 'final', minScore: 70, maxAttempts: 1, showResults: 'grade_only', questions: [] })
+  const [evalData, setEvalData]    = useState({ hasEval: false, minScore: 70, maxAttempts: 1, questions: [] })
 
   // Step 5 state
   const [cert, setCert]            = useState({ hasCert: false, certName: '', certCondition: 'complete' })
@@ -85,9 +85,8 @@ export function useCourseWizard() {
         const quiz = evalMod.lessons?.[0]?.quizzes?.[0]
         if (quiz) {
           setEvalData({
-            hasEval: true, evalType: 'final',
-            minScore: quiz.passing_score || 70, maxAttempts: quiz.max_attempts || 1,
-            showResults: 'grade_only',
+            hasEval: true,
+            minScore: quiz.passing_score || 70, maxAttempts: quiz.max_attempts == null ? 0 : quiz.max_attempts,
             questions: (quiz.questions || []).map(q => ({
               id: uid(), dbId: q.id, type: q.type, text: q.text, score: q.points || 1, expanded: false,
               answers: (q.answers || []).map(a => ({ id: uid(), dbId: a.id, text: a.text, correct: a.is_correct })),
@@ -143,6 +142,12 @@ export function useCourseWizard() {
         return null
       case 4:
         if (evalData.hasEval && evalData.questions.length === 0) return 'Agrega al menos una pregunta.'
+        if (evalData.hasEval) {
+          if (evalData.questions.some(q => !q.text.trim())) return 'Todas las preguntas necesitan un texto.'
+          if (evalData.questions.some(q => q.type !== 'open' && !(q.answers || []).some(a => a.correct))) {
+            return 'Cada pregunta de opción o verdadero/falso necesita al menos una respuesta marcada como correcta.'
+          }
+        }
         return null
       default:
         return null
@@ -209,7 +214,7 @@ export function useCourseWizard() {
     // modules the instructor removed — cascades their own lessons/resources/quizzes/lesson_progress
     const modsToDelete = [...existingModIds].filter(id => !clientModDbIds.has(id))
     if (modsToDelete.length > 0) {
-      await supabase.from('modules').delete().in('id', modsToDelete)
+      await supabase.from('modules').delete().in('id', modsToDelete).throwOnError()
     }
 
     const modIdMap = {} // client module id -> db module id
@@ -244,8 +249,8 @@ export function useCourseWizard() {
       // lessons the instructor removed — cascades their own resources/quizzes/lesson_progress
       const lessonsToDelete = [...existingLessonIds].filter(id => !clientLessonDbIds.has(id))
       if (lessonsToDelete.length > 0) {
-        await supabase.from('resources').delete().in('lesson_id', lessonsToDelete)
-        await supabase.from('lessons').delete().in('id', lessonsToDelete)
+        await supabase.from('resources').delete().in('lesson_id', lessonsToDelete).throwOnError()
+        await supabase.from('lessons').delete().in('id', lessonsToDelete).throwOnError()
       }
 
       const keptLessonIds = new Set(mod.lessons.filter(l => l.dbId && existingLessonIds.has(l.dbId)).map(l => l.id))
@@ -286,7 +291,7 @@ export function useCourseWizard() {
       // per lesson stays safe here — only re-scoped to that one lesson's links
       for (const les of mod.lessons) {
         const dbLesId = lessonIdMap[les.id]
-        await supabase.from('resources').delete().eq('lesson_id', dbLesId).eq('file_type', 'link')
+        await supabase.from('resources').delete().eq('lesson_id', dbLesId).eq('file_type', 'link').throwOnError()
         const linkRows = (les.links || [])
           .filter(lk => lk.url && lk.url.trim())
           .map(lk => ({ lesson_id: dbLesId, title: lk.label?.trim() || lk.url.trim(), file_url: lk.url.trim(), file_type: 'link' }))
@@ -321,14 +326,14 @@ export function useCourseWizard() {
       if (existingQuizId) {
         const { data: existingQs } = await supabase.from('questions').select('id').eq('quiz_id', existingQuizId)
         if (existingQs?.length > 0) {
-          await supabase.from('answers').delete().in('question_id', existingQs.map(q => q.id))
+          await supabase.from('answers').delete().in('question_id', existingQs.map(q => q.id)).throwOnError()
         }
-        await supabase.from('questions').delete().eq('quiz_id', existingQuizId)
+        await supabase.from('questions').delete().eq('quiz_id', existingQuizId).throwOnError()
       }
-      if (existingLesId) await supabase.from('quizzes').delete().eq('lesson_id', existingLesId)
+      if (existingLesId) await supabase.from('quizzes').delete().eq('lesson_id', existingLesId).throwOnError()
       if (existingModId) {
-        await supabase.from('lessons').delete().eq('module_id', existingModId)
-        await supabase.from('modules').delete().eq('id', existingModId)
+        await supabase.from('lessons').delete().eq('module_id', existingModId).throwOnError()
+        await supabase.from('modules').delete().eq('id', existingModId).throwOnError()
       }
       return
     }
@@ -353,11 +358,11 @@ export function useCourseWizard() {
 
     if (quizId) {
       const { error } = await supabase.from('quizzes')
-        .update({ passing_score: evalData.minScore, max_attempts: evalData.maxAttempts || 99 }).eq('id', quizId)
+        .update({ passing_score: evalData.minScore, max_attempts: evalData.maxAttempts === 0 ? null : evalData.maxAttempts }).eq('id', quizId)
       if (error) throw error
     } else {
       const { data: newQuiz, error } = await supabase.from('quizzes')
-        .insert({ lesson_id: lesId, title: 'Evaluación del curso', passing_score: evalData.minScore, max_attempts: evalData.maxAttempts || 99 }).select('id').single()
+        .insert({ lesson_id: lesId, title: 'Evaluación del curso', passing_score: evalData.minScore, max_attempts: evalData.maxAttempts === 0 ? null : evalData.maxAttempts }).select('id').single()
       if (error) throw error
       quizId = newQuiz.id
     }
@@ -369,8 +374,8 @@ export function useCourseWizard() {
 
     const qsToDelete = [...existingQIds].filter(id => !clientQDbIds.has(id))
     if (qsToDelete.length > 0) {
-      await supabase.from('answers').delete().in('question_id', qsToDelete)
-      await supabase.from('questions').delete().in('id', qsToDelete)
+      await supabase.from('answers').delete().in('question_id', qsToDelete).throwOnError()
+      await supabase.from('questions').delete().in('id', qsToDelete).throwOnError()
     }
 
     const keptQIds = new Set(evalData.questions.filter(q => q.dbId && existingQIds.has(q.dbId)).map(q => q.id))
@@ -417,7 +422,7 @@ export function useCourseWizard() {
 
       const asToDelete = [...existingAIds].filter(id => !clientADbIds.has(id))
       if (asToDelete.length > 0) {
-        await supabase.from('answers').delete().in('id', asToDelete)
+        await supabase.from('answers').delete().in('id', asToDelete).throwOnError()
       }
 
       const keptAIds = new Set(q.answers.filter(a => a.dbId && existingAIds.has(a.dbId)).map(a => a.id))

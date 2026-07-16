@@ -113,7 +113,7 @@ export default function LessonQuiz({ lessonId, studentId, onPassed }) {
   if (!quiz) return null
 
   const attemptsUsed = attempts.length
-  const attemptsLeft = quiz.max_attempts - attemptsUsed
+  const attemptsLeft = quiz.max_attempts == null ? Infinity : quiz.max_attempts - attemptsUsed
   const hasPendingReview = attempts.some(a => a.status === 'pending_review')
   const gradedAttempts = attempts.filter(a => a.status !== 'pending_review')
   const bestAttempt = gradedAttempts.find(a => a.passed) || gradedAttempts[0]
@@ -129,7 +129,7 @@ export default function LessonQuiz({ lessonId, studentId, onPassed }) {
         <span style={{ color: 'var(--jade)' }}>{QUIZ_ICON}</span>
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{quiz.title}</h3>
         <span style={{ fontSize: '.7rem', color: 'var(--text-2)', marginLeft: 'auto' }}>
-          {attemptsUsed}/{quiz.max_attempts} intentos · aprueba con {quiz.passing_score}%
+          {attemptsUsed}/{quiz.max_attempts ?? '∞'} intentos · aprueba con {quiz.passing_score}%
         </span>
       </div>
 

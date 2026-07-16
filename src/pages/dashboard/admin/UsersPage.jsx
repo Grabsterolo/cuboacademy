@@ -99,49 +99,26 @@ export default function UsersPage() {
     setCreateError('')
     setCreateLoading(true)
 
-    const { data: { session: adminSession } } = await supabase.auth.getSession()
-
-    const { data, error } = await supabase.auth.signUp({
-      email: newEmail,
-      password: newPassword,
-      options: { emailRedirectTo: null, data: { full_name: newName } },
+    // Runs server-side via a Supabase Edge Function using the Admin API —
+    // creating the user here in the browser with signUp() would briefly
+    // switch the admin's own session to the new account.
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: { email: newEmail, password: newPassword, full_name: newName, role: newRole },
     })
 
-    if (error) {
-      if (adminSession) await supabase.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token })
-      setCreateError(error?.message || 'Error al crear el usuario.')
+    if (error || data?.error) {
+      setCreateError(data?.error || error?.message || 'Error al crear el usuario.')
       setCreateLoading(false)
       return
     }
-
-    // Restaurar la sesión del admin ANTES de tocar profiles,
-    // porque el signUp anterior dejó activa la sesión del usuario nuevo.
-    if (adminSession) {
-      const { error: sessionErr } = await supabase.auth.setSession({
-        access_token: adminSession.access_token,
-        refresh_token: adminSession.refresh_token,
-      })
-      if (sessionErr) {
-        setCreateError('El usuario fue creado, pero no se pudo restaurar tu sesión de admin. Recarga la página e inicia sesión de nuevo.')
-        setCreateLoading(false)
-        return
-      }
-    }
-
-    // Ahora se ejecuta con sesión de admin → RLS permite el UPDATE
-    if (data.user) {
-      const { error: profileErr } = await supabase
-        .from('profiles')
-        .update({ role: newRole, full_name: newName })
-        .eq('id', data.user.id)
-      if (profileErr) {
-        setCreateError('El usuario fue creado con rol "student". No se pudo asignar el rol deseado — edítalo manualmente.')
-        setCreateLoading(false)
-        return
-      }
-    }
-
     setCreateLoading(false)
+
+    if (data?.warning) {
+      setCreateError(data.warning)
+      loadUsers()
+      return
+    }
+
     setCreateSuccess(true)
     setTimeout(() => { closeCreate(); loadUsers() }, 1400)
   }

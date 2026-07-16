@@ -46,7 +46,7 @@ export function Step8Publish({ status, setStatus, saving, error, onDraft, onRevi
             Guardar borrador
           </button>
           <button type="button" onClick={onReview} disabled={saving || !canSubmit}
-            style={{ padding: '.7rem 1.6rem', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 700, cursor: (saving || status !== 'review') ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', background: 'var(--jade)', color: 'white', opacity: (saving || status !== 'review') ? .55 : 1, display: 'flex', alignItems: 'center', gap: '.45rem' }}>
+            style={{ padding: '.7rem 1.6rem', border: 'none', borderRadius: 8, fontSize: '.875rem', fontWeight: 700, cursor: (saving || !canSubmit) ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', background: 'var(--jade)', color: 'white', opacity: (saving || !canSubmit) ? .55 : 1, display: 'flex', alignItems: 'center', gap: '.45rem' }}>
             {saving ? (
               <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'wiz-spin .7s linear infinite' }} /> Enviando…</>
             ) : status === 'published' ? (

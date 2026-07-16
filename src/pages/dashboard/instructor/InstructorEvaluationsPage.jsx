@@ -54,7 +54,7 @@ export default function InstructorEvaluationsPage() {
       .select(`
         id, status, submitted_at, reviewed_at, notes, enrollment_id, student_id, course_id,
         profiles!student_id(full_name, email),
-        courses!course_id(id, title, cover_image_url)
+        courses!course_id(id, title, cover_image_url, has_certificate)
       `)
       .in('course_id', courseIds)
       .order('submitted_at', { ascending: false })
@@ -143,16 +143,18 @@ export default function InstructorEvaluationsPage() {
       .update({ completed_at: now })
       .eq('id', sub.enrollment_id)
 
-    await supabase
-      .from('certificates')
-      .insert({
-        student_id:    sub.student_id,
-        course_id:     sub.course_id,
-        enrollment_id: sub.enrollment_id,
-        unique_code:   genUniqueCode(),
-        issued_at:     now,
-        status:        'pending',
-      })
+    if (sub.courses?.has_certificate) {
+      await supabase
+        .from('certificates')
+        .insert({
+          student_id:    sub.student_id,
+          course_id:     sub.course_id,
+          enrollment_id: sub.enrollment_id,
+          unique_code:   genUniqueCode(),
+          issued_at:     now,
+          status:        'pending',
+        })
+    }
 
     setSubmissions(prev => prev.map(s =>
       s.id === sub.id ? { ...s, status: 'approved', reviewed_at: now } : s

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { IconBtn } from '../../../components/ui'
+import { IconBtn, Toast } from '../../../components/ui'
 
 const STATUS = {
   draft:     { label: 'Borrador',    bg: '#F5F5F0',          color: '#9B9894',  border: 'var(--border)' },
@@ -28,6 +28,7 @@ export default function CoursesPage() {
   const [tab,           setTab]           = useState(null)
   const [search,        setSearch]        = useState('')
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [toast,         setToast]         = useState('')
 
   useEffect(() => { load() }, [])
   useEffect(() => {
@@ -53,10 +54,23 @@ export default function CoursesPage() {
     if (error) setCourses(cs => cs.map(c => c.id === id ? prev : c))
   }
 
+  function showToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3500)
+  }
+
   async function handleDelete(id) {
     setConfirmDelete(null)
+    const prev = courses
     setCourses(cs => cs.filter(c => c.id !== id))
-    await supabase.from('courses').delete().eq('id', id)
+    const { error } = await supabase.from('courses').delete().eq('id', id)
+    if (error) {
+      setCourses(prev)
+      const isOrdersConflict = error.code === '23503'
+      showToast(isOrdersConflict
+        ? 'No se pudo eliminar: el curso tiene órdenes de compra asociadas.'
+        : 'Error al eliminar: ' + (error.message || 'inténtalo de nuevo.'))
+    }
   }
 
   const filtered = courses.filter(c => {
@@ -228,6 +242,8 @@ export default function CoursesPage() {
           </>
         )}
       </div>
+
+      <Toast message={toast} />
     </DashboardLayout>
   )
 }

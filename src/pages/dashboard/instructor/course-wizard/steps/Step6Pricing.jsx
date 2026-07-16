@@ -38,10 +38,10 @@ export function Step6Pricing({ pricing, setPricing }) {
                 </p>
               </div>
             ) : null}
-            <Field label="Método de cobro">
+            <Field label="Método de cobro" hint="Un administrador confirma manualmente cada pago recibido antes de dar acceso al curso.">
               <div style={{ padding: '.85rem 1.1rem', background: 'var(--cream)', borderRadius: 8, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '.7rem' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="3" stroke="var(--text-2)" strokeWidth="1.5"/><line x1="2" y1="10" x2="22" y2="10" stroke="var(--text-2)" strokeWidth="1.5"/></svg>
-                <span style={{ fontSize: '.85rem', color: 'var(--carbon)' }}>PayPal integrado</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="1.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                <span style={{ fontSize: '.85rem', color: 'var(--carbon)' }}>Confirmación manual de pago</span>
               </div>
             </Field>
           </div>

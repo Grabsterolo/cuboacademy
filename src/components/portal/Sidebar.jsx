@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNotifications } from '../../context/NotificationContext'
 import { useSettings } from '../../context/SettingsContext'
@@ -24,6 +24,80 @@ const SCREEN_TO_NAV = {
   'quiz-calificacion': 'evaluaciones',
 }
 const navKeyForScreen = screen => SCREEN_TO_NAV[screen] || screen
+
+const BELL_ICON = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+
+function timeAgo(iso) {
+  const diffMs = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diffMs / 60000)
+  if (mins < 1) return 'ahora'
+  if (mins < 60) return `hace ${mins} min`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `hace ${hours} h`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `hace ${days} d`
+  return new Date(iso).toLocaleDateString('es-CR', { day: 'numeric', month: 'short' })
+}
+
+function NotificationBell({ onNavigate }) {
+  const { notifications, loading, unreadCount, markAsRead, markAllAsRead } = useNotifications()
+  const [open, setOpen] = useState(false)
+
+  function handleItemClick(n) {
+    setOpen(false)
+    if (!n.is_read) markAsRead(n.id)
+    if (n.screen) onNavigate(n.screen, n.params || {})
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(o => !o)} title="Notificaciones"
+        style={{ position: 'relative', background: open ? 'rgba(255,255,255,.1)' : 'none', border: 'none', borderRadius: 7, cursor: 'pointer', color: 'rgba(255,255,255,.75)', padding: 6, display: 'flex', alignItems: 'center' }}>
+        {BELL_ICON}
+        {unreadCount > 0 && (
+          <span style={{ position: 'absolute', top: 3, right: 3, width: 8, height: 8, borderRadius: '50%', background: '#DC2626', border: '1.5px solid var(--jade-dark)' }} />
+        )}
+      </button>
+
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 300 }} />
+          <div style={{
+            position: 'absolute', top: '110%', left: 0, zIndex: 301, width: 320, maxHeight: 420,
+            background: 'white', borderRadius: 12, border: '1px solid var(--border)',
+            boxShadow: '0 16px 48px rgba(0,0,0,.28)', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.85rem 1rem', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.88rem', color: 'var(--carbon)' }}>Notificaciones</span>
+              {unreadCount > 0 && (
+                <button onClick={markAllAsRead} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '.72rem', fontWeight: 600, color: 'var(--jade)', fontFamily: 'var(--sans)', padding: 0 }}>
+                  Marcar todas como leídas
+                </button>
+              )}
+            </div>
+            <div style={{ overflowY: 'auto' }}>
+              {loading ? (
+                <p style={{ padding: '1.5rem 1rem', fontSize: '.8rem', color: 'var(--text-2)', textAlign: 'center', margin: 0 }}>Cargando…</p>
+              ) : notifications.length === 0 ? (
+                <p style={{ padding: '1.5rem 1rem', fontSize: '.8rem', color: 'var(--text-2)', textAlign: 'center', margin: 0 }}>No tienes notificaciones.</p>
+              ) : notifications.map(n => (
+                <div key={n.id} onClick={() => handleItemClick(n)}
+                  style={{ display: 'flex', gap: '.6rem', alignItems: 'flex-start', padding: '.75rem 1rem', borderBottom: '1px solid var(--border)', cursor: n.screen ? 'pointer' : 'default', background: n.is_read ? 'white' : 'var(--jade-soft)' }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: n.is_read ? 'transparent' : 'var(--jade)', flexShrink: 0, marginTop: 5 }} />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ fontSize: '.82rem', fontWeight: n.is_read ? 500 : 700, color: 'var(--carbon)', margin: '0 0 .15rem' }}>{n.title}</p>
+                    {n.message && <p style={{ fontSize: '.78rem', color: 'var(--text-2)', margin: '0 0 .25rem', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{n.message}</p>}
+                    <p style={{ fontSize: '.68rem', color: 'var(--text-2)', margin: 0 }}>{timeAgo(n.created_at)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 function NavItem({ item, active, onClick, badge = 0 }) {
   return (
@@ -105,17 +179,25 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
     if (isMobile) onCloseDrawer?.()
   }
 
+  function handleNotificationNav(screen, params) {
+    navigate(screen, params)
+    if (isMobile) onCloseDrawer?.()
+  }
+
   const sidebarContent = (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={{ padding: '1.4rem 1.1rem .75rem' }}>
-        <button onClick={() => navigate('landing')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-          {LOGO}
-          <span style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700 }}>
-            <span style={{ color: 'rgba(255,255,255,.9)' }}>{namePart1}</span>
-            {namePart2 && <span style={{ color: 'var(--jade)' }}>{namePart2}</span>}
-          </span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <button onClick={() => navigate('landing')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            {LOGO}
+            <span style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700 }}>
+              <span style={{ color: 'rgba(255,255,255,.9)' }}>{namePart1}</span>
+              {namePart2 && <span style={{ color: 'var(--jade)' }}>{namePart2}</span>}
+            </span>
+          </button>
+          <NotificationBell onNavigate={handleNotificationNav} />
+        </div>
         <div style={{ height: 1, background: 'rgba(255,255,255,.08)', margin: '1rem 0 .25rem' }} />
       </div>
 
