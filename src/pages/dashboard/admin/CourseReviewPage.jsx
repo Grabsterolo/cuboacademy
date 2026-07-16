@@ -158,7 +158,10 @@ export default function CourseReviewPage() {
     }
     setSaving(true); setActionErr('')
     const status = action === 'publish' ? 'published' : 'draft'
-    const { error } = await supabase.from('courses').update({ status }).eq('id', courseId)
+    const payload = action === 'reject'
+      ? { status, admin_notes: rejectNote.trim() || null }
+      : { status, admin_notes: null }
+    const { error } = await supabase.from('courses').update(payload).eq('id', courseId)
     setSaving(false)
     if (error) { setActionErr(error.message); return }
     setConfirm(null)
