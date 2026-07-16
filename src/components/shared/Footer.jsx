@@ -41,7 +41,7 @@ export default function Footer() {
       <div className="footer-inner" style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '.75rem' }}>
         <span style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700 }}>
           <span style={{ color: 'var(--carbon)' }}>Cubo </span>
-          <span style={{ color: 'var(--jade)' }}>Academy</span>
+          <span style={{ color: 'var(--jade)' }}>Campus</span>
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
           <button onClick={() => navigate('courses')} style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 400, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Cursos</button>

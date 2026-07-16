@@ -161,7 +161,7 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
     markRef.current([section, ...screens])
   }, [section])
 
-  const platformName = settings?.platform_name || 'Cubo Academy'
+  const platformName = settings?.platform_name || 'Cubo Campus'
   const spIdx = platformName.indexOf(' ')
   const namePart1 = spIdx > -1 ? platformName.slice(0, spIdx) + ' ' : platformName
   const namePart2 = spIdx > -1 ? platformName.slice(spIdx + 1) : ''

@@ -106,7 +106,7 @@ export default function InstructorSettingsPage() {
             <Row label="Nuevo estudiante" desc="Cuando alguien se inscriba en uno de tus cursos.">
               <Toggle on={notifNewStudent} onChange={setNotifNewStudent} />
             </Row>
-            <Row label="Comunicados" desc="Cuando el equipo de Cubo Academy publique un aviso.">
+            <Row label="Comunicados" desc="Cuando el equipo de Cubo Campus publique un aviso.">
               <Toggle on={notifAnnouncements} onChange={setNotifAnnouncements} />
             </Row>
             <Row label="Reseñas" desc="Cuando un estudiante deje una reseña en tu curso." last>

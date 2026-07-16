@@ -212,7 +212,7 @@ export default function InstructorApplicationPage() {
       <div style={{ background: 'var(--carbon)', padding: '4rem 5% 3.5rem', textAlign: 'center' }}>
         <p style={{ fontSize: '.73rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.5rem' }}>Comparte tu expertise</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.8rem,4vw,2.6rem)', fontWeight: 700, color: 'white', lineHeight: 1.15, marginBottom: '.9rem', maxWidth: 620, margin: '0 auto .9rem' }}>
-          Conviértete en instructor de Cubo Academy
+          Conviértete en instructor de Cubo Campus
         </h1>
         <p style={{ fontSize: '.95rem', color: 'rgba(255,255,255,.6)', maxWidth: 540, margin: '0 auto', lineHeight: 1.7 }}>
           Diseñado para consultores activos que quieren convertir su experiencia real en formación de impacto.
@@ -305,7 +305,7 @@ export default function InstructorApplicationPage() {
                   <input id="cv-upload" type="file" accept="application/pdf" onChange={e => handleCvSelect(e.target.files?.[0])} style={{ display: 'none' }} />
                   {cvErr && <p style={{ fontSize: '.75rem', color: '#c0392b', marginTop: '.4rem' }}>{cvErr}</p>}
                   <p style={{ fontSize: '.75rem', color: '#B5B2AB', marginTop: '.4rem', lineHeight: 1.5 }}>
-                    Tu documento quedará disponible para que el equipo de Cubo Academy lo revise junto con tu solicitud.
+                    Tu documento quedará disponible para que el equipo de Cubo Campus lo revise junto con tu solicitud.
                   </p>
                 </Fld>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.5rem' }}>
@@ -347,7 +347,7 @@ export default function InstructorApplicationPage() {
                   </label>
                   <label style={chkLabel}>
                     <input type="checkbox" className="app-chk" checked={chkReview} onChange={e => setChkReview(e.target.checked)} />
-                    Acepto la revisión manual de mi perfil por el equipo de Cubo Academy.
+                    Acepto la revisión manual de mi perfil por el equipo de Cubo Campus.
                   </label>
                 </div>
 

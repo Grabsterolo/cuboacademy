@@ -4,7 +4,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useSettings } from '../../../context/SettingsContext'
 
 const DEFAULTS = {
-  platform_name: 'Cubo Academy',
+  platform_name: 'Cubo Campus',
   platform_description: '',
   logo_url: '',
   primary_color: '#167D78',
@@ -188,7 +188,7 @@ export default function SettingsPage() {
               <form onSubmit={handleSavePlatform} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
                 <Field label="Nombre de la plataforma">
                   <input className="sett-inp" style={inp} type="text" value={settings.platform_name}
-                    onChange={e => set('platform_name', e.target.value)} placeholder="Cubo Academy" />
+                    onChange={e => set('platform_name', e.target.value)} placeholder="Cubo Campus" />
                 </Field>
                 <Field label="Descripción" hint="meta tags y emails">
                   <input className="sett-inp" style={inp} type="text" value={settings.platform_description}
@@ -247,7 +247,7 @@ export default function SettingsPage() {
                   <textarea className="sett-inp" style={{ ...inp, resize: 'vertical', minHeight: 90 }}
                     value={settings.hero_subtitle}
                     onChange={e => set('hero_subtitle', e.target.value)}
-                    placeholder="Cubo Academy convierte experiencia consultiva real en cursos de alto impacto…" />
+                    placeholder="Cubo Campus convierte experiencia consultiva real en cursos de alto impacto…" />
                 </Field>
                 <Field label="Email de contacto">
                   <input className="sett-inp" style={inp} type="email" value={settings.contact_email}

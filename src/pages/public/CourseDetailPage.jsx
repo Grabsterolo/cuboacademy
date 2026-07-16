@@ -242,7 +242,7 @@ export default function CourseDetailPage() {
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                       <span style={{ fontSize: '.84rem', fontWeight: 700, color: '#92400E' }}>Inscripción solicitada</span>
                     </div>
-                    <p style={{ fontSize: '.76rem', color: '#B45309', lineHeight: 1.55, margin: 0 }}>Tu solicitud fue registrada. El equipo de Cubo Academy verificará el pago y activará tu acceso. Te notificaremos cuando esté listo.</p>
+                    <p style={{ fontSize: '.76rem', color: '#B45309', lineHeight: 1.55, margin: 0 }}>Tu solicitud fue registrada. El equipo de Cubo Campus verificará el pago y activará tu acceso. Te notificaremos cuando esté listo.</p>
                   </div>
                 ) : !user ? (
                   <button className="buy-btn" onClick={() => navigate('login')}

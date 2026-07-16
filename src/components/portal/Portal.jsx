@@ -163,7 +163,7 @@ export default function Portal() {
                 </svg>
               </button>
               <div style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: 'var(--carbon)' }}>
-                Cubo <span style={{ color: 'var(--jade)' }}>Academy</span>
+                Cubo <span style={{ color: 'var(--jade)' }}>Campus</span>
               </div>
               <div style={{ width: 34 }} />
             </div>

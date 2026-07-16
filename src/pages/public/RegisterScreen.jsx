@@ -57,7 +57,7 @@ export default function RegisterScreen() {
         <div style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 20, padding: '2.5rem 2.25rem', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>
-              Cubo <span style={{ color: 'var(--jade-light)' }}>Academy</span>
+              Cubo <span style={{ color: 'var(--jade-light)' }}>Campus</span>
             </div>
             <p style={{ marginTop: '.5rem', fontSize: '.82rem', color: 'rgba(255,255,255,.5)', fontWeight: 300 }}>Crea tu cuenta gratis</p>
           </div>

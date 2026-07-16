@@ -24,7 +24,7 @@ export function Step5Certificate({ cert, setCert }) {
             <div style={{ padding: '1rem 1.1rem', background: 'var(--jade-soft)', borderRadius: 9, border: '1px solid rgba(22,125,120,.2)' }}>
               <p style={{ fontSize: '.82rem', color: 'var(--jade)', fontWeight: 600, margin: '0 0 .2rem' }}>Vista previa del certificado</p>
               <p style={{ fontSize: '.78rem', color: 'var(--jade)', margin: 0, opacity: .8 }}>
-                "[Nombre del estudiante] completó exitosamente {cert.certName || 'el curso'}" — Cubo Academy
+                "[Nombre del estudiante] completó exitosamente {cert.certName || 'el curso'}" — Cubo Campus
               </p>
             </div>
           </div>

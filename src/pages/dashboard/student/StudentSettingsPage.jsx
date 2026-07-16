@@ -103,7 +103,7 @@ export default function StudentSettingsPage() {
 
           {/* Notificaciones — full width */}
           <Card title="Notificaciones por correo" desc="Elige qué actualizaciones deseas recibir en tu bandeja de entrada." span>
-            <Row label="Comunicados" desc="Cuando el equipo de Cubo Academy publique un aviso.">
+            <Row label="Comunicados" desc="Cuando el equipo de Cubo Campus publique un aviso.">
               <Toggle on={notifAnnouncements} onChange={setNotifAnnouncements} />
             </Row>
             <Row label="Actualizaciones de curso" desc="Cuando un instructor actualice contenido de un curso tuyo.">

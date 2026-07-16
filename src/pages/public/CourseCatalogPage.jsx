@@ -112,7 +112,7 @@ export default function CourseCatalogPage() {
 
       {/* Hero bar */}
       <div style={{ background: 'var(--jade-dark)', padding: '4.5rem 5% 3rem', color: 'white' }}>
-        <p style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--jade-light)', marginBottom: '.5rem', opacity: .85 }}>Cubo Academy</p>
+        <p style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--jade-light)', marginBottom: '.5rem', opacity: .85 }}>Cubo Campus</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: 700, lineHeight: 1.1, marginBottom: '1.5rem' }}>Catálogo de cursos</h1>
         {/* Search */}
         <div style={{ maxWidth: 520, position: 'relative' }}>

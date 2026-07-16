@@ -295,7 +295,7 @@ export default function HomePage() {
               </em>
             </h1>
             <p style={{ fontSize: '1rem', color: 'rgba(248,246,241,.65)', lineHeight: 1.75, maxWidth: 480, marginBottom: '2.5rem', fontWeight: 300 }}>
-              {settings.hero_subtitle || 'Cubo Academy convierte experiencia consultiva real en cursos de alto impacto. Procesos, datos y liderazgo — metodología que ya funciona en empresas reales.'}
+              {settings.hero_subtitle || 'Cubo Campus convierte experiencia consultiva real en cursos de alto impacto. Procesos, datos y liderazgo — metodología que ya funciona en empresas reales.'}
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem', flexWrap: 'wrap' }}>
               <button onClick={() => navigate('courses')} style={{ padding: '.9rem 2rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 600, border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(22,125,120,.4)' }}>
@@ -384,7 +384,7 @@ export default function HomePage() {
       <section className="section-pad" style={{ padding: '5.5rem 5%', background: 'white' }}>
         <div className="diff-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>
           <div className="reveal">
-            <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>¿Por qué Cubo Academy?</div>
+            <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>¿Por qué Cubo Campus?</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)', marginBottom: '2rem' }}>Formación desde<br />la trinchera real</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
               {DIFF_ITEMS.map((item) => (

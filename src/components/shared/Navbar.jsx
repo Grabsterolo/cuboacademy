@@ -10,7 +10,7 @@ export default function Navbar() {
   const { navigate, screen, enterPortal } = useNavigation()
   const allowRegistration = settings.allow_public_registration !== 'false'
   const allowInstructor = settings.allowed_registration_roles === 'student_instructor'
-  const platformName = settings.platform_name || 'Cubo Academy'
+  const platformName = settings.platform_name || 'Cubo Campus'
   const spIdx = platformName.indexOf(' ')
   const namePart1 = spIdx > -1 ? platformName.slice(0, spIdx) + ' ' : platformName
   const namePart2 = spIdx > -1 ? platformName.slice(spIdx + 1) : ''

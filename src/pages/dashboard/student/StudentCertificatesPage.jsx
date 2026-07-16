@@ -5,12 +5,27 @@ import { useAuth } from '../../../context/AuthContext'
 
 const CERT_ICON_BIG = <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
 const CERT_ICON     = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+const LINKEDIN_ICON = <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.85 0-2.14 1.45-2.14 2.94v5.66H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
 function fmt(dateStr) {
   if (!dateStr) return '—'
   return new Date(dateStr).toLocaleDateString('es-CR', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function buildLinkedInUrl(cert, courseName) {
+  const d = new Date(cert.approved_at || cert.issued_at)
+  const params = new URLSearchParams({
+    startTask: 'CERTIFICATION_NAME',
+    name: courseName,
+    organizationName: 'Cubo Campus',
+    issueYear: String(d.getFullYear()),
+    issueMonth: String(d.getMonth() + 1),
+    certUrl: cert.pdf_url,
+    certId: cert.unique_code,
+  })
+  return `https://www.linkedin.com/profile/add?${params.toString()}`
 }
 
 export default function StudentCertificatesPage() {
@@ -24,7 +39,7 @@ export default function StudentCertificatesPage() {
       .from('certificates')
       .select(`
         id, issued_at, approved_at, unique_code, pdf_url,
-        courses!course_id(id, title, cover_image_url, level, duration_hours, categories(name), profiles!instructor_id(full_name))
+        courses!course_id(id, title, certificate_name, cover_image_url, level, duration_hours, categories(name), profiles!instructor_id(full_name))
       `)
       .eq('student_id', user.id)
       .eq('status', 'approved')
@@ -104,6 +119,7 @@ export default function StudentCertificatesPage() {
                 const category    = c.categories?.name || ''
                 const instructor  = c.profiles?.full_name || ''
                 const studentName = profile?.full_name || user?.email || 'Estudiante'
+                const courseName  = c.certificate_name || c.title
                 return (
                   <div key={cert.id} className="cert-card">
                     <div style={{ background: 'linear-gradient(120deg,#0c3a38,var(--jade))', padding: '1.5rem 1.75rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
@@ -151,19 +167,28 @@ export default function StudentCertificatesPage() {
                         </div>
                       </div>
 
-                      {cert.pdf_url ? (
-                        <a className="cert-download" href={cert.pdf_url} target="_blank" rel="noopener noreferrer" download
-                          style={{ padding: '.55rem 1.1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', textDecoration: 'none' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                          Descargar PDF
-                        </a>
-                      ) : (
-                        <span className="cert-download" title="El PDF de este certificado todavía no está disponible"
-                          style={{ padding: '.55rem 1.1rem', background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', opacity: .65 }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                          PDF no disponible
-                        </span>
-                      )}
+                      <div className="cert-download" style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap' }}>
+                        {cert.pdf_url ? (
+                          <>
+                            <a href={cert.pdf_url} target="_blank" rel="noopener noreferrer" download
+                              style={{ padding: '.55rem 1.1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', textDecoration: 'none' }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                              Descargar PDF
+                            </a>
+                            <a href={buildLinkedInUrl(cert, courseName)} target="_blank" rel="noopener noreferrer"
+                              style={{ padding: '.55rem 1.1rem', background: '#0A66C2', color: 'white', border: 'none', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', textDecoration: 'none' }}>
+                              {LINKEDIN_ICON}
+                              Compartir en LinkedIn
+                            </a>
+                          </>
+                        ) : (
+                          <span title="El PDF de este certificado todavía no está disponible"
+                            style={{ padding: '.55rem 1.1rem', background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', opacity: .65 }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            PDF no disponible
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )

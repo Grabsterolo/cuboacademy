@@ -51,7 +51,7 @@ export default function LoginScreen() {
           {/* Logo */}
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: 'white', letterSpacing: '-.01em' }}>
-              Cubo <span style={{ color: 'var(--jade-light)' }}>Academy</span>
+              Cubo <span style={{ color: 'var(--jade-light)' }}>Campus</span>
             </div>
             <p style={{ marginTop: '.5rem', fontSize: '.82rem', color: 'rgba(255,255,255,.5)', fontWeight: 300 }}>Bienvenido de vuelta</p>
           </div>
