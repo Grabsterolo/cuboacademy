@@ -424,8 +424,25 @@ function Step3({ modules, setModules }) {
 
 function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onUpdateLink, onRemoveLink }) {
   const [open, setOpen] = useState(false)
+  const [docUploading, setDocUploading] = useState(false)
+  const [docErr, setDocErr] = useState('')
+  const fileRef = useRef()
   const typeLabel = { video: 'Video', text: 'Texto', document: 'Documento' }
   const typeIcon  = { video: IC.video, text: IC.text, document: IC.doc }
+
+  async function handleDocUpload(file) {
+    if (!file) return
+    if (file.size > 20 * 1024 * 1024) { setDocErr('Máximo 20 MB.'); return }
+    setDocErr(''); setDocUploading(true)
+    const name = `${Date.now()}-${file.name}`
+    const { error } = await supabase.storage.from('course-resources').upload(name, file)
+    if (error) { setDocErr(error.message); setDocUploading(false); return }
+    const { data: { publicUrl } } = supabase.storage.from('course-resources').getPublicUrl(name)
+    onChange({ video_url: publicUrl })
+    setDocUploading(false)
+  }
+
+  const docFileName = les.video_url ? decodeURIComponent(les.video_url.split('/').pop().split('?')[0]) : ''
 
   return (
     <div style={{ borderBottom: '1px solid var(--border)' }}>
@@ -443,10 +460,40 @@ function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onUpdateLin
 
       {open && (
         <div style={{ padding: '1rem 1.25rem 1.25rem', background: '#FAFAF9', borderTop: '1px solid var(--border)' }}>
-          {(les.type === 'video' || les.type === 'document') && (
-            <Field label={les.type === 'video' ? 'URL del video' : 'URL del documento'} hint={les.type === 'video' ? 'YouTube, Vimeo o cualquier URL de video' : 'Enlace directo al PDF o archivo'}>
+          {les.type === 'video' && (
+            <Field label="URL del video" hint="YouTube, Vimeo o cualquier URL de video">
               <input style={INP} type="url" value={les.video_url || ''} placeholder="https://..."
                 onChange={e => onChange({ video_url: e.target.value })} onFocus={fi} onBlur={fb} />
+            </Field>
+          )}
+          {les.type === 'document' && (
+            <Field label="Documento" hint="PDF, Word, Excel o ZIP · Máx. 20 MB">
+              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" style={{ display: 'none' }}
+                onChange={e => { handleDocUpload(e.target.files[0]); e.target.value = '' }} />
+              {les.video_url ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.6rem .8rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8 }}>
+                  <span style={{ color: 'var(--jade)', flexShrink: 0 }}>{IC.doc}</span>
+                  <a href={les.video_url} target="_blank" rel="noopener noreferrer"
+                    style={{ flex: 1, fontSize: '.84rem', color: 'var(--carbon)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {docFileName}
+                  </a>
+                  <SmallBtn onClick={() => fileRef.current?.click()} title="Reemplazar archivo">{IC.upload}</SmallBtn>
+                  <SmallBtn danger onClick={() => onChange({ video_url: '' })} title="Quitar archivo">{IC.x}</SmallBtn>
+                </div>
+              ) : (
+                <div onClick={() => !docUploading && fileRef.current?.click()}
+                  style={{ border: '2px dashed var(--border)', borderRadius: 8, padding: '1.1rem', textAlign: 'center', cursor: docUploading ? 'wait' : 'pointer', background: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.35rem' }}>
+                  {docUploading ? (
+                    <span style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>Subiendo…</span>
+                  ) : (
+                    <>
+                      <span style={{ color: 'var(--text-2)' }}>{IC.upload}</span>
+                      <span style={{ fontSize: '.82rem', color: 'var(--carbon)', fontWeight: 500 }}>Haz clic para subir un documento</span>
+                    </>
+                  )}
+                </div>
+              )}
+              {docErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.4rem 0 0' }}>{docErr}</p>}
             </Field>
           )}
           <Field label="Texto explicativo" hint="Notas o transcripción de la lección">

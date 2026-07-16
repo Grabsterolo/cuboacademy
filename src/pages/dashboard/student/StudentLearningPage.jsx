@@ -60,19 +60,6 @@ function VideoPlayer({ links, activeIdx, onSelectIdx }) {
   )
 }
 
-function NoVideoPlaceholder() {
-  return (
-    <div style={{ width: '100%', paddingBottom: '42.25%', position: 'relative', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.75rem' }}>
-        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'white', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="1.7" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="var(--border)" stroke="none"/></svg>
-        </div>
-        <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontFamily: 'var(--sans)', margin: 0 }}>Esta lección no tiene video</p>
-      </div>
-    </div>
-  )
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function StudentLearningPage() {
@@ -394,10 +381,9 @@ export default function StudentLearningPage() {
 
             {/* ── Main content ── */}
             <div>
-              {activeLinks.length > 0
-                ? <VideoPlayer links={activeLinks} activeIdx={activeVideoIdx} onSelectIdx={setActiveVideoIdx} />
-                : <NoVideoPlaceholder />
-              }
+              {activeLinks.length > 0 && (
+                <VideoPlayer links={activeLinks} activeIdx={activeVideoIdx} onSelectIdx={setActiveVideoIdx} />
+              )}
 
               {/* Lesson header */}
               <div style={{ marginTop: '1.25rem', marginBottom: '1rem' }}>
