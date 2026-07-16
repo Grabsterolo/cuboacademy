@@ -2,16 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { FieldLabel as LabelField } from '../../../components/ui'
-
-function slugify(str) {
-  return str
-    .toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-}
+import { slugify } from '../../../lib/slugify'
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([])

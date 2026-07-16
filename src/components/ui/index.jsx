@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 
+export { Icon } from './icons'
+export { INP, SEL, fi, fb } from './tokens'
+
 // ─── FieldLabel ───────────────────────────────────────────────────────────────
 // Simple label used by CategoriesPage and UsersPage forms.
 export function FieldLabel({ children }) {
