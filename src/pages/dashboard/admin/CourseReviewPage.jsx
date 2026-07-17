@@ -124,9 +124,17 @@ export default function CourseReviewPage() {
       const lessonId = evalMod.lessons[0].id
       const { data: quiz } = await supabase
         .from('quizzes')
-        .select('*, questions(id, type, text, answers(id, text, is_correct))')
+        .select('*, questions(id, type, text, answers(id, text))')
         .eq('lesson_id', lessonId)
         .single()
+      if (quiz) {
+        const { data: answerKey } = await supabase.rpc('get_answer_key', { p_quiz_ids: [quiz.id] })
+        const correctById = new Map((answerKey || []).map(k => [k.answer_id, k.is_correct]))
+        quiz.questions = (quiz.questions || []).map(q => ({
+          ...q,
+          answers: (q.answers || []).map(a => ({ ...a, is_correct: correctById.get(a.id) || false })),
+        }))
+      }
       setEvalInfo(quiz || null)
     }
 

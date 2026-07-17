@@ -173,7 +173,11 @@ function QuestionCard({ q, idx, onToggle, onUpdate, onRemove, onAddAnswer, onUpd
                   ? ['Verdadero', 'Falso'].map((opt, i) => {
                       const isCorrect = q.answers.find(a => a.text === opt)?.correct || false
                       return (
-                        <div key={i} onClick={() => onUpdate({ answers: [{ id: uid(), text: 'Verdadero', correct: opt === 'Verdadero' }, { id: uid(), text: 'Falso', correct: opt === 'Falso' }] })}
+                        <div key={i} onClick={() => {
+                          const v = q.answers.find(a => a.text === 'Verdadero') || { id: uid(), text: 'Verdadero' }
+                          const f = q.answers.find(a => a.text === 'Falso') || { id: uid(), text: 'Falso' }
+                          onUpdate({ answers: [{ ...v, correct: opt === 'Verdadero' }, { ...f, correct: opt === 'Falso' }] })
+                        }}
                           style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.6rem .9rem', borderRadius: 8, border: `2px solid ${isCorrect ? 'var(--jade)' : 'var(--border)'}`, background: isCorrect ? 'var(--jade-soft)' : 'white', cursor: 'pointer', transition: 'all .15s' }}>
                           <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${isCorrect ? 'var(--jade)' : 'var(--border)'}`, background: isCorrect ? 'var(--jade)' : 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             {isCorrect && <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'white' }} />}

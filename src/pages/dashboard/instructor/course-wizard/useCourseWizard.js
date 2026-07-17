@@ -17,6 +17,7 @@ export function useCourseWizard() {
   const [saving, setSaving]         = useState(false)
   const [loading, setLoading]       = useState(isEdit)
   const [error, setError]           = useState('')
+  const [loadFailed, setLoadFailed] = useState(false)
   const [categories, setCategories]   = useState([])
   const [instructors, setInstructors] = useState([])
   const isAdmin = profile?.role === 'admin'
@@ -61,11 +62,21 @@ export function useCourseWizard() {
   async function loadExisting(cId) {
     setLoading(true)
     try {
-      const [{ data: course }, { data: mods }, { data: evalMod }] = await Promise.all([
+      const [
+        { data: course, error: courseErr },
+        { data: mods, error: modsErr },
+        { data: evalMod, error: evalErr },
+      ] = await Promise.all([
         supabase.from('courses').select('*').eq('id', cId).single(),
         supabase.from('modules').select('*, lessons(*, resources(*))').eq('course_id', cId).neq('title', 'Evaluación Final').order('order_index').order('order_index', { foreignTable: 'lessons' }),
-        supabase.from('modules').select('*, lessons(*, quizzes(*, questions(*, answers(*))))').eq('course_id', cId).eq('title', 'Evaluación Final').maybeSingle(),
+        supabase.from('modules').select('*, lessons(*, quizzes(*, questions(*, answers(id, text, order_index))))').eq('course_id', cId).eq('title', 'Evaluación Final').maybeSingle(),
       ])
+
+      if (courseErr || modsErr || evalErr) {
+        setError('No se pudo cargar el curso. Recarga la página antes de continuar — guardar ahora podría sobrescribirlo con datos en blanco.')
+        setLoadFailed(true)
+        return
+      }
 
       if (course) {
         setInfo({ title: course.title || '', categoryId: course.category_id || '', level: course.level || 'beginner', description: course.description || '', coverUrl: course.cover_image_url || '', instructorId: course.instructor_id || '' })
@@ -91,12 +102,19 @@ export function useCourseWizard() {
       if (evalMod) {
         const quiz = evalMod.lessons?.[0]?.quizzes?.[0]
         if (quiz) {
+          const { data: answerKey, error: keyErr } = await supabase.rpc('get_answer_key', { p_quiz_ids: [quiz.id] })
+          if (keyErr) {
+            setError('No se pudo cargar la clave de respuestas del examen. Recarga la página antes de continuar.')
+            setLoadFailed(true)
+            return
+          }
+          const correctById = new Map((answerKey || []).map(k => [k.answer_id, k.is_correct]))
           setEvalData({
             hasEval: true,
             minScore: quiz.passing_score || 70, maxAttempts: quiz.max_attempts == null ? 0 : quiz.max_attempts,
             questions: (quiz.questions || []).map(q => ({
               id: uid(), dbId: q.id, type: q.type, text: q.text, score: q.points || 1, expanded: false,
-              answers: (q.answers || []).map(a => ({ id: uid(), dbId: a.id, text: a.text, correct: a.is_correct })),
+              answers: (q.answers || []).map(a => ({ id: uid(), dbId: a.id, text: a.text, correct: correctById.get(a.id) || false })),
             })),
           })
         }
@@ -211,8 +229,9 @@ export function useCourseWizard() {
   async function saveStep2(cId) {
     if (!cId) return
 
-    const { data: existingMods } = await supabase.from('modules')
+    const { data: existingMods, error: modsReadErr } = await supabase.from('modules')
       .select('id, lessons(id)').eq('course_id', cId).neq('title', 'Evaluación Final')
+    if (modsReadErr) throw modsReadErr
 
     const existingModIds = new Set((existingMods || []).map(m => m.id))
     const existingLessonIdsByMod = new Map((existingMods || []).map(m => [m.id, new Set((m.lessons || []).map(l => l.id))]))
@@ -321,8 +340,9 @@ export function useCourseWizard() {
   // quiz_responses both cascade on delete, so recreating the quiz/questions on
   // every save (as before) silently wiped a student's exam attempt history.
   async function saveStep4(cId) {
-    const { data: existingEvalMod } = await supabase.from('modules')
+    const { data: existingEvalMod, error: evalModReadErr } = await supabase.from('modules')
       .select('id, lessons(id, quizzes(id))').eq('course_id', cId).eq('title', 'Evaluación Final').maybeSingle()
+    if (evalModReadErr) throw evalModReadErr
 
     const existingModId  = existingEvalMod?.id || null
     const existingLesId   = existingEvalMod?.lessons?.[0]?.id || null
@@ -331,7 +351,8 @@ export function useCourseWizard() {
     if (!evalData.hasEval || evalData.questions.length === 0) {
       // evaluation removed/disabled — clean up any existing eval structure entirely
       if (existingQuizId) {
-        const { data: existingQs } = await supabase.from('questions').select('id').eq('quiz_id', existingQuizId)
+        const { data: existingQs, error: existingQsErr } = await supabase.from('questions').select('id').eq('quiz_id', existingQuizId)
+        if (existingQsErr) throw existingQsErr
         if (existingQs?.length > 0) {
           await supabase.from('answers').delete().in('question_id', existingQs.map(q => q.id)).throwOnError()
         }
@@ -375,7 +396,8 @@ export function useCourseWizard() {
     }
 
     // diff questions by id
-    const { data: existingQs } = await supabase.from('questions').select('id').eq('quiz_id', quizId)
+    const { data: existingQs, error: qReadErr } = await supabase.from('questions').select('id').eq('quiz_id', quizId)
+    if (qReadErr) throw qReadErr
     const existingQIds = new Set((existingQs || []).map(q => q.id))
     const clientQDbIds = new Set(evalData.questions.map(q => q.dbId).filter(Boolean))
 
@@ -423,7 +445,8 @@ export function useCourseWizard() {
         continue
       }
 
-      const { data: existingAs } = await supabase.from('answers').select('id').eq('question_id', dbQId)
+      const { data: existingAs, error: aReadErr } = await supabase.from('answers').select('id').eq('question_id', dbQId)
+      if (aReadErr) throw aReadErr
       const existingAIds = new Set((existingAs || []).map(a => a.id))
       const clientADbIds = new Set(q.answers.map(a => a.dbId).filter(Boolean))
 
@@ -489,6 +512,7 @@ export function useCourseWizard() {
 
   // ── next handler (create mode) ────────────────────────────────────────────
   async function handleNext() {
+    if (loadFailed) { setError('No se pudo cargar el curso. Recarga la página para continuar.'); return }
     const validErr = validateStep(step)
     if (validErr) { setError(validErr); return }
     setError(''); setSaving(true)
@@ -507,6 +531,7 @@ export function useCourseWizard() {
 
   // ── save step handler (edit mode) ─────────────────────────────────────────
   async function handleSaveStep() {
+    if (loadFailed) { setError('No se pudo cargar el curso. Recarga la página para continuar.'); return }
     const validErr = validateStep(step)
     if (validErr) { setError(validErr); return }
     setError(''); setSaving(true)

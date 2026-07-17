@@ -81,7 +81,7 @@ export default function InstructorEvaluationsPage() {
         lessons(id, title, order_index,
           quizzes(id, title, passing_score,
             questions(id, text, type, order_index, points,
-              answers(id, text, order_index, is_correct))))
+              answers(id, text, order_index))))
       `)
       .eq('course_id', sub.course_id)
       .order('order_index', { ascending: true })
@@ -97,6 +97,17 @@ export default function InstructorEvaluationsPage() {
     }
 
     const quizIds = quizzes.map(q => q.id)
+
+    if (quizIds.length) {
+      const { data: answerKey } = await supabase.rpc('get_answer_key', { p_quiz_ids: quizIds })
+      const correctById = new Map((answerKey || []).map(k => [k.answer_id, k.is_correct]))
+      for (const quiz of quizzes) {
+        quiz.questions = (quiz.questions || []).map(q => ({
+          ...q,
+          answers: (q.answers || []).map(a => ({ ...a, is_correct: correctById.get(a.id) || false })),
+        }))
+      }
+    }
     let attempts = []
     let responses = []
 

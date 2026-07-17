@@ -108,7 +108,7 @@ function renderSection(section, role, params) {
     case 'tienda':        return <StudentStorePage />
     case 'configuracion': return <StudentSettingsPage />
     case 'aprender':      return <StudentLearningPage />
-    case 'course-detail': return <CourseDetailPage />
+    case 'curso-detalle': return <CourseDetailPage />
     default:              return <Placeholder label={section} />
   }
 }

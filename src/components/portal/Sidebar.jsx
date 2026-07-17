@@ -19,7 +19,7 @@ const LOGO = (
 const SCREEN_TO_NAV = {
   'curso-revision':    'cursos',
   'curso-wizard':      'cursos',
-  'course-detail':     'cursos',
+  'curso-detalle':     'cursos',
   'aprender':          'cursos',
   'quiz-calificacion': 'evaluaciones',
 }
