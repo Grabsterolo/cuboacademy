@@ -13,6 +13,7 @@ const DEFAULTS = {
   allowed_registration_roles: 'student',
   hero_title: '',
   hero_subtitle: '',
+  hero_video_url: '',
   contact_email: '',
   social_instagram: '',
   social_linkedin: '',
@@ -127,7 +128,7 @@ export default function SettingsPage() {
 
   async function handleSaveLanding(e) {
     e.preventDefault()
-    await saveKeys(['hero_title', 'hero_subtitle', 'contact_email'], setS2)
+    await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email'], setS2)
   }
 
   async function handleSaveSocial(e) {
@@ -248,6 +249,10 @@ export default function SettingsPage() {
                     value={settings.hero_subtitle}
                     onChange={e => set('hero_subtitle', e.target.value)}
                     placeholder="Cubo Campus convierte experiencia consultiva real en cursos de alto impacto…" />
+                </Field>
+                <Field label="Video de fondo del hero" hint="URL de un video .mp4 · se reproduce en loop, sin sonido · deja vacío para usar el fondo por defecto">
+                  <input className="sett-inp" style={inp} type="text" value={settings.hero_video_url}
+                    onChange={e => set('hero_video_url', e.target.value)} placeholder="https://..." />
                 </Field>
                 <Field label="Email de contacto">
                   <input className="sett-inp" style={inp} type="email" value={settings.contact_email}

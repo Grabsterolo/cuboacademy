@@ -271,12 +271,22 @@ export default function HomePage() {
 
       {/* ── HERO ── */}
       <section className="hero-section" style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '8rem 5% 5rem' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)', backgroundSize: '48px 48px', zIndex: 0 }} />
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', width: 700, height: 700, borderRadius: '50%', background: 'rgba(22,125,120,.18)', filter: 'blur(90px)', top: '-10%', left: '-5%', animation: 'orb1 14s ease-in-out infinite' }} />
-          <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'rgba(22,125,120,.13)', filter: 'blur(70px)', top: '30%', right: '5%', animation: 'orb2 18s ease-in-out infinite', animationDelay: '-6s' }} />
-          <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'rgba(90,191,186,.08)', filter: 'blur(60px)', bottom: '0%', left: '40%', animation: 'orb3 22s ease-in-out infinite', animationDelay: '-11s' }} />
-        </div>
+        {settings.hero_video_url ? (
+          <>
+            <video src={settings.hero_video_url} autoPlay muted loop playsInline
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(140deg, rgba(8,26,30,.82), rgba(13,56,52,.75))' }} />
+          </>
+        ) : (
+          <>
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)', backgroundSize: '48px 48px', zIndex: 0 }} />
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', width: 700, height: 700, borderRadius: '50%', background: 'rgba(22,125,120,.18)', filter: 'blur(90px)', top: '-10%', left: '-5%', animation: 'orb1 14s ease-in-out infinite' }} />
+              <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'rgba(22,125,120,.13)', filter: 'blur(70px)', top: '30%', right: '5%', animation: 'orb2 18s ease-in-out infinite', animationDelay: '-6s' }} />
+              <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'rgba(90,191,186,.08)', filter: 'blur(60px)', bottom: '0%', left: '40%', animation: 'orb3 22s ease-in-out infinite', animationDelay: '-11s' }} />
+            </div>
+          </>
+        )}
         <div className="hero-grid" style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '4rem', alignItems: 'center', width: '100%', maxWidth: 1200, margin: '0 auto' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(90,191,186,.75)', marginBottom: '1.4rem' }}>
