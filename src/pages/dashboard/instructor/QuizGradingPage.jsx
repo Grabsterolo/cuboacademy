@@ -43,48 +43,20 @@ export default function QuizGradingPage() {
   async function loadAttempts() {
     setLoading(true)
     setLoadError('')
-    const quizMetaMap = {}
 
     try {
-      // Get courses — admin sees all, instructor only theirs
-      let coursesQuery = supabase.from('courses').select('id, title')
-      if (!isAdmin) coursesQuery = coursesQuery.eq('instructor_id', user.id)
-      const { data: courses } = await coursesQuery.throwOnError()
-      const courseIds = (courses || []).map(c => c.id)
-      if (!courseIds.length) { setAttempts([]); setLoading(false); return }
-      const courseMap = Object.fromEntries((courses || []).map(c => [c.id, c]))
-
-      const { data: mods } = await supabase
-        .from('modules').select('id, course_id').in('course_id', courseIds).throwOnError()
-      const modIds = (mods || []).map(m => m.id)
-      if (!modIds.length) { setAttempts([]); setLoading(false); return }
-      const modCourseMap = Object.fromEntries((mods || []).map(m => [m.id, m.course_id]))
-
-      const { data: lessons } = await supabase
-        .from('lessons').select('id, title, module_id').in('module_id', modIds).throwOnError()
-      const lessonIds = (lessons || []).map(l => l.id)
-      if (!lessonIds.length) { setAttempts([]); setLoading(false); return }
-      const lessonMap = Object.fromEntries((lessons || []).map(l => [l.id, l]))
-
-      const { data: quizData } = await supabase
-        .from('quizzes').select('id, title, lesson_id').in('lesson_id', lessonIds).throwOnError()
-      const quizIds = (quizData || []).map(q => q.id)
-      for (const q of quizData || []) {
-        const lesson  = lessonMap[q.lesson_id]
-        const courseId = lesson ? modCourseMap[lesson.module_id] : null
-        quizMetaMap[q.id] = {
-          quizTitle:   q.title,
-          lessonTitle: lesson?.title || '—',
-          courseTitle: courseId ? courseMap[courseId]?.title : '—',
-        }
-      }
-
-      if (!quizIds.length) { setAttempts([]); setLoading(false); return }
-
+      // Single joined query instead of walking courses → modules → lessons →
+      // quizzes by hand: RLS on quiz_attempts ("Instructores y admin ven
+      // intentos de sus cursos") already scopes rows to this instructor's
+      // own courses (or all courses for admin), so we just need the nested
+      // embeds for display metadata.
       const { data: attemptsData } = await supabase
         .from('quiz_attempts')
-        .select('id, status, completed_at, student_id, quiz_id, profiles!student_id(full_name, email)')
-        .in('quiz_id', quizIds)
+        .select(`
+          id, status, completed_at, student_id, quiz_id,
+          profiles!student_id(full_name, email),
+          quizzes(id, title, lessons(id, title, modules(id, courses(id, title))))
+        `)
         .eq('status', 'pending_review')
         .order('completed_at', { ascending: false })
         .throwOnError()
@@ -100,11 +72,15 @@ export default function QuizGradingPage() {
 
       const openResponses = (responsesData || []).filter(r => r.questions?.type === 'open')
 
-      const result = attemptsData.map(a => ({
-        ...a,
-        meta: quizMetaMap[a.quiz_id] || { quizTitle: '—', lessonTitle: '—', courseTitle: '—' },
-        openResponses: openResponses.filter(r => r.attempt_id === a.id),
-      })).filter(a => a.openResponses.length > 0)
+      const result = attemptsData.map(a => {
+        const lesson = a.quizzes?.lessons
+        const course = lesson?.modules?.courses
+        return {
+          ...a,
+          meta: { quizTitle: a.quizzes?.title || '—', lessonTitle: lesson?.title || '—', courseTitle: course?.title || '—' },
+          openResponses: openResponses.filter(r => r.attempt_id === a.id),
+        }
+      }).filter(a => a.openResponses.length > 0)
 
       // Initialize graded set and point inputs from DB state
       const graded = new Set()

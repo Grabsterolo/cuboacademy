@@ -47,7 +47,7 @@ export default function CourseDetailPage() {
       // Filter modules through the embedded courses relation instead of
       // looking up the course id first — one round trip instead of two.
       supabase.from('modules')
-        .select('id, title, order_index, lessons(id, title, duration_mins, is_free_preview, order_index), courses!inner(slug, status)')
+        .select('id, title, order_index, lessons(id, title, duration_mins, order_index), courses!inner(slug, status)')
         .eq('courses.slug', slug).eq('courses.status', 'published')
         .order('order_index', { ascending: true })
         .order('order_index', { ascending: true, foreignTable: 'lessons' }),
@@ -247,9 +247,6 @@ export default function CourseDetailPage() {
                               <div style={{ fontSize: '.82rem', color: 'var(--carbon)', fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{les.title}</div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
-                              {les.is_free_preview && (
-                                <span style={{ fontSize: '.62rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light,rgba(22,125,120,.18))', padding: '1px 6px', borderRadius: 8 }}>Free</span>
-                              )}
                               {les.duration_mins != null && (
                                 <span style={{ fontSize: '.7rem', color: 'var(--text-2)' }}>{les.duration_mins} min</span>
                               )}

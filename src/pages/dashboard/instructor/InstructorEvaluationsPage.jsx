@@ -60,6 +60,7 @@ export default function InstructorEvaluationsPage() {
       `)
       .in('course_id', courseIds)
       .order('submitted_at', { ascending: false })
+      .limit(500)
 
     setSubmissions(data || [])
     setLoading(false)
@@ -98,8 +99,20 @@ export default function InstructorEvaluationsPage() {
 
     const quizIds = quizzes.map(q => q.id)
 
+    let attempts = []
+    let responses = []
+
     if (quizIds.length) {
-      const { data: answerKey } = await supabase.rpc('get_answer_key', { p_quiz_ids: quizIds })
+      // These two only depend on quizIds, not on each other — run together.
+      const [{ data: answerKey }, { data: attemptsData }] = await Promise.all([
+        supabase.rpc('get_answer_key', { p_quiz_ids: quizIds }),
+        supabase.from('quiz_attempts')
+          .select('id, quiz_id, score, passed, completed_at')
+          .in('quiz_id', quizIds)
+          .eq('student_id', sub.student_id)
+          .order('completed_at', { ascending: false }),
+      ])
+
       const correctById = new Map((answerKey || []).map(k => [k.answer_id, k.is_correct]))
       for (const quiz of quizzes) {
         quiz.questions = (quiz.questions || []).map(q => ({
@@ -107,19 +120,8 @@ export default function InstructorEvaluationsPage() {
           answers: (q.answers || []).map(a => ({ ...a, is_correct: correctById.get(a.id) || false })),
         }))
       }
-    }
-    let attempts = []
-    let responses = []
 
-    if (quizIds.length) {
-      const { data: attemptsData } = await supabase
-        .from('quiz_attempts')
-        .select('id, quiz_id, score, passed, completed_at')
-        .in('quiz_id', quizIds)
-        .eq('student_id', sub.student_id)
-        .order('completed_at', { ascending: false })
       attempts = attemptsData || []
-
       const attemptIds = attempts.map(a => a.id)
       if (attemptIds.length) {
         const { data: responsesData } = await supabase

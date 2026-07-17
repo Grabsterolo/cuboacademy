@@ -99,7 +99,7 @@ export default function StudentLearningPage() {
         .select('id, title, cover_image_url, certificate_condition, profiles!instructor_id(full_name)')
         .eq('id', courseId).single(),
       supabase.from('modules')
-        .select('id, title, description, order_index, lessons(id, title, description, video_url, duration_mins, is_free_preview, order_index, type, resources(id, title, file_url, file_type))')
+        .select('id, title, description, order_index, lessons(id, title, description, video_url, duration_mins, order_index, type, resources(id, title, file_url, file_type))')
         .eq('course_id', courseId)
         .order('order_index', { ascending: true })
         .order('order_index', { ascending: true, foreignTable: 'lessons' }),
@@ -396,9 +396,6 @@ export default function StudentLearningPage() {
                         const mod = modules.find(m => m.lessons.some(l => l.id === activeLesson?.id))
                         return mod ? <span style={{ fontSize: '.72rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--text-2)' }}>{mod.title}</span> : null
                       })()}
-                      {activeLesson?.is_free_preview && (
-                        <span style={{ fontSize: '.65rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light,rgba(22,125,120,.18))', padding: '2px 7px', borderRadius: 10 }}>Preview gratuito</span>
-                      )}
                     </div>
                     <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.1rem,2.5vw,1.45rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.25, margin: 0 }}>
                       {activeLesson?.title}
@@ -623,9 +620,6 @@ export default function StudentLearningPage() {
                               <div style={{ fontSize: '.68rem', color: 'var(--text-2)', marginTop: '.1rem' }}>{les.duration_mins} min</div>
                             )}
                           </div>
-                          {les.is_free_preview && !done && (
-                            <span style={{ fontSize: '.6rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light,rgba(22,125,120,.18))', padding: '1px 5px', borderRadius: 8, flexShrink: 0 }}>Free</span>
-                          )}
                         </div>
                       )
                     })}

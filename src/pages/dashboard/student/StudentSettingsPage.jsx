@@ -28,21 +28,9 @@ function Row({ label, desc, children, last }) {
   )
 }
 
-function Toggle({ on, onChange }) {
-  return (
-    <button onClick={() => onChange(!on)} style={{ width: 42, height: 24, borderRadius: 12, background: on ? 'var(--jade)' : 'var(--border)', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}>
-      <div style={{ position: 'absolute', top: 3, left: on ? 21 : 3, width: 18, height: 18, borderRadius: '50%', background: 'white', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />
-    </button>
-  )
-}
-
 export default function StudentSettingsPage() {
   const { user } = useAuth()
   const { navigate } = useNavigation()
-
-  const [notifAnnouncements,  setNotifAnnouncements]  = useState(true)
-  const [notifCourseUpdates,  setNotifCourseUpdates]  = useState(true)
-  const [notifNewCourses,     setNotifNewCourses]     = useState(false)
 
   const [pwLoading, setPwLoading] = useState(false)
   const [pwMsg,     setPwMsg]     = useState('')
@@ -98,19 +86,6 @@ export default function StudentSettingsPage() {
                 style={{ padding: '.45rem 1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
                 Ir a Mi perfil →
               </button>
-            </Row>
-          </Card>
-
-          {/* Notificaciones — full width */}
-          <Card title="Notificaciones por correo" desc="Elige qué actualizaciones deseas recibir en tu bandeja de entrada." span>
-            <Row label="Comunicados" desc="Cuando el equipo de Cubo Campus publique un aviso.">
-              <Toggle on={notifAnnouncements} onChange={setNotifAnnouncements} />
-            </Row>
-            <Row label="Actualizaciones de curso" desc="Cuando un instructor actualice contenido de un curso tuyo.">
-              <Toggle on={notifCourseUpdates} onChange={setNotifCourseUpdates} />
-            </Row>
-            <Row label="Nuevos cursos" desc="Cuando haya nuevos cursos disponibles en el catálogo." last>
-              <Toggle on={notifNewCourses} onChange={setNotifNewCourses} />
             </Row>
           </Card>
 

@@ -29,6 +29,8 @@ export default function InstructorReportsPage() {
   const [counts, setCounts] = useState({})
   const [totalStudents, setTotalStudents] = useState(0)
   const [monthlyEnr, setMonthlyEnr] = useState([])
+  const [revenueByCourse, setRevenueByCourse] = useState({})
+  const [totalRevenue, setTotalRevenue] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -43,10 +45,10 @@ export default function InstructorReportsPage() {
         if (!list.length) { setLoading(false); return }
 
         const ids = list.map(c => c.id)
-        const { data: enr } = await supabase
-          .from('enrollments')
-          .select('course_id, student_id, created_at')
-          .in('course_id', ids)
+        const [{ data: enr }, { data: orders }] = await Promise.all([
+          supabase.from('enrollments').select('course_id, student_id, created_at').in('course_id', ids),
+          supabase.from('orders').select('course_id, amount').eq('status', 'completed').in('course_id', ids),
+        ])
 
         const map = {}
         const monthly = {}
@@ -60,6 +62,16 @@ export default function InstructorReportsPage() {
         })
         setCounts(map)
         setTotalStudents(students.size)
+
+        const revMap = {}
+        let revTotal = 0
+        ;(orders || []).forEach(o => {
+          const amt = Number(o.amount) || 0
+          revMap[o.course_id] = (revMap[o.course_id] || 0) + amt
+          revTotal += amt
+        })
+        setRevenueByCourse(revMap)
+        setTotalRevenue(revTotal)
 
         const now = new Date()
         setMonthlyEnr(Array.from({ length: 6 }, (_, i) => {
@@ -78,6 +90,7 @@ export default function InstructorReportsPage() {
   const COURSE_ICON = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
   const USERS_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
   const CHECK_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  const MONEY_ICON  = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 15a2.5 2.5 0 0 0 2.5 1.5c1.5 0 2.5-.9 2.5-2s-1-1.5-2.5-2-2.5-.9-2.5-2 1-2 2.5-2a2.5 2.5 0 0 1 2.5 1.5"/><line x1="12" y1="6.5" x2="12" y2="17.5"/></svg>
 
   return (
     <DashboardLayout>
@@ -98,10 +111,11 @@ export default function InstructorReportsPage() {
           </div>
         ) : (
           <>
-            <div className="rp-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '.85rem', marginBottom: '1.75rem' }}>
+            <div className="rp-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '.85rem', marginBottom: '1.75rem' }}>
               <StatCard value={courses.length}   label="Cursos creados"    icon={COURSE_ICON} sub={`${published.length} publicado${published.length !== 1 ? 's' : ''}`} />
               <StatCard value={totalStudents}    label="Estudiantes totales" icon={USERS_ICON} sub={courses.length ? `${(totalStudents / courses.length).toFixed(1)} prom./curso` : null} />
               <StatCard value={published.length} label="Cursos activos"    icon={CHECK_ICON} />
+              <StatCard value={`$${totalRevenue.toFixed(2)}`} label="Ingresos totales" icon={MONEY_ICON} sub="Órdenes pagadas" />
             </div>
 
             <div className="rp-main" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', alignItems: 'start' }}>
@@ -144,6 +158,7 @@ export default function InstructorReportsPage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.4rem' }}>
                         <span style={{ fontSize: '.83rem', fontWeight: 600, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: '.75rem' }}>{c.title}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
+                          {revenueByCourse[c.id] > 0 && <span style={{ fontSize: '.7rem', fontWeight: 700, color: 'var(--jade)' }}>${revenueByCourse[c.id].toFixed(2)}</span>}
                           <span style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--text-2)' }}>{n} est.</span>
                           <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 8, background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>{st.label}</span>
                         </div>

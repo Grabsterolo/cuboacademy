@@ -28,21 +28,9 @@ function Row({ label, desc, children, last }) {
   )
 }
 
-function Toggle({ on, onChange }) {
-  return (
-    <button onClick={() => onChange(!on)} style={{ width: 42, height: 24, borderRadius: 12, background: on ? 'var(--jade)' : 'var(--border)', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}>
-      <div style={{ position: 'absolute', top: 3, left: on ? 21 : 3, width: 18, height: 18, borderRadius: '50%', background: 'white', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />
-    </button>
-  )
-}
-
 export default function InstructorSettingsPage() {
   const { user } = useAuth()
   const { navigate } = useNavigation()
-
-  const [notifNewStudent,    setNotifNewStudent]    = useState(true)
-  const [notifAnnouncements, setNotifAnnouncements] = useState(true)
-  const [notifReviews,       setNotifReviews]       = useState(false)
 
   const [pwLoading, setPwLoading] = useState(false)
   const [pwMsg,     setPwMsg]     = useState('')
@@ -98,19 +86,6 @@ export default function InstructorSettingsPage() {
                 style={{ padding: '.45rem 1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
                 Ir a Mi perfil →
               </button>
-            </Row>
-          </Card>
-
-          {/* Notificaciones — full width */}
-          <Card title="Notificaciones por correo" desc="Elige qué eventos te gustaría recibir en tu bandeja de entrada." span>
-            <Row label="Nuevo estudiante" desc="Cuando alguien se inscriba en uno de tus cursos.">
-              <Toggle on={notifNewStudent} onChange={setNotifNewStudent} />
-            </Row>
-            <Row label="Comunicados" desc="Cuando el equipo de Cubo Campus publique un aviso.">
-              <Toggle on={notifAnnouncements} onChange={setNotifAnnouncements} />
-            </Row>
-            <Row label="Reseñas" desc="Cuando un estudiante deje una reseña en tu curso." last>
-              <Toggle on={notifReviews} onChange={setNotifReviews} />
             </Row>
           </Card>
 

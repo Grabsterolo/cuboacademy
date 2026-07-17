@@ -38,6 +38,7 @@ export default function InstructorStudentsPage() {
           .select('id, created_at, course_id, student_id')
           .in('course_id', ids)
           .order('created_at', { ascending: false })
+          .limit(1000)
 
         if (!enr?.length) { setLoading(false); return }
 

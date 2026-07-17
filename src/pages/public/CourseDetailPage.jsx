@@ -38,7 +38,7 @@ export default function CourseDetailPage() {
       // Load modules + lessons
       const { data: mods } = await supabase
         .from('modules')
-        .select('*, lessons(id, title, duration_mins, is_free_preview, order_index)')
+        .select('*, lessons(id, title, duration_mins, order_index)')
         .eq('course_id', c.id)
         .order('order_index', { ascending: true })
         .order('order_index', { ascending: true, foreignTable: 'lessons' })
@@ -205,12 +205,8 @@ export default function CourseDetailPage() {
                       {open && mod.lessons.map(les => (
                         <div key={les.id} className="les-row">
                           <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-                            {les.is_free_preview
-                              ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                              : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            }
-                            <span style={{ fontSize: '.84rem', color: les.is_free_preview ? 'var(--carbon)' : 'var(--text-2)' }}>{les.title}</span>
-                            {les.is_free_preview && <span style={{ fontSize: '.64rem', fontWeight: 700, padding: '1px 6px', borderRadius: 10, background: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' }}>Preview</span>}
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span style={{ fontSize: '.84rem', color: 'var(--text-2)' }}>{les.title}</span>
                           </div>
                           {les.duration_mins && <span style={{ fontSize: '.72rem', color: 'var(--text-2)', flexShrink: 0, marginLeft: '.5rem' }}>{les.duration_mins} min</span>}
                         </div>

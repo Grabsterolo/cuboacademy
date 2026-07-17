@@ -73,6 +73,7 @@ export default function UsersPage() {
       .from('users_view')
       .select('id, full_name, email, role, created_at, is_active')
       .order('created_at', { ascending: false })
+      .limit(500)
     if (data) setUsers(data)
     setLoading(false)
   }

@@ -43,6 +43,7 @@ export default function CoursesPage() {
       .from('courses')
       .select('id, title, cover_image_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
       .order('created_at', { ascending: false })
+      .limit(500)
     setCourses(data || [])
     setLoading(false)
   }

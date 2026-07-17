@@ -3,9 +3,10 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 
 const STATUS_STYLE = {
-  completed: { label: 'Pagado',    bg: 'var(--jade-soft)', color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
-  pending:   { label: 'Pendiente', bg: '#FFF9E6',           color: '#B45309',       border: '1px solid #FBBF24' },
-  failed:    { label: 'Fallido',   bg: '#FEF2F2',           color: '#B91C1C',       border: '1px solid #FECACA' },
+  completed: { label: 'Pagado',      bg: 'var(--jade-soft)', color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
+  pending:   { label: 'Pendiente',   bg: '#FFF9E6',           color: '#B45309',       border: '1px solid #FBBF24' },
+  failed:    { label: 'Fallido',     bg: '#FEF2F2',           color: '#B91C1C',       border: '1px solid #FECACA' },
+  refunded:  { label: 'Reembolsado', bg: '#F1F0EC',           color: 'var(--text-2)', border: '1px solid var(--border)' },
 }
 
 function StatusBadge({ status }) {
@@ -26,6 +27,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [acting, setActing] = useState(null) // order id being processed
   const [confirmAction, setConfirmAction] = useState(null) // { orderId, action }
+  const [actionErr, setActionErr] = useState('')
 
   useEffect(() => { loadOrders() }, [])
 
@@ -71,11 +73,33 @@ export default function OrdersPage() {
     setActing(null)
   }
 
+  // Refund: no real payment gateway is wired up (orders are approved manually),
+  // so there's no money to actually move — this just reverts the internal
+  // state: mark the order refunded and revoke the enrollment it granted.
+  async function handleRefund(order) {
+    setConfirmAction(null)
+    setActing(order.id)
+    setActionErr('')
+
+    const { error: orderErr } = await supabase.from('orders').update({ status: 'refunded' }).eq('id', order.id)
+    if (orderErr) { setActing(null); setActionErr('No se pudo marcar la orden como reembolsada: ' + orderErr.message); return }
+
+    const { error: enrErr } = await supabase.from('enrollments')
+      .delete().eq('student_id', order.student_id).eq('course_id', order.course_id)
+    if (enrErr) {
+      setActionErr('La orden se marcó como reembolsada, pero no se pudo quitar la matrícula: ' + enrErr.message)
+    }
+
+    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'refunded' } : o))
+    setActing(null)
+  }
+
   const STATUS_FILTERS = [
     { value: '', label: 'Todos' },
     { value: 'pending', label: 'Pendientes' },
     { value: 'completed', label: 'Pagados' },
     { value: 'failed', label: 'Fallidos' },
+    { value: 'refunded', label: 'Reembolsados' },
   ]
 
   const q = search.toLowerCase()
@@ -113,6 +137,13 @@ export default function OrdersPage() {
             )}
           </div>
         </div>
+
+        {actionErr && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C', borderRadius: 10, padding: '.8rem 1rem', fontSize: '.83rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.75rem' }}>
+            <span>{actionErr}</span>
+            <button onClick={() => setActionErr('')} style={{ background: 'none', border: 'none', color: '#B91C1C', cursor: 'pointer', fontWeight: 700, fontSize: '.9rem', flexShrink: 0 }}>✕</button>
+          </div>
+        )}
 
         {/* Filters */}
         <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
@@ -225,6 +256,31 @@ export default function OrdersPage() {
                             ✕
                           </button>
                         </>
+                      )}
+                    </div>
+                  )}
+
+                  {order.status === 'completed' && (
+                    <div style={{ display: 'flex', gap: '.4rem', flexShrink: 0 }}>
+                      {isConfirming ? (
+                        <>
+                          <span style={{ fontSize: '.75rem', color: 'var(--text-2)', alignSelf: 'center', fontFamily: 'var(--sans)' }}>¿Reembolsar y quitar matrícula?</span>
+                          <button onClick={() => handleRefund(order)} disabled={isActing}
+                            style={{ padding: '.35rem .85rem', background: '#B91C1C', color: 'white', border: 'none', borderRadius: 7, fontSize: '.77rem', fontWeight: 700, cursor: isActing ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isActing ? .7 : 1 }}>
+                            {isActing ? '…' : 'Sí'}
+                          </button>
+                          <button onClick={() => setConfirmAction(null)} disabled={isActing}
+                            style={{ padding: '.35rem .65rem', background: 'none', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.77rem', color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                            No
+                          </button>
+                        </>
+                      ) : (
+                        <button onClick={() => setConfirmAction({ orderId: order.id, action: 'refund' })} disabled={isActing}
+                          style={{ padding: '.38rem .85rem', background: 'none', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.77rem', color: '#B91C1C', cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'border-color .15s', whiteSpace: 'nowrap' }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = '#FECACA'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+                          Reembolsar
+                        </button>
                       )}
                     </div>
                   )}

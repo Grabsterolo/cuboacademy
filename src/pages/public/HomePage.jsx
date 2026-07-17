@@ -123,7 +123,7 @@ const COURSES = [
 
 const HOW_STEPS = [
   { num: '1', title: 'Crea tu cuenta', desc: 'Regístrate como estudiante o instructor. En 2 minutos ya estás adentro.' },
-  { num: '2', title: 'Explora el catálogo', desc: 'Filtra por área, nivel o duración. Cada curso incluye una muestra gratuita.' },
+  { num: '2', title: 'Explora el catálogo', desc: 'Filtra por área, nivel o duración, y revisa el temario de cada curso.' },
   { num: '3', title: 'Aprende a tu ritmo', desc: 'Video, recursos descargables y ejercicios prácticos. Sin fechas límite.' },
   { num: '4', title: 'Certifícate', desc: 'Certificado digital avalado por Grupo Cubo 130. Listo para tu perfil.' },
 ]
