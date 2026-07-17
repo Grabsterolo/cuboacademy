@@ -9,11 +9,12 @@ export function Step8Publish({ status, setStatus, saving, error, onDraft, onRevi
         { value: 'published', label: 'Publicar directamente',     sub: 'El curso queda visible para todos los estudiantes.',     icon: '🚀' },
       ]
     : [
-        { value: 'draft',  label: 'Guardar como borrador', sub: 'El curso queda privado. Puedes seguir editándolo.',                       icon: '📝' },
-        { value: 'review', label: 'Enviar a revisión',      sub: 'Un administrador revisará el curso y decidirá si lo publica.', icon: '📤' },
+        { value: 'draft',    label: 'Guardar como borrador', sub: 'El curso queda privado. Puedes seguir editándolo.',                       icon: '📝' },
+        { value: 'review',   label: 'Enviar a revisión',      sub: 'Un administrador revisará el curso y decidirá si lo publica.', icon: '📤' },
+        { value: 'archived', label: 'Archivar curso',         sub: 'Deja de verse en el catálogo. Conservas todo el contenido.',   icon: '📦' },
       ]
 
-  const canSubmit = status === 'review' || (isAdmin && status === 'published')
+  const canSubmit = status === 'review' || status === 'archived' || (isAdmin && status === 'published')
 
   return (
     <div>
@@ -51,6 +52,8 @@ export function Step8Publish({ status, setStatus, saving, error, onDraft, onRevi
               <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'wiz-spin .7s linear infinite' }} /> Enviando…</>
             ) : status === 'published' ? (
               <>{IC.send} Publicar curso</>
+            ) : status === 'archived' ? (
+              <>{IC.send} Archivar curso</>
             ) : (
               <>{IC.send} Enviar a revisión</>
             )}

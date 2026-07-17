@@ -1,46 +1,49 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import Sidebar from './Sidebar'
 
+// Lazy-loaded per role so a student's bundle never has to fetch the
+// instructor course wizard, admin pages, etc. (and vice versa).
+
 // Admin
-import GeneralPage from '../../pages/dashboard/admin/GeneralPage'
-import UsersPage from '../../pages/dashboard/admin/UsersPage'
-import CategoriesPage from '../../pages/dashboard/admin/CategoriesPage'
-import CoursesPage from '../../pages/dashboard/admin/CoursesPage'
-import CourseReviewPage from '../../pages/dashboard/admin/CourseReviewPage'
-import OrdersPage from '../../pages/dashboard/admin/OrdersPage'
-import CertificatesPage from '../../pages/dashboard/admin/CertificatesPage'
-import ReportsPage from '../../pages/dashboard/admin/ReportsPage'
-import SettingsPage from '../../pages/dashboard/admin/SettingsPage'
-import RequestsPage from '../../pages/dashboard/admin/RequestsPage'
-import AnnouncementsPage from '../../pages/dashboard/admin/AnnouncementsPage'
+const GeneralPage = lazy(() => import('../../pages/dashboard/admin/GeneralPage'))
+const UsersPage = lazy(() => import('../../pages/dashboard/admin/UsersPage'))
+const CategoriesPage = lazy(() => import('../../pages/dashboard/admin/CategoriesPage'))
+const CoursesPage = lazy(() => import('../../pages/dashboard/admin/CoursesPage'))
+const CourseReviewPage = lazy(() => import('../../pages/dashboard/admin/CourseReviewPage'))
+const OrdersPage = lazy(() => import('../../pages/dashboard/admin/OrdersPage'))
+const CertificatesPage = lazy(() => import('../../pages/dashboard/admin/CertificatesPage'))
+const ReportsPage = lazy(() => import('../../pages/dashboard/admin/ReportsPage'))
+const SettingsPage = lazy(() => import('../../pages/dashboard/admin/SettingsPage'))
+const RequestsPage = lazy(() => import('../../pages/dashboard/admin/RequestsPage'))
+const AnnouncementsPage = lazy(() => import('../../pages/dashboard/admin/AnnouncementsPage'))
 
 // Instructor
-import CourseWizardPage from '../../pages/dashboard/instructor/CourseWizardPage'
-import QuizGradingPage from '../../pages/dashboard/instructor/QuizGradingPage'
-import InstructorDashboard from '../../pages/dashboard/InstructorDashboard'
-import InstructorProfilePage from '../../pages/dashboard/instructor/InstructorProfilePage'
-import InstructorCoursesPage from '../../pages/dashboard/instructor/InstructorCoursesPage'
-import InstructorStudentsPage from '../../pages/dashboard/instructor/InstructorStudentsPage'
-import InstructorEvaluationsPage from '../../pages/dashboard/instructor/InstructorEvaluationsPage'
-import InstructorReportsPage from '../../pages/dashboard/instructor/InstructorReportsPage'
-import InstructorSettingsPage from '../../pages/dashboard/instructor/InstructorSettingsPage'
-import InstructorAnnouncementsPage from '../../pages/dashboard/instructor/InstructorAnnouncementsPage'
+const CourseWizardPage = lazy(() => import('../../pages/dashboard/instructor/CourseWizardPage'))
+const QuizGradingPage = lazy(() => import('../../pages/dashboard/instructor/QuizGradingPage'))
+const InstructorDashboard = lazy(() => import('../../pages/dashboard/InstructorDashboard'))
+const InstructorProfilePage = lazy(() => import('../../pages/dashboard/instructor/InstructorProfilePage'))
+const InstructorCoursesPage = lazy(() => import('../../pages/dashboard/instructor/InstructorCoursesPage'))
+const InstructorStudentsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorStudentsPage'))
+const InstructorEvaluationsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorEvaluationsPage'))
+const InstructorReportsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorReportsPage'))
+const InstructorSettingsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorSettingsPage'))
+const InstructorAnnouncementsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorAnnouncementsPage'))
 
 // Student
-import StudentDashboard from '../../pages/dashboard/StudentDashboard'
-import StudentProfilePage from '../../pages/dashboard/student/StudentProfilePage'
-import StudentCoursesPage from '../../pages/dashboard/student/StudentCoursesPage'
-import StudentInstructorsPage from '../../pages/dashboard/student/StudentInstructorsPage'
-import StudentAchievementsPage from '../../pages/dashboard/student/StudentAchievementsPage'
-import StudentCertificatesPage from '../../pages/dashboard/student/StudentCertificatesPage'
-import StudentStorePage from '../../pages/dashboard/student/StudentStorePage'
-import StudentSettingsPage from '../../pages/dashboard/student/StudentSettingsPage'
-import StudentAnnouncementsPage from '../../pages/dashboard/student/StudentAnnouncementsPage'
-import StudentLearningPage from '../../pages/dashboard/student/StudentLearningPage'
-import CourseDetailPage from '../../pages/dashboard/student/CourseDetailPage'
+const StudentDashboard = lazy(() => import('../../pages/dashboard/StudentDashboard'))
+const StudentProfilePage = lazy(() => import('../../pages/dashboard/student/StudentProfilePage'))
+const StudentCoursesPage = lazy(() => import('../../pages/dashboard/student/StudentCoursesPage'))
+const StudentInstructorsPage = lazy(() => import('../../pages/dashboard/student/StudentInstructorsPage'))
+const StudentAchievementsPage = lazy(() => import('../../pages/dashboard/student/StudentAchievementsPage'))
+const StudentCertificatesPage = lazy(() => import('../../pages/dashboard/student/StudentCertificatesPage'))
+const StudentStorePage = lazy(() => import('../../pages/dashboard/student/StudentStorePage'))
+const StudentSettingsPage = lazy(() => import('../../pages/dashboard/student/StudentSettingsPage'))
+const StudentAnnouncementsPage = lazy(() => import('../../pages/dashboard/student/StudentAnnouncementsPage'))
+const StudentLearningPage = lazy(() => import('../../pages/dashboard/student/StudentLearningPage'))
+const CourseDetailPage = lazy(() => import('../../pages/dashboard/student/CourseDetailPage'))
 
 
 function LoadingSection() {
@@ -171,7 +174,9 @@ export default function Portal() {
 
           {/* Section content */}
           <div style={{ flex: 1, position: 'relative' }}>
-            {renderSection(displaySection, role, displayParams)}
+            <Suspense fallback={<LoadingSection />}>
+              {renderSection(displaySection, role, displayParams)}
+            </Suspense>
             {overlay.show && (
               <div style={{
                 position: 'absolute', inset: 0, background: 'var(--cream)',

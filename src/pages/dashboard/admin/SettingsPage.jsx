@@ -98,6 +98,8 @@ export default function SettingsPage() {
 
   const [heroVideoUploading, setHeroVideoUploading] = useState(false)
   const [heroVideoErr, setHeroVideoErr] = useState('')
+  const [pendingHeroVideoPath, setPendingHeroVideoPath] = useState('')
+  const [pendingHeroVideoUrl, setPendingHeroVideoUrl] = useState('')
   const heroVideoInputRef = useRef()
 
   useEffect(() => {
@@ -113,12 +115,14 @@ export default function SettingsPage() {
 
   function set(key, val) { setSettings(prev => ({ ...prev, [key]: val })) }
 
-  async function saveKeys(keys, setSt) {
+  async function saveKeys(keys, setSt, overrides = {}) {
     setSt({ saving: true, ok: false, err: '' })
-    const rows = keys.map(k => ({ key: k, value: settings[k] ?? '' }))
+    const merged = { ...settings, ...overrides }
+    const rows = keys.map(k => ({ key: k, value: merged[k] ?? '' }))
     const { error } = await supabase.from('platform_settings').upsert(rows, { onConflict: 'key' })
     if (error) { setSt({ saving: false, ok: false, err: error.message || 'Error al guardar.' }); return }
     setCtx(prev => ({ ...prev, ...rows.reduce((a, r) => ({ ...a, [r.key]: r.value }), {}) }))
+    if (Object.keys(overrides).length) setSettings(prev => ({ ...prev, ...overrides }))
     setSt({ saving: false, ok: true, err: '' })
     setTimeout(() => setSt(p => ({ ...p, ok: false })), 3000)
   }
@@ -130,29 +134,46 @@ export default function SettingsPage() {
     if (settings.platform_name) document.title = settings.platform_name
   }
 
-  // Fixed path + upsert: every upload overwrites the same object, so the
-  // bucket never accumulates old videos — only the current one ever exists.
-  // The cache-busting query param forces browsers to fetch the new bytes
-  // instead of serving a cached response for the same unchanged URL.
+  // Uploads go to a temp object first, not the live hero.mp4 -- so picking a
+  // file only affects the live site once "Guardar cambios" actually moves it
+  // into place. Fixed temp path + upsert keeps the bucket from accumulating
+  // abandoned uploads across repeated selections before saving.
   async function handleHeroVideoUpload(file) {
     if (!file) return
     if (file.type !== 'video/mp4') { setHeroVideoErr('Solo se acepta formato MP4.'); return }
     if (file.size > 50 * 1024 * 1024) { setHeroVideoErr('Máximo 50 MB.'); return }
     setHeroVideoErr(''); setHeroVideoUploading(true)
+    const tempPath = 'pending-hero.mp4'
     const { error: upErr } = await supabase.storage.from('hero-video')
-      .upload('hero.mp4', file, { upsert: true, contentType: 'video/mp4' })
+      .upload(tempPath, file, { upsert: true, contentType: 'video/mp4' })
     if (upErr) { setHeroVideoErr(upErr.message); setHeroVideoUploading(false); return }
-    const { data: { publicUrl } } = supabase.storage.from('hero-video').getPublicUrl('hero.mp4')
-    set('hero_video_url', `${publicUrl}?v=${Date.now()}`)
+    const { data: { publicUrl } } = supabase.storage.from('hero-video').getPublicUrl(tempPath)
+    setPendingHeroVideoPath(tempPath)
+    setPendingHeroVideoUrl(`${publicUrl}?v=${Date.now()}`)
     setHeroVideoUploading(false)
   }
 
   function handleRemoveHeroVideo() {
     set('hero_video_url', '')
+    if (pendingHeroVideoPath) {
+      supabase.storage.from('hero-video').remove([pendingHeroVideoPath])
+      setPendingHeroVideoPath('')
+      setPendingHeroVideoUrl('')
+    }
   }
 
   async function handleSaveLanding(e) {
     e.preventDefault()
+    if (pendingHeroVideoPath) {
+      setS2({ saving: true, ok: false, err: '' })
+      const { error: moveErr } = await supabase.storage.from('hero-video').move(pendingHeroVideoPath, 'hero.mp4')
+      if (moveErr) { setS2({ saving: false, ok: false, err: 'No se pudo aplicar el nuevo video: ' + moveErr.message }); return }
+      const { data: { publicUrl } } = supabase.storage.from('hero-video').getPublicUrl('hero.mp4')
+      setPendingHeroVideoPath('')
+      setPendingHeroVideoUrl('')
+      await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email'], setS2, { hero_video_url: `${publicUrl}?v=${Date.now()}` })
+      return
+    }
     await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email'], setS2)
   }
 
@@ -278,9 +299,12 @@ export default function SettingsPage() {
                 <Field label="Video de fondo del hero" hint="MP4 · máx. 50 MB · se reproduce en loop, sin sonido · deja vacío para usar el fondo por defecto">
                   <input ref={heroVideoInputRef} type="file" accept="video/mp4" style={{ display: 'none' }}
                     onChange={e => { handleHeroVideoUpload(e.target.files[0]); e.target.value = '' }} />
-                  {settings.hero_video_url ? (
+                  {pendingHeroVideoUrl && (
+                    <p style={{ fontSize: '.75rem', color: '#C2410C', margin: '0 0 .5rem' }}>Video nuevo listo — se aplica al sitio cuando guardes los cambios.</p>
+                  )}
+                  {(pendingHeroVideoUrl || settings.hero_video_url) ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>
-                      <video src={settings.hero_video_url} muted loop autoPlay playsInline
+                      <video src={pendingHeroVideoUrl || settings.hero_video_url} muted loop autoPlay playsInline
                         style={{ width: 120, height: 68, objectFit: 'cover', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--carbon)', flexShrink: 0 }} />
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
                         <button type="button" onClick={() => heroVideoInputRef.current?.click()} disabled={heroVideoUploading}

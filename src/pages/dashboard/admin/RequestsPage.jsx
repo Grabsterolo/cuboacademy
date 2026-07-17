@@ -3,6 +3,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { ModalOverlay, ConfirmModal, Badge, Toast } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
 import { useNavigation } from '../../../context/NavigationContext'
+import { slugify } from '../../../lib/slugify'
 
 const EXP_LABEL = { 2: '1-2 años', 5: '3-5 años', 10: '6-10 años', 15: '10+ años' }
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
@@ -97,6 +98,33 @@ export default function RequestsPage() {
     setTimeout(() => setToast(''), 3000)
   }
 
+  // Seeds a draft course from the applicant's proposal so they don't have to
+  // retype it into the wizard. Only possible when the instructor already has
+  // a profile (existingProfile branch) -- a brand-new account has no id yet
+  // to attach the course to.
+  async function seedDraftCourseFromApplication(app, instructorId) {
+    if (!app.course_title?.trim()) return
+    const baseSlug = slugify(app.course_title.trim())
+    let candidate = baseSlug
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const { error } = await supabase.from('courses').insert({
+        title: app.course_title.trim(),
+        description: app.course_description?.trim() || null,
+        category_id: app.course_category_id || null,
+        level: app.course_level || 'beginner',
+        instructor_id: instructorId,
+        slug: candidate,
+        status: 'draft',
+      })
+      if (!error) return
+      if (error.code === '23505' && /slug/.test(error.message || '')) {
+        candidate = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+        continue
+      }
+      return // some other error -- don't block approval over the course seed
+    }
+  }
+
   async function handleApprove() {
     if (!selected) return
     setActionLoading(true)
@@ -123,7 +151,8 @@ export default function RequestsPage() {
     loadData()
 
     if (existingProfile) {
-      showToast('Solicitud aprobada. Se otorgó el rol de instructor a la cuenta existente.')
+      await seedDraftCourseFromApplication(app, existingProfile.id)
+      showToast('Solicitud aprobada. Se otorgó el rol de instructor a la cuenta existente y se creó un borrador con su propuesta de curso.')
       return
     }
 
