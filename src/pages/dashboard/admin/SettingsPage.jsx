@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useSettings } from '../../../context/SettingsContext'
@@ -96,6 +96,10 @@ export default function SettingsPage() {
   const [s2, setS2] = useState({ saving: false, ok: false, err: '' })
   const [s3, setS3] = useState({ saving: false, ok: false, err: '' })
 
+  const [heroVideoUploading, setHeroVideoUploading] = useState(false)
+  const [heroVideoErr, setHeroVideoErr] = useState('')
+  const heroVideoInputRef = useRef()
+
   useEffect(() => {
     supabase.from('platform_settings').select('*').then(({ data }) => {
       if (data?.length) {
@@ -124,6 +128,27 @@ export default function SettingsPage() {
     await saveKeys(['platform_name', 'platform_description', 'logo_url', 'primary_color'], setS1)
     if (settings.primary_color) document.documentElement.style.setProperty('--jade', settings.primary_color)
     if (settings.platform_name) document.title = settings.platform_name
+  }
+
+  // Fixed path + upsert: every upload overwrites the same object, so the
+  // bucket never accumulates old videos — only the current one ever exists.
+  // The cache-busting query param forces browsers to fetch the new bytes
+  // instead of serving a cached response for the same unchanged URL.
+  async function handleHeroVideoUpload(file) {
+    if (!file) return
+    if (file.type !== 'video/mp4') { setHeroVideoErr('Solo se acepta formato MP4.'); return }
+    if (file.size > 50 * 1024 * 1024) { setHeroVideoErr('Máximo 50 MB.'); return }
+    setHeroVideoErr(''); setHeroVideoUploading(true)
+    const { error: upErr } = await supabase.storage.from('hero-video')
+      .upload('hero.mp4', file, { upsert: true, contentType: 'video/mp4' })
+    if (upErr) { setHeroVideoErr(upErr.message); setHeroVideoUploading(false); return }
+    const { data: { publicUrl } } = supabase.storage.from('hero-video').getPublicUrl('hero.mp4')
+    set('hero_video_url', `${publicUrl}?v=${Date.now()}`)
+    setHeroVideoUploading(false)
+  }
+
+  function handleRemoveHeroVideo() {
+    set('hero_video_url', '')
   }
 
   async function handleSaveLanding(e) {
@@ -250,9 +275,31 @@ export default function SettingsPage() {
                     onChange={e => set('hero_subtitle', e.target.value)}
                     placeholder="Cubo Campus convierte experiencia consultiva real en cursos de alto impacto…" />
                 </Field>
-                <Field label="Video de fondo del hero" hint="URL de un video .mp4 · se reproduce en loop, sin sonido · deja vacío para usar el fondo por defecto">
-                  <input className="sett-inp" style={inp} type="text" value={settings.hero_video_url}
-                    onChange={e => set('hero_video_url', e.target.value)} placeholder="https://..." />
+                <Field label="Video de fondo del hero" hint="MP4 · máx. 50 MB · se reproduce en loop, sin sonido · deja vacío para usar el fondo por defecto">
+                  <input ref={heroVideoInputRef} type="file" accept="video/mp4" style={{ display: 'none' }}
+                    onChange={e => { handleHeroVideoUpload(e.target.files[0]); e.target.value = '' }} />
+                  {settings.hero_video_url ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>
+                      <video src={settings.hero_video_url} muted loop autoPlay playsInline
+                        style={{ width: 120, height: 68, objectFit: 'cover', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--carbon)', flexShrink: 0 }} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                        <button type="button" onClick={() => heroVideoInputRef.current?.click()} disabled={heroVideoUploading}
+                          style={{ padding: '.45rem .9rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', cursor: heroVideoUploading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: heroVideoUploading ? .6 : 1 }}>
+                          {heroVideoUploading ? 'Subiendo…' : 'Reemplazar video'}
+                        </button>
+                        <button type="button" onClick={handleRemoveHeroVideo} disabled={heroVideoUploading}
+                          style={{ padding: '.45rem .9rem', background: 'none', border: '1px solid #FECACA', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: '#DC2626', cursor: heroVideoUploading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)' }}>
+                          Quitar video
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => heroVideoInputRef.current?.click()} disabled={heroVideoUploading}
+                      style={{ padding: '.6rem 1.1rem', background: 'var(--cream)', border: '1.5px dashed var(--border)', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, color: 'var(--carbon)', cursor: heroVideoUploading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: heroVideoUploading ? .6 : 1 }}>
+                      {heroVideoUploading ? 'Subiendo…' : 'Subir video'}
+                    </button>
+                  )}
+                  {heroVideoErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.5rem 0 0' }}>{heroVideoErr}</p>}
                 </Field>
                 <Field label="Email de contacto">
                   <input className="sett-inp" style={inp} type="email" value={settings.contact_email}
