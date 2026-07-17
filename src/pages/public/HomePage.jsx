@@ -3,12 +3,62 @@ import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 
-const CATEGORY_ICON = (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--jade)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-    <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-  </svg>
-)
+const TRACK_STYLES = [
+  { bg: 'linear-gradient(150deg, #0B3436 0%, #167D78 130%)', icon: 'layers' },
+  { bg: 'linear-gradient(150deg, #7A3520 0%, #C96E4B 130%)', icon: 'chart' },
+  { bg: 'linear-gradient(150deg, #104447 0%, #5ABFBA 145%)', icon: 'users' },
+  { bg: 'linear-gradient(150deg, #16201F 0%, #104447 145%)', icon: 'megaphone' },
+  { bg: 'linear-gradient(150deg, #0B3436 0%, #C96E4B 160%)', icon: 'briefcase' },
+  { bg: 'linear-gradient(150deg, #5C2814 0%, #D9855E 130%)', icon: 'cpu' },
+]
+
+function TrackIcon({ name }) {
+  const common = { viewBox: '0 0 120 120', width: 132, height: 132, fill: 'none', stroke: 'currentColor', strokeWidth: 2.25, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  switch (name) {
+    case 'chart':
+      return (
+        <svg {...common}>
+          <line x1="20" y1="102" x2="20" y2="72" /><line x1="46" y1="102" x2="46" y2="55" />
+          <line x1="72" y1="102" x2="72" y2="35" /><line x1="98" y1="102" x2="98" y2="14" />
+        </svg>
+      )
+    case 'users':
+      return (
+        <svg {...common}>
+          <circle cx="45" cy="42" r="18" /><path d="M15 102c0-20 13-33 30-33s30 13 30 33" />
+          <circle cx="84" cy="50" r="13" /><path d="M71 102c1-15 10-25 22-25" />
+        </svg>
+      )
+    case 'megaphone':
+      return (
+        <svg {...common}>
+          <path d="M15 55v10a8 8 0 0 0 8 8h6l10 24 10-3-8-21 59 20V30L41 50h-6a8 8 0 0 0-8 8z" />
+          <path d="M97 45a15 15 0 0 1 0 20" />
+        </svg>
+      )
+    case 'briefcase':
+      return (
+        <svg {...common}>
+          <rect x="15" y="42" width="90" height="55" rx="8" /><path d="M42 42V30a10 10 0 0 1 10-10h16a10 10 0 0 1 10 10v12" />
+          <line x1="15" y1="68" x2="105" y2="68" />
+        </svg>
+      )
+    case 'cpu':
+      return (
+        <svg {...common}>
+          <rect x="35" y="35" width="50" height="50" rx="6" /><rect x="50" y="50" width="20" height="20" rx="3" />
+          <line x1="60" y1="10" x2="60" y2="25" /><line x1="60" y1="95" x2="60" y2="110" />
+          <line x1="10" y1="60" x2="25" y2="60" /><line x1="95" y1="60" x2="110" y2="60" />
+        </svg>
+      )
+    default:
+      return (
+        <svg {...common}>
+          <rect x="20" y="55" width="55" height="45" rx="8" /><rect x="35" y="35" width="55" height="45" rx="8" /><rect x="50" y="18" width="55" height="45" rx="8" />
+        </svg>
+      )
+  }
+}
 
 const DIFF_ITEMS = [
   {
@@ -122,7 +172,16 @@ export default function HomePage() {
   const [courses, setCourses] = useState([])
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [instructors, setInstructors] = useState(null)
+  const tracksScrollRef = useRef(null)
   useReveal()
+
+  function scrollTracks(dir) {
+    const el = tracksScrollRef.current
+    if (!el) return
+    const card = el.querySelector('.track-card')
+    const amount = (card ? card.offsetWidth : 300) + 24
+    el.scrollBy({ left: dir * amount, behavior: 'smooth' })
+  }
 
   useEffect(() => {
     supabase.from('categories').select('*').order('name').then(({ data }) => {
@@ -191,10 +250,29 @@ export default function HomePage() {
           .reveal.will-animate { transition: none; opacity: 1; transform: none; }
         }
         .progress-fill { transition: width .8s ease; }
-        .track-card { position: relative; overflow: hidden; transition: background .3s, box-shadow .3s, transform .3s; }
-        .track-card::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--jade); transform: scaleX(0); transform-origin: left; transition: transform .35s ease; }
-        .track-card:hover { background: var(--jade-soft) !important; box-shadow: 0 14px 36px rgba(23,26,28,.09); transform: translateY(-3px); }
-        .track-card:hover::before { transform: scaleX(1); }
+        .tracks-scroll { display: flex; gap: 1.5rem; overflow-x: auto; scroll-snap-type: x mandatory; padding: .5rem 5% 1.25rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        .tracks-scroll::-webkit-scrollbar { display: none; }
+        .track-card {
+          position: relative; overflow: hidden; flex: 0 0 320px; min-height: 440px;
+          border-radius: 20px; scroll-snap-align: start; color: white;
+          display: flex; flex-direction: column; justify-content: flex-end;
+          padding: 2.2rem 2rem; cursor: default;
+          transition: transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s;
+        }
+        .track-card:hover { transform: translateY(-8px); box-shadow: 0 22px 50px rgba(11,52,54,.28); }
+        .track-card-icon { position: absolute; top: 1.2rem; right: -1.2rem; opacity: .16; color: white; pointer-events: none; transition: transform .5s cubic-bezier(.16,1,.3,1), opacity .4s; }
+        .track-card:hover .track-card-icon { transform: scale(1.08) rotate(-4deg); opacity: .22; }
+        .track-card-num { position: absolute; top: 1.75rem; left: 2rem; font-family: var(--serif); font-size: .75rem; font-weight: 700; letter-spacing: .12em; color: rgba(255,255,255,.5); }
+        .track-card-body { position: relative; z-index: 1; }
+        .track-card-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 700; line-height: 1.18; margin-bottom: .65rem; }
+        .track-card-desc { font-size: .85rem; color: rgba(255,255,255,.72); line-height: 1.65; font-weight: 300; margin-bottom: 1.5rem; }
+        .track-card-btn { display: inline-flex; align-items: center; gap: .4rem; background: white; color: var(--carbon); border: none; border-radius: 24px; padding: .65rem 1.15rem; font-family: var(--serif); font-size: .82rem; font-weight: 600; cursor: pointer; transition: gap .2s, background .2s; }
+        .track-card-btn:hover { gap: .65rem; background: var(--cream); }
+        .track-card-btn svg { transition: transform .2s; }
+        .track-card-btn:hover svg { transform: translateX(2px); }
+        .tracks-arrow-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--carbon); transition: background .2s, border-color .2s, color .2s, transform .15s; }
+        .tracks-arrow-btn:hover { background: var(--jade); border-color: var(--jade); color: white; }
+        .tracks-arrow-btn:active { transform: scale(.92); }
         .course-card { transition: transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s, border-color .28s; cursor: pointer; }
         .course-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(23,26,28,.12); }
         .inst-card { transition: border-color .25s, box-shadow .25s, transform .25s; }
@@ -216,7 +294,9 @@ export default function HomePage() {
           .hero-metrics { flex-direction: row !important; gap: .75rem !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
           .hero-metrics .metric-card { padding: 1rem 1.2rem !important; flex: 0 0 auto; min-width: 160px; }
           .section-pad { padding: 4.5rem 5% !important; }
-          .tracks-grid { grid-template-columns: 1fr !important; }
+          .tracks-section { padding: 4.5rem 0 !important; }
+          .tracks-header { flex-direction: column !important; align-items: flex-start !important; gap: 1.25rem !important; }
+          .track-card { flex-basis: 260px !important; min-height: 380px !important; }
           .diff-grid { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
           .courses-grid { grid-template-columns: 1fr !important; }
           .courses-header-bar { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
@@ -341,44 +421,64 @@ export default function HomePage() {
       </section>
 
       {/* ── TRACKS ── */}
-      <section className="section-pad tracks-section" style={{ padding: '8rem 5% 7.5rem', position: 'relative', overflow: 'hidden' }}>
+      <section className="tracks-section" style={{ padding: '8rem 0 7.5rem', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-10%', right: '-8%', width: 460, height: 460, borderRadius: '50%', background: 'rgba(22,125,120,.05)', filter: 'blur(90px)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: '-15%', left: '-6%', width: 360, height: 360, borderRadius: '50%', background: 'rgba(201,110,75,.04)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ marginBottom: '4rem' }}>
-            <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Áreas de formación</div>
-            <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)', marginBottom: '.85rem' }}>Explora por área de conocimiento</h2>
-            <p style={{ fontSize: '.95rem', color: 'var(--text-2)', lineHeight: 1.75, fontWeight: 300, maxWidth: 500 }}>Encuentra formación especializada en las áreas que más impactan tu carrera y tu organización.</p>
-          </div>
-          {tracks === null ? (
-            <div className="tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '2.4rem 2rem' }}>
-                  <div style={{ width: 44, height: 44, background: 'var(--border)', borderRadius: 10, marginBottom: '1.3rem' }} />
-                  <div style={{ height: 20, background: 'var(--border)', borderRadius: 6, marginBottom: '.6rem', width: '70%' }} />
-                  <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, marginBottom: '.4rem' }} />
-                  <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, width: '85%' }} />
-                </div>
-              ))}
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 5%' }}>
+          <div className="reveal tracks-header" style={{ marginBottom: '3.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '2rem' }}>
+            <div>
+              <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Áreas de formación</div>
+              <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)', marginBottom: '.85rem' }}>Explora por área de conocimiento</h2>
+              <p style={{ fontSize: '.95rem', color: 'var(--text-2)', lineHeight: 1.75, fontWeight: 300, maxWidth: 500 }}>Encuentra formación especializada en las áreas que más impactan tu carrera y tu organización.</p>
             </div>
-          ) : tracks.length === 0 ? (
+            {tracks && tracks.length > 0 && (
+              <div className="tracks-arrows" style={{ display: 'flex', gap: '.6rem', flexShrink: 0 }}>
+                <button className="tracks-arrow-btn" onClick={() => scrollTracks(-1)} aria-label="Área anterior">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                </button>
+                <button className="tracks-arrow-btn" onClick={() => scrollTracks(1)} aria-label="Siguiente área">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {tracks === null ? (
+          <div style={{ display: 'flex', gap: '1.5rem', padding: '0 5%', overflow: 'hidden' }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ flex: '0 0 300px', height: 420, background: 'var(--border)', borderRadius: 20 }} />
+            ))}
+          </div>
+        ) : tracks.length === 0 ? (
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 5%' }}>
             <div style={{ padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)', background: 'white', border: '1px solid var(--border)', borderRadius: 14 }}>
               Las áreas de formación estarán disponibles pronto.
             </div>
-          ) : (
-            <div className="tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
-              {tracks.map((t, i) => (
-                <div key={t.id} className="reveal track-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '2.4rem 2rem' }}>
-                  <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.3rem' }}>
-                    {CATEGORY_ICON}
+          </div>
+        ) : (
+          <div ref={tracksScrollRef} className="tracks-scroll">
+            {tracks.map((t, i) => {
+              const style = TRACK_STYLES[i % TRACK_STYLES.length]
+              return (
+                <div key={t.id} className="reveal track-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: style.bg }}>
+                  <div className="track-card-icon">
+                    <TrackIcon name={style.icon} />
                   </div>
-                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.18rem', fontWeight: 700, marginBottom: '.6rem', color: 'var(--carbon)' }}>{t.name}</div>
-                  {t.description && <div style={{ fontSize: '.845rem', color: 'var(--text-2)', lineHeight: 1.7, fontWeight: 300 }}>{t.description}</div>}
+                  <span className="track-card-num">{String(i + 1).padStart(2, '0')}</span>
+                  <div className="track-card-body">
+                    <h3 className="track-card-title">{t.name}</h3>
+                    {t.description && <p className="track-card-desc">{t.description}</p>}
+                    <button className="track-card-btn" onClick={() => navigate('courses', { categoryId: t.id })}>
+                      Ver cursos
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {/* ── DIFERENCIADOR ── */}

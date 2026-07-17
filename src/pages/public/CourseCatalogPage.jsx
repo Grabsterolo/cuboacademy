@@ -61,11 +61,12 @@ function SkeletonCard() {
 }
 
 export default function CourseCatalogPage() {
+  const { params } = useNavigation()
   const [courses, setCourses] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [catFilter, setCatFilter] = useState('')
+  const [catFilter, setCatFilter] = useState(params.categoryId || '')
   const [levelFilter, setLevelFilter] = useState('')
 
   useEffect(() => {
