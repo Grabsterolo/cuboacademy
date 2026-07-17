@@ -185,21 +185,26 @@ export default function HomePage() {
     <>
       <style>{`
         .reveal { opacity: 1; transform: none; }
-        .reveal.will-animate { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
-        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal.will-animate { opacity: 0; transform: translateY(28px) scale(.97); transition: opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0) scale(1); }
+        @media (prefers-reduced-motion: reduce) {
+          .reveal.will-animate { transition: none; opacity: 1; transform: none; }
+        }
         .progress-fill { transition: width .8s ease; }
-        .track-card { position: relative; overflow: hidden; transition: background .25s; }
+        .track-card { position: relative; overflow: hidden; transition: background .3s, box-shadow .3s, transform .3s; }
         .track-card::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--jade); transform: scaleX(0); transform-origin: left; transition: transform .35s ease; }
-        .track-card:hover { background: var(--jade-soft) !important; }
+        .track-card:hover { background: var(--jade-soft) !important; box-shadow: 0 14px 36px rgba(23,26,28,.09); transform: translateY(-3px); }
         .track-card:hover::before { transform: scaleX(1); }
-        .course-card { transition: transform .22s, box-shadow .22s, border-color .22s; cursor: pointer; }
-        .course-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(23,26,28,.1); }
-        .inst-card { transition: border-color .25s, box-shadow .25s; }
-        .inst-card:hover { border-color: rgba(22,125,120,.25); box-shadow: 0 6px 24px rgba(23,26,28,.07); }
+        .course-card { transition: transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s, border-color .28s; cursor: pointer; }
+        .course-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(23,26,28,.12); }
+        .inst-card { transition: border-color .25s, box-shadow .25s, transform .25s; }
+        .inst-card:hover { border-color: rgba(22,125,120,.25); box-shadow: 0 10px 28px rgba(23,26,28,.08); transform: translateY(-3px); }
         .btn-course { transition: background .2s, color .2s, border-color .2s; }
         .btn-course:hover { background: var(--jade); color: white; border-color: var(--jade); }
-        .metric-card { transition: background .25s; }
-        .metric-card:hover { background: rgba(255,255,255,.09) !important; }
+        .btn-outline { transition: background .2s, color .2s, border-color .2s; }
+        .btn-outline:hover { background: var(--jade); color: white; border-color: var(--jade); }
+        .metric-card { transition: background .3s, transform .3s; }
+        .metric-card:hover { background: rgba(255,255,255,.1) !important; transform: translateY(-2px); }
         /* ── Responsive ── */
         @media (max-width: 900px) {
           .courses-grid { grid-template-columns: repeat(2,1fr) !important; }
@@ -210,7 +215,7 @@ export default function HomePage() {
           .hero-grid { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
           .hero-metrics { flex-direction: row !important; gap: .75rem !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
           .hero-metrics .metric-card { padding: 1rem 1.2rem !important; flex: 0 0 auto; min-width: 160px; }
-          .section-pad { padding: 3.5rem 5% !important; }
+          .section-pad { padding: 4.5rem 5% !important; }
           .tracks-grid { grid-template-columns: 1fr !important; }
           .diff-grid { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
           .courses-grid { grid-template-columns: 1fr !important; }
@@ -335,34 +340,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── BAND ── */}
-      <div style={{ padding: '1.75rem 5%', background: 'white', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ fontSize: '.65rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: '#B5B2AB', marginBottom: '1rem', textAlign: 'center' }}>
-            Respaldado por experiencia en empresas como
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2.75rem', flexWrap: 'wrap' }}>
-            {['Grupo Cubo 130', 'BAC Credomatic', 'Holcim', 'CCSS', 'ICE'].map((name, i, arr) => (
-              <span key={name} style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 600, color: '#B5B2AB', letterSpacing: '.03em' }}>
-                {name}{i < arr.length - 1 && <span style={{ color: '#D8D5CE', fontSize: '.6rem', margin: '0 1rem' }}>·</span>}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* ── TRACKS ── */}
-      <section className="section-pad" style={{ padding: '5.5rem 5%' }}>
+      <section className="section-pad tracks-section" style={{ padding: '8rem 5% 7.5rem', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-10%', right: '-8%', width: 460, height: 460, borderRadius: '50%', background: 'rgba(22,125,120,.05)', filter: 'blur(90px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-15%', left: '-6%', width: 360, height: 360, borderRadius: '50%', background: 'rgba(201,110,75,.04)', filter: 'blur(80px)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ marginBottom: '3rem' }}>
+          <div className="reveal" style={{ marginBottom: '4rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Áreas de formación</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)', marginBottom: '.85rem' }}>Explora por área de conocimiento</h2>
             <p style={{ fontSize: '.95rem', color: 'var(--text-2)', lineHeight: 1.75, fontWeight: 300, maxWidth: 500 }}>Encuentra formación especializada en las áreas que más impactan tu carrera y tu organización.</p>
           </div>
           {tracks === null ? (
-            <div className="tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+            <div className="tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
               {[0, 1, 2].map(i => (
-                <div key={i} style={{ background: 'white', padding: '2.4rem 2rem' }}>
+                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '2.4rem 2rem' }}>
                   <div style={{ width: 44, height: 44, background: 'var(--border)', borderRadius: 10, marginBottom: '1.3rem' }} />
                   <div style={{ height: 20, background: 'var(--border)', borderRadius: 6, marginBottom: '.6rem', width: '70%' }} />
                   <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, marginBottom: '.4rem' }} />
@@ -375,9 +366,9 @@ export default function HomePage() {
               Las áreas de formación estarán disponibles pronto.
             </div>
           ) : (
-            <div className="reveal tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-              {tracks.map((t) => (
-                <div key={t.id} className="track-card" style={{ background: 'white', padding: '2.4rem 2rem' }}>
+            <div className="tracks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
+              {tracks.map((t, i) => (
+                <div key={t.id} className="reveal track-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '2.4rem 2rem' }}>
                   <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.3rem' }}>
                     {CATEGORY_ICON}
                   </div>
@@ -391,8 +382,8 @@ export default function HomePage() {
       </section>
 
       {/* ── DIFERENCIADOR ── */}
-      <section className="section-pad" style={{ padding: '5.5rem 5%', background: 'white' }}>
-        <div className="diff-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>
+      <section className="section-pad" style={{ padding: '7.5rem 5%', background: 'white' }}>
+        <div className="diff-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5.5rem', alignItems: 'center' }}>
           <div className="reveal">
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>¿Por qué Cubo Campus?</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)', marginBottom: '2rem' }}>Formación desde<br />la trinchera real</h2>
@@ -412,7 +403,7 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="reveal" style={{ background: 'var(--jade-dark)', borderRadius: 16, padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+          <div className="reveal" style={{ transitionDelay: '140ms', background: 'var(--jade-dark)', borderRadius: 16, padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(22,125,120,.18)' }} />
             <div style={{ display: 'flex', gap: '1rem' }}>
               {[{ val: '94%', label: 'Tasa de compleción', accent: false }, { val: '4.8', label: 'Calificación promedio', accent: true }].map((s) => (
@@ -452,21 +443,21 @@ export default function HomePage() {
       </section>
 
       {/* ── CURSOS ── */}
-      <section className="section-pad" style={{ padding: '5.5rem 5%' }}>
+      <section className="section-pad" style={{ padding: '7.5rem 5%' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal courses-header-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+          <div className="reveal courses-header-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3.25rem' }}>
             <div>
               <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Catálogo</div>
               <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Cursos destacados</h2>
             </div>
-            <button onClick={() => navigate('courses')} style={{ padding: '.45rem 1.1rem', border: '1px solid var(--border)', background: 'white', color: 'var(--carbon)', borderRadius: 7, fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+            <button onClick={() => navigate('courses')} className="btn-outline" style={{ padding: '.55rem 1.2rem', border: '1px solid var(--border)', background: 'white', color: 'var(--carbon)', borderRadius: 8, fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
               Ver catálogo completo →
             </button>
           </div>
-          <div className="reveal courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
+          <div className="courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.5rem' }}>
             {coursesLoading ? (
               [0, 1, 2].map(i => (
-                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                   <div style={{ height: 144, background: 'var(--border)' }} />
                   <div style={{ padding: '1.35rem 1.4rem 1.4rem' }}>
                     <div style={{ height: 18, background: 'var(--border)', borderRadius: 4, marginBottom: '.5rem', width: '80%' }} />
@@ -482,10 +473,10 @@ export default function HomePage() {
                 <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 300 }}>Estamos preparando contenido de alto impacto. Vuelve pronto.</p>
               </div>
             ) : (
-              courses.map(c => {
+              courses.map((c, i) => {
                 const initials = (c.profiles?.full_name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
                 return (
-                  <div key={c.id} className="course-card" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div key={c.id} className="reveal course-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                     <div style={{ height: 144, position: 'relative', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', overflow: 'hidden' }}>
                       {c.cover_image_url
                         ? <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -541,16 +532,16 @@ export default function HomePage() {
       </section>
 
       {/* ── CÓMO FUNCIONA ── */}
-      <section className="section-pad" style={{ padding: '5.5rem 5%', background: 'white' }}>
+      <section className="section-pad" style={{ padding: '7.5rem 5%', background: 'white' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ marginBottom: '3rem' }}>
+          <div className="reveal" style={{ marginBottom: '4rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>El proceso</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Simple de empezar, poderoso en el fondo</h2>
           </div>
-          <div className="reveal how-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0, position: 'relative' }}>
+          <div className="how-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0, position: 'relative' }}>
             <div className="how-connector" style={{ position: 'absolute', top: 25, left: '12.5%', right: '12.5%', height: 1, background: 'linear-gradient(90deg,transparent,var(--border) 20%,var(--border) 80%,transparent)' }} />
-            {HOW_STEPS.map((s) => (
-              <div key={s.num} style={{ textAlign: 'center', padding: '0 1.25rem' }}>
+            {HOW_STEPS.map((s, i) => (
+              <div key={s.num} className="reveal" style={{ transitionDelay: `${i * 100}ms`, textAlign: 'center', padding: '0 1.25rem' }}>
                 <div style={{ width: 50, height: 50, border: '1.5px solid var(--border)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--jade)', margin: '0 auto 1.2rem', background: 'white', position: 'relative', zIndex: 1 }}>{s.num}</div>
                 <div style={{ fontFamily: 'var(--serif)', fontSize: '.93rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.35rem' }}>{s.title}</div>
                 <div style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.6 }}>{s.desc}</div>
@@ -561,16 +552,16 @@ export default function HomePage() {
       </section>
 
       {/* ── INSTRUCTORES ── */}
-      <section className="section-pad" style={{ padding: '5.5rem 5%' }}>
+      <section className="section-pad" style={{ padding: '7.5rem 5%' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ marginBottom: '3rem' }}>
+          <div className="reveal" style={{ marginBottom: '4rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>El equipo docente</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Consultores que también enseñan</h2>
           </div>
           {instructors === null ? (
-            <div className="inst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.15rem' }}>
+            <div className="inst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.4rem' }}>
               {[0, 1, 2, 3].map(i => (
-                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
+                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
                   <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto .9rem', background: 'var(--border)' }} />
                   <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, margin: '0 auto .5rem', width: '60%' }} />
                   <div style={{ height: 12, background: 'var(--border)', borderRadius: 4, width: '80%', margin: '0 auto' }} />
@@ -582,12 +573,12 @@ export default function HomePage() {
               Pronto presentaremos a nuestro equipo de instructores.
             </div>
           ) : (
-            <div className="reveal inst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.15rem' }}>
+            <div className="inst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.4rem' }}>
               {instructors.map((inst, i) => {
                 const initials = (inst.full_name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
                 const role = inst.specialty || inst.profession || 'Instructor'
                 return (
-                  <div key={inst.id} className="inst-card" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
+                  <div key={inst.id} className="reveal inst-card" style={{ transitionDelay: `${(i % 4) * 80}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
                     {inst.avatar_url ? (
                       <img src={inst.avatar_url} alt={inst.full_name} style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', margin: '0 auto .9rem', display: 'block' }} />
                     ) : (
@@ -605,15 +596,16 @@ export default function HomePage() {
       </section>
 
       {/* ── TESTIMONIOS ── */}
-      <section className="section-pad" style={{ padding: '5.5rem 5%', background: 'white' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="reveal" style={{ marginBottom: '3rem' }}>
+      <section className="section-pad" style={{ padding: '7.5rem 5%', background: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '10%', left: '-8%', width: 380, height: 380, borderRadius: '50%', background: 'rgba(22,125,120,.04)', filter: 'blur(85px)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
+          <div className="reveal" style={{ marginBottom: '4rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Lo que dicen</div>
             <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Resultados que hablan solos</h2>
           </div>
-          <div className="reveal test-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.15rem' }}>
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.75rem' }}>
+          <div className="test-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.4rem' }}>
+            {TESTIMONIALS.map((t, i) => (
+              <div key={t.name} className="reveal" style={{ transitionDelay: `${i * 100}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem' }}>
                 <div style={{ color: 'var(--terra)', fontSize: '.8rem', letterSpacing: '.1em', marginBottom: '.85rem' }}>★★★★★</div>
                 <div style={{ fontSize: '.875rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.75, marginBottom: '1.3rem', fontStyle: 'italic' }}>{t.text}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem' }}>
@@ -630,9 +622,9 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA ── */}
-      <section style={{ background: 'var(--jade-dark)', padding: '5.5rem 5%', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: -80, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(22,125,120,.2)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -60, left: '5%', width: 240, height: 240, borderRadius: '50%', background: 'rgba(22,125,120,.12)', pointerEvents: 'none' }} />
+      <section style={{ background: 'var(--jade-dark)', padding: '7rem 5%', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: -80, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'rgba(22,125,120,.2)', filter: 'blur(10px)', animation: 'orb2 20s ease-in-out infinite', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -60, left: '5%', width: 240, height: 240, borderRadius: '50%', background: 'rgba(201,110,75,.1)', filter: 'blur(10px)', animation: 'orb3 24s ease-in-out infinite', pointerEvents: 'none' }} />
         <div className="reveal cta-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '3rem', position: 'relative', zIndex: 1 }}>
           <div>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(232,243,242,.5)', marginBottom: '.7rem' }}>Empieza hoy</div>
@@ -647,10 +639,10 @@ export default function HomePage() {
             <button onClick={() => navigate('register')} style={{ padding: '1rem 2.2rem', background: 'var(--terra)', color: 'var(--carbon)', borderRadius: 9, fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(201,110,75,.35)' }}>
               Crear cuenta gratis
             </button>
-            <button onClick={() => navigate('courses')} style={{ padding: '.75rem 1.75rem', background: 'transparent', color: 'rgba(248,246,241,.7)', border: '1px solid rgba(248,246,241,.18)', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 500, whiteSpace: 'nowrap', textAlign: 'center', cursor: 'pointer' }}>
+            <button onClick={() => navigate('courses')} style={{ padding: '.75rem 1.75rem', background: 'rgba(255,255,255,.06)', color: 'rgba(248,246,241,.75)', border: '1px solid rgba(248,246,241,.18)', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 500, whiteSpace: 'nowrap', textAlign: 'center', cursor: 'pointer', backdropFilter: 'blur(6px)' }}>
               Ver planes y precios
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', fontSize: '.72rem', color: 'rgba(248,246,241,.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'rgba(248,246,241,.55)', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, padding: '.4rem .85rem', backdropFilter: 'blur(6px)' }}>
               Sin tarjeta de crédito · Cancela cuando quieras
             </div>
           </div>
