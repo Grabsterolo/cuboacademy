@@ -311,7 +311,7 @@ export default function StudentLearningPage() {
             <div>
               <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Estudiante</p>
               <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.4rem,3vw,1.9rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.2, margin: 0 }}>
-                {loading ? '…' : course?.title || 'Cargando curso…'}
+                {loading ? '…' : course?.title || 'Curso no disponible'}
               </h1>
               {course?.profiles?.full_name && (
                 <p style={{ fontSize: '.8rem', color: 'var(--text-2)', marginTop: '.3rem', fontFamily: 'var(--sans)' }}>por {course.profiles.full_name}</p>

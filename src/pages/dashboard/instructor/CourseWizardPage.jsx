@@ -14,7 +14,7 @@ import { Step8Publish } from './course-wizard/steps/Step8Publish'
 export default function CourseWizardPage() {
   const {
     step, setStep, completed, isEdit, loading, saving, error, setError, courseId,
-    info, setInfo, imgUploading, handleImgUpload,
+    info, setInfo, imgUploading, imgErr, handleImgUpload,
     categories, instructors, isAdmin,
     modules, setModules,
     evalData, setEvalData,
@@ -27,7 +27,7 @@ export default function CourseWizardPage() {
   // ── render ────────────────────────────────────────────────────────────────
   function renderStep() {
     switch (step) {
-      case 1: return <Step1Info info={info} onChange={(k, v) => setInfo(i => ({ ...i, [k]: v }))} categories={categories} instructors={instructors} isAdmin={isAdmin} imgUploading={imgUploading} onImgUpload={handleImgUpload} />
+      case 1: return <Step1Info info={info} onChange={(k, v) => setInfo(i => ({ ...i, [k]: v }))} categories={categories} instructors={instructors} isAdmin={isAdmin} imgUploading={imgUploading} imgErr={imgErr} onImgUpload={handleImgUpload} />
       case 2: return <Step2Structure modules={modules} setModules={setModules} />
       case 3: return <Step3Content modules={modules} setModules={setModules} />
       case 4: return <Step4Evaluation eval={evalData} setEval={setEvalData} />

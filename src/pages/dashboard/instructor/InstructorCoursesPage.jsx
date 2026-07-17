@@ -35,7 +35,7 @@ export default function InstructorCoursesPage() {
     if (!profile?.id) return
     setLoading(true)
     supabase.from('courses')
-      .select('id, title, cover_image_url, level, status, categories(name), created_at')
+      .select('id, title, cover_image_url, level, status, admin_notes, categories(name), created_at')
       .eq('instructor_id', profile.id)
       .order('created_at', { ascending: false })
       .then(async ({ data }) => {
@@ -151,9 +151,10 @@ export default function InstructorCoursesPage() {
                 const st = STATUS[c.status] || STATUS.draft
                 const n  = counts[c.id] || 0
                 return (
-                  <div key={c.id} className="ic-card" onClick={() => navigate('curso-wizard', { courseId: c.id })}>
+                  <div key={c.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div className="ic-card" onClick={() => navigate('curso-wizard', { courseId: c.id })}>
                     <div style={{ width: 64, height: 48, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
-                      {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.28rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
@@ -174,6 +175,12 @@ export default function InstructorCoursesPage() {
                       <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>{st.label}</span>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
+                  </div>
+                  {c.status === 'draft' && c.admin_notes && (
+                    <div style={{ margin: '.4rem 0 0', padding: '.65rem .9rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, fontSize: '.78rem', color: '#B91C1C' }}>
+                      <strong>El admin rechazó este curso:</strong> {c.admin_notes}
+                    </div>
+                  )}
                   </div>
                 )
               })}

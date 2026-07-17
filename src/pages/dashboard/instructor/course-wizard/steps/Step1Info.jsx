@@ -3,7 +3,7 @@ import RichTextEditor from '../../../../../components/ui/RichTextEditor'
 import { StepHeader } from '../components/StepHeader'
 import { Field, PillSelector, INP, SEL, fi, fb, IC } from '../components/shared'
 
-export function Step1Info({ info, onChange, categories, instructors, isAdmin, imgUploading, onImgUpload }) {
+export function Step1Info({ info, onChange, categories, instructors, isAdmin, imgUploading, imgErr, onImgUpload }) {
   const fileRef = useRef()
 
   return (
@@ -77,6 +77,7 @@ export function Step1Info({ info, onChange, categories, instructors, isAdmin, im
                 )}
               </div>
             )}
+            {imgErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.4rem 0 0' }}>{imgErr}</p>}
           </Field>
         </div>
       </div>

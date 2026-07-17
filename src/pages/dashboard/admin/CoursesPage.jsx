@@ -50,6 +50,10 @@ export default function CoursesPage() {
 
   async function handleStatusChange(id, newStatus) {
     const prev = courses.find(c => c.id === id)
+    if (prev?.status === 'published' && newStatus !== 'published') {
+      const ok = window.confirm(`"${prev.title}" está publicado. ¿Seguro que quieres cambiarlo a "${STATUS[newStatus]?.label || newStatus}"? Dejará de verse en el catálogo.`)
+      if (!ok) return
+    }
     setCourses(cs => cs.map(c => c.id === id ? { ...c, status: newStatus } : c))
     const { error } = await supabase.from('courses').update({ status: newStatus }).eq('id', id)
     if (error) setCourses(cs => cs.map(c => c.id === id ? prev : c))
@@ -178,7 +182,7 @@ export default function CoursesPage() {
                   <div key={c.id} className="cp-card">
                     {/* Thumbnail */}
                     <div style={{ width: 64, height: 48, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
-                      {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
 
                     {/* Info */}

@@ -153,10 +153,15 @@ export default function InstructorEvaluationsPage() {
 
     if (e1) { setProcessing(null); return }
 
-    await supabase
+    const { error: e2 } = await supabase
       .from('enrollments')
       .update({ completed_at: now })
       .eq('id', sub.enrollment_id)
+
+    if (e2) {
+      setToast('La evaluación se aprobó, pero no se pudo marcar el curso como completado: ' + e2.message)
+      setTimeout(() => setToast(''), 4500)
+    }
 
     if (sub.courses?.has_certificate) {
       const { error: certErr } = await supabase
@@ -293,7 +298,8 @@ export default function InstructorEvaluationsPage() {
 
         <div style={{ marginBottom: '1.75rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Instructor</p>
-          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Evaluaciones</h1>
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Exámenes finales</h1>
+          <p style={{ fontSize: '.85rem', color: 'var(--text-2)', marginTop: '.35rem' }}>Aprueba o rechaza las solicitudes de examen final y certificación. Para calificar quizzes de lección, ve a "Calificar quizzes".</p>
         </div>
 
         {!loading && (

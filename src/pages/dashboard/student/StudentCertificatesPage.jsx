@@ -31,6 +31,7 @@ function buildLinkedInUrl(cert, courseName) {
 export default function StudentCertificatesPage() {
   const { user, profile } = useAuth()
   const [certs, setCerts]   = useState([])
+  const [rejectedCerts, setRejectedCerts] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -38,14 +39,15 @@ export default function StudentCertificatesPage() {
     supabase
       .from('certificates')
       .select(`
-        id, issued_at, approved_at, unique_code, pdf_url,
+        id, issued_at, approved_at, unique_code, pdf_url, status, admin_notes,
         courses!course_id(id, title, certificate_name, cover_image_url, level, duration_hours, categories(name), profiles!instructor_id(full_name))
       `)
       .eq('student_id', user.id)
-      .eq('status', 'approved')
+      .in('status', ['approved', 'rejected'])
       .order('approved_at', { ascending: false })
       .then(({ data }) => {
-        setCerts(data || [])
+        setCerts((data || []).filter(c => c.status === 'approved'))
+        setRejectedCerts((data || []).filter(c => c.status === 'rejected'))
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -66,6 +68,17 @@ export default function StudentCertificatesPage() {
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Estudiante</p>
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Certificados</h1>
         </div>
+
+        {!loading && rejectedCerts.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem', marginBottom: '1.5rem' }}>
+            {rejectedCerts.map(cert => (
+              <div key={cert.id} style={{ padding: '.85rem 1.1rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, fontSize: '.82rem', color: '#B91C1C' }}>
+                <strong>Tu certificado de "{cert.courses?.certificate_name || cert.courses?.title}" fue rechazado.</strong>
+                {cert.admin_notes && <span> {cert.admin_notes}</span>}
+              </div>
+            ))}
+          </div>
+        )}
 
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>

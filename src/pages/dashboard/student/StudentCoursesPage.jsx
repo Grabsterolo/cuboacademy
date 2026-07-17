@@ -166,7 +166,7 @@ export default function StudentCoursesPage() {
                   <div key={enr.id} className="sc-card" onClick={() => navigate('aprender', { courseId: c.id })}>
                     {/* Thumbnail */}
                     <div style={{ width: 64, height: 54, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
-                      {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
 
                     {/* Info */}

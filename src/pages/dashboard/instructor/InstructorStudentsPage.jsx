@@ -35,7 +35,7 @@ export default function InstructorStudentsPage() {
         // enrollments
         const { data: enr } = await supabase
           .from('enrollments')
-          .select('id, created_at, course_id, student_id')
+          .select('id, created_at, completed_at, course_id, student_id')
           .in('course_id', ids)
           .order('created_at', { ascending: false })
           .limit(1000)
@@ -55,6 +55,7 @@ export default function InstructorStudentsPage() {
         setRows(enr.map(e => ({
           id:          e.id,
           created_at:  e.created_at,
+          completed_at: e.completed_at,
           course_id:   e.course_id,
           courseTitle: courseMap[e.course_id] || '—',
           student:     profileMap[e.student_id] || { full_name: 'Estudiante', email: '' },
@@ -157,6 +158,9 @@ export default function InstructorStudentsPage() {
                     </div>
                     <div style={{ fontSize: '.75rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.courseTitle}</div>
                   </div>
+                  <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, flexShrink: 0, background: r.completed_at ? 'var(--jade-soft)' : '#F5F5F0', color: r.completed_at ? 'var(--jade)' : '#9B9894' }}>
+                    {r.completed_at ? 'Completado' : 'En curso'}
+                  </span>
                   <div style={{ fontSize: '.72rem', color: '#B5B2AB', flexShrink: 0 }}>
                     {new Date(r.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>

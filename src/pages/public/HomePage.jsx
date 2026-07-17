@@ -172,6 +172,12 @@ export default function HomePage() {
   const [courses, setCourses] = useState([])
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [instructors, setInstructors] = useState(null)
+  const [saveData, setSaveData] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-data: reduce)')
+    setSaveData(mq.matches || navigator.connection?.saveData || false)
+  }, [])
   const tracksScrollRef = useRef(null)
   useReveal()
 
@@ -356,9 +362,9 @@ export default function HomePage() {
 
       {/* ── HERO ── */}
       <section className="hero-section" style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '8rem 5% 5rem' }}>
-        {settings.hero_video_url ? (
+        {settings.hero_video_url && !saveData ? (
           <>
-            <video src={settings.hero_video_url} autoPlay muted loop playsInline
+            <video src={settings.hero_video_url} autoPlay muted loop playsInline preload="metadata"
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
             <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(140deg, rgba(8,26,30,.82), rgba(13,56,52,.75))' }} />
           </>

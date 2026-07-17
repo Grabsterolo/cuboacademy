@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { FieldLabel as LabelField } from '../../../components/ui'
+import { FieldLabel as LabelField, Toast } from '../../../components/ui'
 import { slugify } from '../../../lib/slugify'
 
 export default function CategoriesPage() {
@@ -22,6 +22,12 @@ export default function CategoriesPage() {
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [toast, setToast] = useState('')
+
+  function showToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3500)
+  }
 
   useEffect(() => { loadCategories() }, [])
 
@@ -102,9 +108,15 @@ export default function CategoriesPage() {
   async function handleDelete() {
     if (!deleteTarget) return
     setDeleteLoading(true)
-    await supabase.from('categories').delete().eq('id', deleteTarget.id)
+    const { error } = await supabase.from('categories').delete().eq('id', deleteTarget.id)
     setDeleteLoading(false)
     setDeleteTarget(null)
+    if (error) {
+      showToast(error.code === '23503'
+        ? 'No se puede eliminar: hay cursos usando esta categoría.'
+        : 'Error al eliminar: ' + (error.message || 'inténtalo de nuevo.'))
+      return
+    }
     loadCategories()
   }
 
@@ -323,6 +335,8 @@ export default function CategoriesPage() {
           </div>
         </div>
       )}
+
+      <Toast message={toast} />
     </DashboardLayout>
   )
 }

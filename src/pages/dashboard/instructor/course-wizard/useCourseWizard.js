@@ -174,6 +174,12 @@ export function useCourseWizard() {
           }
         }
         return null
+      case 5:
+        if (cert.hasCert && !cert.certName.trim()) return 'El nombre del certificado es obligatorio.'
+        return null
+      case 6:
+        if (!pricing.isFree && !(parseFloat(pricing.price) > 0)) return 'Ingresa un precio mayor a 0.'
+        return null
       default:
         return null
     }

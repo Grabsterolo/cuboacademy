@@ -40,7 +40,7 @@ export const INSTRUCTOR_NAV = [
   { key: 'comunicados',   label: 'Comunicados',     icon: ICON.announcements },
   { key: 'cursos',        label: 'Mis cursos',      icon: ICON.courses },
   { key: 'estudiantes',   label: 'Mis estudiantes', icon: ICON.users },
-  { key: 'evaluaciones',     label: 'Evaluaciones',      icon: ICON.evaluations },
+  { key: 'evaluaciones',     label: 'Exámenes finales',  icon: ICON.evaluations },
   { key: 'quiz-calificacion', label: 'Calificar quizzes', icon: ICON.quiz },
   { key: 'reportes',      label: 'Reportes',        icon: ICON.reports },
   { key: 'configuracion', label: 'Configuración',   icon: ICON.settings },
