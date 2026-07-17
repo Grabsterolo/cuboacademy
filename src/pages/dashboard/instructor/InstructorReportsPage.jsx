@@ -27,6 +27,7 @@ export default function InstructorReportsPage() {
   const { profile } = useAuth()
   const [courses, setCourses] = useState([])
   const [counts, setCounts] = useState({})
+  const [totalStudents, setTotalStudents] = useState(0)
   const [monthlyEnr, setMonthlyEnr] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -44,18 +45,21 @@ export default function InstructorReportsPage() {
         const ids = list.map(c => c.id)
         const { data: enr } = await supabase
           .from('enrollments')
-          .select('course_id, created_at')
+          .select('course_id, student_id, created_at')
           .in('course_id', ids)
 
         const map = {}
         const monthly = {}
+        const students = new Set()
         ;(enr || []).forEach(r => {
           map[r.course_id] = (map[r.course_id] || 0) + 1
+          students.add(r.student_id)
           const d = new Date(r.created_at)
           const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
           monthly[key] = (monthly[key] || 0) + 1
         })
         setCounts(map)
+        setTotalStudents(students.size)
 
         const now = new Date()
         setMonthlyEnr(Array.from({ length: 6 }, (_, i) => {
@@ -67,7 +71,6 @@ export default function InstructorReportsPage() {
       })
   }, [profile?.id])
 
-  const totalStudents = Object.values(counts).reduce((s, n) => s + n, 0)
   const published     = courses.filter(c => c.status === 'published')
   const maxMonthly    = Math.max(...monthlyEnr.map(m => m.value), 1)
   const sorted        = [...courses].sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0))

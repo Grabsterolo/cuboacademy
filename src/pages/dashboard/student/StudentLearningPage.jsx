@@ -174,32 +174,25 @@ export default function StudentLearningPage() {
     setMarking(true)
 
     const alreadyDone = completedIds.has(activeLesson.id)
-    const newCompleted = alreadyDone ? false : true
-    const now = new Date().toISOString()
 
-    // Upsert lesson_progress
-    await supabase.from('lesson_progress').upsert(
-      { student_id: user.id, lesson_id: activeLesson.id, completed: newCompleted, completed_at: newCompleted ? now : null, last_watched_at: now },
-      { onConflict: 'student_id,lesson_id' }
-    )
+    // Server-side: validates enrollment, toggles lesson_progress, and only
+    // the DB itself decides whether that finishes the course (every lesson
+    // done) before touching enrollments.completed_at.
+    const { data, error } = await supabase.rpc('toggle_lesson_progress', { p_lesson_id: activeLesson.id })
+
+    if (error) {
+      setCompleteError('No se pudo registrar el progreso. Intenta de nuevo.')
+      setMarking(false)
+      return
+    }
 
     const next = new Set(completedIds)
-    if (alreadyDone) next.delete(activeLesson.id)
-    else next.add(activeLesson.id)
+    if (data.completed) next.add(activeLesson.id)
+    else next.delete(activeLesson.id)
     setCompletedIds(next)
 
-    // Auto-complete enrollment when condition is 'complete' and every lesson is now done
-    if (!alreadyDone && !enrollment?.completed_at && course?.certificate_condition === 'complete') {
-      const allLessonIds = modules.flatMap(m => m.lessons).map(l => l.id)
-      if (allLessonIds.length > 0 && allLessonIds.every(id => next.has(id))) {
-        const { error: enrollErr } = await supabase
-          .from('enrollments').update({ completed_at: now }).eq('id', enrollment.id)
-        if (enrollErr) {
-          setCompleteError('No se pudo registrar el curso como completado. Intenta marcar la lección de nuevo.')
-        } else {
-          setEnrollment(prev => ({ ...prev, completed_at: now }))
-        }
-      }
+    if (data.courseCompleted && !enrollment?.completed_at) {
+      setEnrollment(prev => ({ ...prev, completed_at: new Date().toISOString() }))
     }
 
     setMarking(false)

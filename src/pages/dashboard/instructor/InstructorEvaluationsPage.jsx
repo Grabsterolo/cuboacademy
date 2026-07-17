@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
+import { Toast } from '../../../components/ui'
 
 const CHECK_ICON = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
 const X_ICON    = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -33,6 +34,7 @@ export default function InstructorEvaluationsPage() {
   const [expanded, setExpanded]       = useState(null)
   const [quizData, setQuizData]       = useState({})
   const [loadingDetail, setLoadingDetail] = useState(null)
+  const [toast, setToast] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -144,7 +146,7 @@ export default function InstructorEvaluationsPage() {
       .eq('id', sub.enrollment_id)
 
     if (sub.courses?.has_certificate) {
-      await supabase
+      const { error: certErr } = await supabase
         .from('certificates')
         .insert({
           student_id:    sub.student_id,
@@ -154,6 +156,10 @@ export default function InstructorEvaluationsPage() {
           issued_at:     now,
           status:        'pending',
         })
+      if (certErr && certErr.code !== '23505') {
+        setToast('La evaluación se aprobó, pero no se pudo generar el certificado: ' + certErr.message)
+        setTimeout(() => setToast(''), 4500)
+      }
     }
 
     setSubmissions(prev => prev.map(s =>
@@ -431,6 +437,8 @@ export default function InstructorEvaluationsPage() {
           </div>
         </div>
       )}
+
+      <Toast message={toast} />
     </DashboardLayout>
   )
 }

@@ -33,6 +33,7 @@ export default function QuizGradingPage() {
   const [grading, setGrading]         = useState({})   // responseId → bool
   const [gradedSet, setGradedSet]     = useState(new Set())
   const [gradeErrors, setGradeErrors] = useState({})   // responseId → message
+  const [loadError, setLoadError]     = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -41,79 +42,88 @@ export default function QuizGradingPage() {
 
   async function loadAttempts() {
     setLoading(true)
+    setLoadError('')
     const quizMetaMap = {}
 
-    // Get courses — admin sees all, instructor only theirs
-    let coursesQuery = supabase.from('courses').select('id, title')
-    if (!isAdmin) coursesQuery = coursesQuery.eq('instructor_id', user.id)
-    const { data: courses } = await coursesQuery
-    const courseIds = (courses || []).map(c => c.id)
-    if (!courseIds.length) { setAttempts([]); setLoading(false); return }
-    const courseMap = Object.fromEntries((courses || []).map(c => [c.id, c]))
+    try {
+      // Get courses — admin sees all, instructor only theirs
+      let coursesQuery = supabase.from('courses').select('id, title')
+      if (!isAdmin) coursesQuery = coursesQuery.eq('instructor_id', user.id)
+      const { data: courses } = await coursesQuery.throwOnError()
+      const courseIds = (courses || []).map(c => c.id)
+      if (!courseIds.length) { setAttempts([]); setLoading(false); return }
+      const courseMap = Object.fromEntries((courses || []).map(c => [c.id, c]))
 
-    const { data: mods } = await supabase
-      .from('modules').select('id, course_id').in('course_id', courseIds)
-    const modIds = (mods || []).map(m => m.id)
-    if (!modIds.length) { setAttempts([]); setLoading(false); return }
-    const modCourseMap = Object.fromEntries((mods || []).map(m => [m.id, m.course_id]))
+      const { data: mods } = await supabase
+        .from('modules').select('id, course_id').in('course_id', courseIds).throwOnError()
+      const modIds = (mods || []).map(m => m.id)
+      if (!modIds.length) { setAttempts([]); setLoading(false); return }
+      const modCourseMap = Object.fromEntries((mods || []).map(m => [m.id, m.course_id]))
 
-    const { data: lessons } = await supabase
-      .from('lessons').select('id, title, module_id').in('module_id', modIds)
-    const lessonIds = (lessons || []).map(l => l.id)
-    if (!lessonIds.length) { setAttempts([]); setLoading(false); return }
-    const lessonMap = Object.fromEntries((lessons || []).map(l => [l.id, l]))
+      const { data: lessons } = await supabase
+        .from('lessons').select('id, title, module_id').in('module_id', modIds).throwOnError()
+      const lessonIds = (lessons || []).map(l => l.id)
+      if (!lessonIds.length) { setAttempts([]); setLoading(false); return }
+      const lessonMap = Object.fromEntries((lessons || []).map(l => [l.id, l]))
 
-    const { data: quizData } = await supabase
-      .from('quizzes').select('id, title, lesson_id').in('lesson_id', lessonIds)
-    const quizIds = (quizData || []).map(q => q.id)
-    for (const q of quizData || []) {
-      const lesson  = lessonMap[q.lesson_id]
-      const courseId = lesson ? modCourseMap[lesson.module_id] : null
-      quizMetaMap[q.id] = {
-        quizTitle:   q.title,
-        lessonTitle: lesson?.title || '—',
-        courseTitle: courseId ? courseMap[courseId]?.title : '—',
+      const { data: quizData } = await supabase
+        .from('quizzes').select('id, title, lesson_id').in('lesson_id', lessonIds).throwOnError()
+      const quizIds = (quizData || []).map(q => q.id)
+      for (const q of quizData || []) {
+        const lesson  = lessonMap[q.lesson_id]
+        const courseId = lesson ? modCourseMap[lesson.module_id] : null
+        quizMetaMap[q.id] = {
+          quizTitle:   q.title,
+          lessonTitle: lesson?.title || '—',
+          courseTitle: courseId ? courseMap[courseId]?.title : '—',
+        }
       }
-    }
 
-    if (!quizIds.length) { setAttempts([]); setLoading(false); return }
+      if (!quizIds.length) { setAttempts([]); setLoading(false); return }
 
-    const { data: attemptsData } = await supabase
-      .from('quiz_attempts')
-      .select('id, status, completed_at, student_id, quiz_id, profiles!student_id(full_name, email)')
-      .in('quiz_id', quizIds)
-      .eq('status', 'pending_review')
-      .order('completed_at', { ascending: false })
+      const { data: attemptsData } = await supabase
+        .from('quiz_attempts')
+        .select('id, status, completed_at, student_id, quiz_id, profiles!student_id(full_name, email)')
+        .in('quiz_id', quizIds)
+        .eq('status', 'pending_review')
+        .order('completed_at', { ascending: false })
+        .throwOnError()
 
-    if (!attemptsData?.length) { setAttempts([]); setLoading(false); return }
+      if (!attemptsData?.length) { setAttempts([]); setLoading(false); return }
 
-    const attemptIds = attemptsData.map(a => a.id)
-    const { data: responsesData } = await supabase
-      .from('quiz_responses')
-      .select('id, attempt_id, question_id, open_response, points_earned, questions!question_id(id, text, type, points)')
-      .in('attempt_id', attemptIds)
+      const attemptIds = attemptsData.map(a => a.id)
+      const { data: responsesData } = await supabase
+        .from('quiz_responses')
+        .select('id, attempt_id, question_id, open_response, points_earned, questions!question_id(id, text, type, points)')
+        .in('attempt_id', attemptIds)
+        .throwOnError()
 
-    const openResponses = (responsesData || []).filter(r => r.questions?.type === 'open')
+      const openResponses = (responsesData || []).filter(r => r.questions?.type === 'open')
 
-    const result = attemptsData.map(a => ({
-      ...a,
-      meta: quizMetaMap[a.quiz_id] || { quizTitle: '—', lessonTitle: '—', courseTitle: '—' },
-      openResponses: openResponses.filter(r => r.attempt_id === a.id),
-    })).filter(a => a.openResponses.length > 0)
+      const result = attemptsData.map(a => ({
+        ...a,
+        meta: quizMetaMap[a.quiz_id] || { quizTitle: '—', lessonTitle: '—', courseTitle: '—' },
+        openResponses: openResponses.filter(r => r.attempt_id === a.id),
+      })).filter(a => a.openResponses.length > 0)
 
-    // Initialize graded set and point inputs from DB state
-    const graded = new Set()
-    const inputs = {}
-    for (const a of result) {
-      for (const r of a.openResponses) {
-        if (r.points_earned != null) graded.add(r.id)
-        inputs[r.id] = r.points_earned != null ? String(r.points_earned) : ''
+      // Initialize graded set and point inputs from DB state
+      const graded = new Set()
+      const inputs = {}
+      for (const a of result) {
+        for (const r of a.openResponses) {
+          if (r.points_earned != null) graded.add(r.id)
+          inputs[r.id] = r.points_earned != null ? String(r.points_earned) : ''
+        }
       }
+      setGradedSet(graded)
+      setPointInputs(inputs)
+      setAttempts(result)
+    } catch (e) {
+      setLoadError(e.message || 'No se pudieron cargar los quizzes pendientes.')
+      setAttempts([])
+    } finally {
+      setLoading(false)
     }
-    setGradedSet(graded)
-    setPointInputs(inputs)
-    setAttempts(result)
-    setLoading(false)
   }
 
   async function gradeResponse(attemptId, responseId, maxPoints) {
@@ -185,6 +195,16 @@ export default function QuizGradingPage() {
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
             {[1,2,3].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 78, opacity: 1 - i * 0.2 }} />)}
+          </div>
+        ) : loadError ? (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 14, padding: '2rem', textAlign: 'center' }}>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: '#991B1B', marginBottom: '.4rem' }}>
+              No se pudo cargar la lista
+            </p>
+            <p style={{ fontSize: '.82rem', color: '#B91C1C', marginBottom: '1rem' }}>{loadError}</p>
+            <button onClick={loadAttempts} style={{ padding: '.5rem 1.1rem', background: 'white', border: '1px solid #FECACA', borderRadius: 8, fontSize: '.82rem', fontWeight: 600, color: '#991B1B', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+              Reintentar
+            </button>
           </div>
         ) : attempts.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>

@@ -26,6 +26,7 @@ export default function InstructorCoursesPage() {
   const { navigate } = useNavigation()
   const [courses, setCourses] = useState([])
   const [counts, setCounts] = useState({})
+  const [totalStudents, setTotalStudents] = useState(0)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState(null)
   const [search, setSearch] = useState('')
@@ -42,10 +43,11 @@ export default function InstructorCoursesPage() {
         setCourses(list)
         if (list.length > 0) {
           const ids = list.map(c => c.id)
-          const { data: enr } = await supabase.from('enrollments').select('course_id').in('course_id', ids)
+          const { data: enr } = await supabase.from('enrollments').select('course_id, student_id').in('course_id', ids)
           const map = {}
           ;(enr || []).forEach(r => { map[r.course_id] = (map[r.course_id] || 0) + 1 })
           setCounts(map)
+          setTotalStudents(new Set((enr || []).map(r => r.student_id)).size)
         }
         setLoading(false)
       })
@@ -59,7 +61,6 @@ export default function InstructorCoursesPage() {
     )
   })
 
-  const totalStudents = Object.values(counts).reduce((s, n) => s + n, 0)
   const stats = [
     { label: 'Total cursos',    value: courses.length },
     { label: 'Publicados',      value: courses.filter(c => c.status === 'published').length },

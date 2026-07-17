@@ -317,7 +317,7 @@ export default function StudentProfilePage() {
                 title="Cursos completados"
                 text="Los cursos que hayas finalizado se mostrarán aquí."
                 cta="Explorar cursos"
-                to="/cursos"
+                onCtaClick={() => navigate('cursos')}
               />
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigation } from '../../../../context/NavigationContext'
 import { useAuth } from '../../../../context/AuthContext'
 import { supabase } from '../../../../lib/supabase'
@@ -42,12 +42,19 @@ export function useCourseWizard() {
   const [pubStatus, setPubStatus]  = useState('draft')
   const [pubError, setPubError]    = useState('')
 
+  // profile?.role resolves asynchronously (undefined -> the real role), which
+  // re-fires this effect a second time — loadedRef keeps loadExisting from
+  // running twice and overwriting whatever the instructor has already typed.
+  const loadedRef = useRef(false)
   useEffect(() => {
     supabase.from('categories').select('id, name').order('name').then(({ data }) => setCategories(data || []))
     if (profile?.role === 'admin') {
       supabase.from('users_view').select('id, full_name').in('role', ['instructor', 'admin']).order('full_name').then(({ data }) => setInstructors(data || []))
     }
-    if (isEdit) loadExisting(params.courseId)
+    if (isEdit && !loadedRef.current) {
+      loadedRef.current = true
+      loadExisting(params.courseId)
+    }
   }, [profile?.role])
 
   // ── load existing course ──────────────────────────────────────────────────

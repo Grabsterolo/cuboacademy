@@ -44,20 +44,18 @@ export default function CourseDetailPage() {
       supabase.from('courses')
         .select('id, slug, title, description, cover_image_url, price, level, duration_hours, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
         .eq('slug', slug).eq('status', 'published').maybeSingle(),
-      supabase.from('courses').select('id').eq('slug', slug).eq('status', 'published').maybeSingle()
-        .then(({ data: c }) => c
-          ? supabase.from('modules')
-              .select('id, title, order_index, lessons(id, title, duration_mins, is_free_preview, order_index)')
-              .eq('course_id', c.id)
-              .order('order_index', { ascending: true })
-              .order('order_index', { ascending: true, foreignTable: 'lessons' })
-          : { data: [] }
-        ),
+      // Filter modules through the embedded courses relation instead of
+      // looking up the course id first — one round trip instead of two.
+      supabase.from('modules')
+        .select('id, title, order_index, lessons(id, title, duration_mins, is_free_preview, order_index), courses!inner(slug, status)')
+        .eq('courses.slug', slug).eq('courses.status', 'published')
+        .order('order_index', { ascending: true })
+        .order('order_index', { ascending: true, foreignTable: 'lessons' }),
     ])
 
     if (!courseData) { setLoading(false); return }
     setCourse(courseData)
-    const mods = (modsData?.data || []).map(m => ({ ...m, lessons: m.lessons || [] }))
+    const mods = (modsData || []).map(m => ({ ...m, lessons: m.lessons || [] }))
     setModules(mods)
     if (mods.length > 0) setExpandedMods(new Set([mods[0].id]))
 

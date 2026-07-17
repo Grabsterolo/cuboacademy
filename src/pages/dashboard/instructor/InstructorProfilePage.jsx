@@ -72,8 +72,8 @@ export default function InstructorProfilePage() {
       .then(async ({ data: courses }) => {
         if (!courses?.length) { setStudentCount(0); return }
         const ids = courses.map(c => c.id)
-        const { count } = await supabase.from('enrollments').select('id', { count: 'exact', head: true }).in('course_id', ids)
-        setStudentCount(count || 0)
+        const { data: enrollments } = await supabase.from('enrollments').select('student_id').in('course_id', ids)
+        setStudentCount(new Set((enrollments || []).map(e => e.student_id)).size)
       }).catch(() => setStudentCount(0))
   }, [profile?.id])
 
