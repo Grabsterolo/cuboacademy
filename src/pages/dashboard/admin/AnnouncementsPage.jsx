@@ -103,24 +103,6 @@ const TARGETS = [
 function typeInfo(val)   { return TYPES.find(t => t.value === val)   || TYPES[0] }
 function targetInfo(val) { return TARGETS.find(t => t.value === val) || TARGETS[0] }
 
-function TypeBadge({ value }) {
-  const t = typeInfo(value)
-  return (
-    <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 20, background: t.bg, color: t.color, border: `1px solid ${t.border}`, flexShrink: 0 }}>
-      {t.label}
-    </span>
-  )
-}
-
-function TargetBadge({ value }) {
-  const t = targetInfo(value)
-  return (
-    <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 20, background: t.bg, color: t.color, border: `1px solid ${t.border}`, flexShrink: 0 }}>
-      {t.label}
-    </span>
-  )
-}
-
 // discreet dot + label — used in the list row, where a full colored pill per
 // badge competed visually with the title (metadata shouldn't outweigh content)
 function DotTag({ color, label }) {
@@ -517,23 +499,24 @@ export default function AnnouncementsPage() {
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', gap: '.45rem', flexWrap: 'wrap', marginBottom: '.85rem' }}>
-                  <TypeBadge value={readItem.type} />
-                  <TargetBadge value={readItem.target_role} />
-                </div>
+                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.32rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.3, margin: '0 0 1rem' }}>{readItem.title}</h2>
 
-                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.32rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.3, margin: '0 0 1.25rem' }}>{readItem.title}</h2>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.55rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.6rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 9 }}>
+                {/* One row of metadata chips — type/date/audience each shown once,
+                    sized to content instead of a redundant badge row + grid */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', background: t.bg, border: `1px solid ${t.border}`, borderRadius: 9, flexShrink: 0 }}>
+                    <span style={{ display: 'flex', color: t.color, transform: 'scale(.75)' }}>{t.icon}</span>
+                    <span style={{ fontSize: '.78rem', color: t.color, fontFamily: 'var(--sans)', fontWeight: 600, whiteSpace: 'nowrap' }}>{t.label}</span>
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 9, flexShrink: 0 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <span style={{ fontSize: '.78rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', fontWeight: 500 }}>
+                    <span style={{ fontSize: '.78rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', fontWeight: 500, whiteSpace: 'nowrap' }}>
                       {new Date(readItem.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.6rem .85rem', background: tgt.bg, border: `1px solid ${tgt.border}`, borderRadius: 9 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', background: tgt.bg, border: `1px solid ${tgt.border}`, borderRadius: 9, flexShrink: 0 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={tgt.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    <span style={{ fontSize: '.78rem', color: tgt.color, fontFamily: 'var(--sans)', fontWeight: 600 }}>{tgt.label}</span>
+                    <span style={{ fontSize: '.78rem', color: tgt.color, fontFamily: 'var(--sans)', fontWeight: 600, whiteSpace: 'nowrap' }}>{tgt.label}</span>
                   </div>
                 </div>
               </div>

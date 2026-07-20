@@ -8,7 +8,7 @@ const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced:
 const STATUS_STYLE = {
   published: { label: 'Publicado',  bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
   draft:     { label: 'Borrador',   bg: '#F5F5F0',           color: '#9B9894',          border: '1px solid var(--border)' },
-  pending:   { label: 'En revisión',bg: '#FFF7ED',           color: '#C2410C',          border: '1px solid #FED7AA' },
+  pending:   { label: 'En revisión',bg: '#FFFBEB',           color: '#A16207',          border: '1px solid #FDE68A' },
   archived:  { label: 'Archivado',  bg: '#FEF2F2',           color: '#B91C1C',          border: '1px solid #FECACA' },
 }
 

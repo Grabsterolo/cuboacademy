@@ -6,7 +6,7 @@ import { IconBtn, Toast } from '../../../components/ui'
 
 const STATUS = {
   draft:     { label: 'Borrador',    bg: '#F5F5F0',          color: '#9B9894',  border: 'var(--border)' },
-  pending:   { label: 'En revisión', bg: '#FFF7ED',          color: '#C2410C',  border: '#FED7AA' },
+  pending:   { label: 'En revisión', bg: '#FFFBEB',          color: '#A16207',  border: '#FDE68A' },
   published: { label: 'Publicado',   bg: 'var(--jade-soft)', color: 'var(--jade)', border: 'rgba(22,125,120,.25)' },
   archived:  { label: 'Archivado',   bg: '#FEF2F2',          color: '#B91C1C',  border: '#FECACA' },
 }
