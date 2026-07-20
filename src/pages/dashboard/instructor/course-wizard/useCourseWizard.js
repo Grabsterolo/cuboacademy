@@ -3,6 +3,7 @@ import { useNavigation } from '../../../../context/NavigationContext'
 import { useAuth } from '../../../../context/AuthContext'
 import { supabase } from '../../../../lib/supabase'
 import { slugify } from '../../../../lib/slugify'
+import { validateImageFile, resizeImage } from '../../../../lib/imageProcessing'
 import { uid, stripHtml, isLessonContentComplete, isQuestionComplete } from './components/shared'
 
 // content-only snapshot of modules/lessons (excludes UI state like `expanded`
@@ -151,12 +152,18 @@ export function useCourseWizard() {
   // ── image upload ──────────────────────────────────────────────────────────
   async function handleImgUpload(file) {
     if (!file) return
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setImgErr('Solo JPG, PNG o WebP.'); return }
-    if (file.size > 5 * 1024 * 1024) { setImgErr('Máximo 5 MB.'); return }
+    const validationErr = validateImageFile(file)
+    if (validationErr) { setImgErr(validationErr); return }
     setImgErr(''); setImgUploading(true)
     const prevUrl = info.coverUrl
-    const name = `${Date.now()}-${file.name}`
-    const { error: upErr } = await supabase.storage.from('course-images').upload(name, file)
+    const name = `${Date.now()}-cover.jpg`
+    let resized
+    try {
+      resized = await resizeImage(file, { maxDimension: 1280, quality: 0.82 })
+    } catch {
+      setImgErr('No se pudo procesar la imagen.'); setImgUploading(false); return
+    }
+    const { error: upErr } = await supabase.storage.from('course-images').upload(name, resized, { contentType: 'image/jpeg' })
     if (upErr) { setImgErr(upErr.message); setImgUploading(false); return }
     const { data: { publicUrl } } = supabase.storage.from('course-images').getPublicUrl(name)
     setInfo(i => ({ ...i, coverUrl: publicUrl }))

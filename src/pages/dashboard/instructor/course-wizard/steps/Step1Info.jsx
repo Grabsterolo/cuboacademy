@@ -47,7 +47,7 @@ export function Step1Info({ info, onChange, categories, instructors, isAdmin, im
               onChange={e => { onImgUpload(e.target.files[0]); e.target.value = '' }} />
             {info.coverUrl ? (
               <div style={{ position: 'relative' }}>
-                <img src={info.coverUrl} alt="Portada"
+                <img loading="lazy" src={info.coverUrl} alt="Portada"
                   style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 10, border: '1px solid var(--border)', display: 'block' }} />
                 <button type="button" onClick={() => onChange('coverUrl', '')}
                   style={{ position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderRadius: '50%', background: 'rgba(22,32,31,.65)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

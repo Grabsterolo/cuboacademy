@@ -37,6 +37,7 @@ export default function OrdersPage() {
       .from('orders')
       .select('id, amount, status, created_at, payment_provider, student_id, course_id, profiles!student_id(full_name, avatar_url), courses(id, title, cover_image_url)')
       .order('created_at', { ascending: false })
+      .limit(500)
     setOrders(data || [])
     setLoading(false)
   }
@@ -199,7 +200,7 @@ export default function OrdersPage() {
                 <div key={order.id} className="op-row">
                   {/* Student avatar */}
                   {student?.avatar_url
-                    ? <img src={student.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                    ? <img loading="lazy" src={student.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                     : <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>{initials}</div>
                   }
 

@@ -88,7 +88,8 @@ function CatalogTab({ wishlistIds, onToggleWishlist }) {
       supabase.from('courses')
         .select('id, slug, title, cover_image_url, price, level, duration_hours, category_id, categories(name), profiles!instructor_id(full_name)')
         .eq('status', 'published')
-        .order('created_at', { ascending: false }),
+        .order('created_at', { ascending: false })
+        .limit(500),
       supabase.from('categories').select('id, name').order('name'),
     ]).then(([{ data: c }, { data: cats }]) => {
       setCourses(c || [])

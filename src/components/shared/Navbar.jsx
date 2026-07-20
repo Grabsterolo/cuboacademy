@@ -197,7 +197,7 @@ export default function Navbar() {
               <button onClick={goToDashboard}
                 style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.35rem .85rem .35rem .4rem', background: 'var(--jade-soft)', borderRadius: 20, border: '1px solid var(--jade-light)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: avatar ? 'transparent' : 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '.7rem', fontWeight: 700, flexShrink: 0, overflow: 'hidden' }}>
-                  {avatar ? <img src={avatar} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : displayName[0]?.toUpperCase()}
+                  {avatar ? <img loading="lazy" src={avatar} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : displayName[0]?.toUpperCase()}
                 </div>
                 <span style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--carbon)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</span>
               </button>

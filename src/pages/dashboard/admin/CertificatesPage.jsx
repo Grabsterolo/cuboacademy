@@ -46,6 +46,7 @@ export default function CertificatesPage() {
         courses!course_id(title, cover_image_url, profiles!instructor_id(full_name))
       `)
       .order('issued_at', { ascending: false })
+      .limit(500)
 
     setCerts(data || [])
     setLoading(false)
@@ -163,7 +164,7 @@ export default function CertificatesPage() {
               return (
                 <div key={cert.id} className="cp-card">
                   <div style={{ width: 52, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
-                    {course?.cover_image_url && <img src={course.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                    {course?.cover_image_url && <img loading="lazy" src={course.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>

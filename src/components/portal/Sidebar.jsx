@@ -213,7 +213,7 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.6rem .75rem', borderRadius: 9, background: 'rgba(255,255,255,.06)', marginBottom: '.6rem', cursor: 'pointer' }}
           onClick={() => { if (profile?.role !== 'admin') handleNav('perfil') }}>
           <div style={{ width: 34, height: 34, borderRadius: '50%', background: avatar ? 'transparent' : 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '.75rem', fontWeight: 700, color: 'white', flexShrink: 0, overflow: 'hidden', border: '2px solid rgba(255,255,255,.12)' }}>
-            {avatar ? <img src={avatar} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : displayName[0]?.toUpperCase()}
+            {avatar ? <img loading="lazy" src={avatar} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : displayName[0]?.toUpperCase()}
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'rgba(255,255,255,.9)', fontFamily: 'var(--serif)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>

@@ -1,15 +1,28 @@
+import { lazy, Suspense } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useCourseWizard } from './course-wizard/useCourseWizard'
 import { WizardProgress } from './course-wizard/components/WizardProgress'
 import { IC } from './course-wizard/components/shared'
-import { Step1Info } from './course-wizard/steps/Step1Info'
-import { Step2Structure } from './course-wizard/steps/Step2Structure'
-import { Step3Content } from './course-wizard/steps/Step3Content'
-import { Step4Evaluation } from './course-wizard/steps/Step4Evaluation'
-import { Step5Certificate } from './course-wizard/steps/Step5Certificate'
-import { Step6Pricing } from './course-wizard/steps/Step6Pricing'
-import { Step7Preview } from './course-wizard/steps/Step7Preview'
-import { Step8Publish } from './course-wizard/steps/Step8Publish'
+
+// Lazy per step: Step1/Step3 pull in the Tiptap rich-text editor, which
+// otherwise ships on every wizard load regardless of which step is open.
+const Step1Info = lazy(() => import('./course-wizard/steps/Step1Info').then(m => ({ default: m.Step1Info })))
+const Step2Structure = lazy(() => import('./course-wizard/steps/Step2Structure').then(m => ({ default: m.Step2Structure })))
+const Step3Content = lazy(() => import('./course-wizard/steps/Step3Content').then(m => ({ default: m.Step3Content })))
+const Step4Evaluation = lazy(() => import('./course-wizard/steps/Step4Evaluation').then(m => ({ default: m.Step4Evaluation })))
+const Step5Certificate = lazy(() => import('./course-wizard/steps/Step5Certificate').then(m => ({ default: m.Step5Certificate })))
+const Step6Pricing = lazy(() => import('./course-wizard/steps/Step6Pricing').then(m => ({ default: m.Step6Pricing })))
+const Step7Preview = lazy(() => import('./course-wizard/steps/Step7Preview').then(m => ({ default: m.Step7Preview })))
+const Step8Publish = lazy(() => import('./course-wizard/steps/Step8Publish').then(m => ({ default: m.Step8Publish })))
+
+function StepLoading() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '30vh', gap: '.5rem', color: 'var(--text-2)', fontFamily: 'var(--sans)', fontSize: '.85rem' }}>
+      <div style={{ width: 16, height: 16, border: '2px solid var(--border)', borderTopColor: 'var(--jade)', borderRadius: '50%', animation: 'wiz-spin .7s linear infinite' }} />
+      Cargando…
+    </div>
+  )
+}
 
 export default function CourseWizardPage() {
   const {
@@ -107,7 +120,7 @@ export default function CourseWizardPage() {
 
         {/* Step content */}
         <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '2rem 2.25rem 2.25rem' }}>
-          {renderStep()}
+          <Suspense fallback={<StepLoading />}>{renderStep()}</Suspense>
         </div>
 
         {/* Navigation */}

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { NavigationProvider, useNavigation } from './context/NavigationContext'
@@ -8,13 +8,23 @@ import Navbar from './components/shared/Navbar'
 import Footer from './components/shared/Footer'
 import Portal from './components/portal/Portal'
 
-// Public screens
-import HomePage from './pages/public/HomePage'
-import LoginScreen from './pages/public/LoginScreen'
-import RegisterScreen from './pages/public/RegisterScreen'
-import InstructorApplicationPage from './pages/public/InstructorApplicationPage'
-import CourseCatalogPage from './pages/public/CourseCatalogPage'
-import CourseDetailPage from './pages/public/CourseDetailPage'
+// Public screens — lazy-loaded so the main bundle isn't paying for the
+// landing/catalog/auth code on every visit (mirrors the Portal.jsx pattern)
+const HomePage = lazy(() => import('./pages/public/HomePage'))
+const LoginScreen = lazy(() => import('./pages/public/LoginScreen'))
+const RegisterScreen = lazy(() => import('./pages/public/RegisterScreen'))
+const InstructorApplicationPage = lazy(() => import('./pages/public/InstructorApplicationPage'))
+const CourseCatalogPage = lazy(() => import('./pages/public/CourseCatalogPage'))
+const CourseDetailPage = lazy(() => import('./pages/public/CourseDetailPage'))
+
+function LoadingSection() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: 'var(--text-2)', fontFamily: 'var(--sans)', fontSize: '.9rem', gap: '.5rem' }}>
+      <div style={{ width: 18, height: 18, border: '2px solid var(--border)', borderTopColor: 'var(--jade)', borderRadius: '50%', animation: 'spin .7s linear infinite' }} />
+      Cargando…
+    </div>
+  )
+}
 
 function AppShell() {
   const { user, loading } = useAuth()
@@ -43,8 +53,8 @@ function AppShell() {
   }
 
   // Fullscreen auth screens (no navbar)
-  if (screen === 'login')    return <LoginScreen />
-  if (screen === 'register') return <RegisterScreen />
+  if (screen === 'login')    return <Suspense fallback={<LoadingSection />}><LoginScreen /></Suspense>
+  if (screen === 'register') return <Suspense fallback={<LoadingSection />}><RegisterScreen /></Suspense>
 
   // Portal (authenticated shell)
   if (screen === 'portal') return <Portal />
@@ -64,7 +74,7 @@ function AppShell() {
   return (
     <div style={{ paddingTop: 66 }}>
       <Navbar />
-      {publicContent}
+      <Suspense fallback={<LoadingSection />}>{publicContent}</Suspense>
       {hasFooter && <Footer />}
     </div>
   )

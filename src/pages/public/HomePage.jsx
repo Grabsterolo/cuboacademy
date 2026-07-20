@@ -593,7 +593,7 @@ export default function HomePage() {
                   <div key={c.id} className="reveal course-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                     <div style={{ height: 144, position: 'relative', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', overflow: 'hidden' }}>
                       {c.cover_image_url
-                        ? <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ? <img loading="lazy" src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : (
                           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.18)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
@@ -623,7 +623,7 @@ export default function HomePage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '.9rem', borderTop: '1px solid var(--border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'var(--text-2)', minWidth: 0 }}>
                           {c.profiles?.avatar_url ? (
-                            <img src={c.profiles.avatar_url} alt={c.profiles.full_name || ''} style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', objectFit: 'cover' }} />
+                            <img loading="lazy" src={c.profiles.avatar_url} alt={c.profiles.full_name || ''} style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', objectFit: 'cover' }} />
                           ) : (
                             <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.58rem', fontWeight: 700, color: 'white' }}>{initials}</div>
                           )}
@@ -694,7 +694,7 @@ export default function HomePage() {
                 return (
                   <div key={inst.id} className="reveal inst-card" style={{ transitionDelay: `${(i % 4) * 80}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem 1.4rem', textAlign: 'center' }}>
                     {inst.avatar_url ? (
-                      <img src={inst.avatar_url} alt={inst.full_name} style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', margin: '0 auto .9rem', display: 'block' }} />
+                      <img loading="lazy" src={inst.avatar_url} alt={inst.full_name} style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', margin: '0 auto .9rem', display: 'block' }} />
                     ) : (
                       <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto .9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'white', background: INST_COLORS[i % INST_COLORS.length] }}>{initials}</div>
                     )}

@@ -403,7 +403,7 @@ export default function InstructorEvaluationsPage() {
                 <div key={sub.id}>
                   <div className="ev-card">
                     <div style={{ width: 52, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
-                      {course?.cover_image_url && <img src={course.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      {course?.cover_image_url && <img loading="lazy" src={course.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>

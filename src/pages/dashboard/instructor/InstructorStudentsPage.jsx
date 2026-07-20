@@ -8,7 +8,7 @@ const USERS = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke
 function Avatar({ name, url, size = 38 }) {
   const initials = (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   return url
-    ? <img src={url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+    ? <img loading="lazy" src={url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
     : <div style={{ width: size, height: size, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ fontSize: size * 0.3 + 'px', fontWeight: 700, color: 'white', fontFamily: 'var(--serif)' }}>{initials}</span>
       </div>

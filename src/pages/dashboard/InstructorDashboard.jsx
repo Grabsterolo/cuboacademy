@@ -143,7 +143,7 @@ export default function InstructorDashboard() {
                 return (
                   <div key={c.id} className="course-row" onClick={() => navigate('curso-wizard', { courseId: c.id })}>
                     <div style={{ width: 60, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
-                      {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      {c.cover_image_url && <img loading="lazy" src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '.86rem', fontWeight: 600, color: 'var(--carbon)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '.25rem' }}>{c.title}</div>

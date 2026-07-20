@@ -11,7 +11,7 @@ const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avan
 function Avatar({ name, url, size = 40 }) {
   const initials = (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   return url
-    ? <img src={url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+    ? <img loading="lazy" src={url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
     : <div style={{ width: size, height: size, borderRadius: '50%', background: 'linear-gradient(140deg,var(--jade),var(--jade-dark,#0d4a46))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ fontSize: size * 0.34 + 'px', fontWeight: 700, color: 'white', fontFamily: 'var(--serif)' }}>{initials}</span>
       </div>

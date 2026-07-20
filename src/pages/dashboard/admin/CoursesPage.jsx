@@ -78,21 +78,18 @@ export default function CoursesPage() {
 
   async function load() {
     setLoading(true)
-    const [{ data }, { data: orderRows }] = await Promise.all([
+    // Top-seller is computed server-side (get_top_selling_course RPC) instead
+    // of fetching every completed order to the browser just to count them.
+    const [{ data }, { data: topId }] = await Promise.all([
       supabase
         .from('courses')
         .select('id, title, cover_image_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
         .order('created_at', { ascending: false })
         .limit(500),
-      supabase.from('orders').select('course_id').eq('status', 'completed'),
+      supabase.rpc('get_top_selling_course'),
     ])
     setCourses(data || [])
-    if (orderRows?.length > 0) {
-      const counts = {}
-      for (const o of orderRows) counts[o.course_id] = (counts[o.course_id] || 0) + 1
-      const [topId] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
-      setTopCourseId(topId)
-    }
+    if (topId) setTopCourseId(topId)
     setLoading(false)
   }
 

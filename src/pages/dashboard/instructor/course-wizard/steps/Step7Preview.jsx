@@ -21,7 +21,7 @@ export function Step7Preview({ info, modules, eval: ev, cert, pricing }) {
         <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
           <div style={{ aspectRatio: '16/9', background: 'linear-gradient(140deg,#0d3840,#082830)', position: 'relative' }}>
             {info.coverUrl
-              ? <img src={info.coverUrl} alt="Portada" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ? <img loading="lazy" src={info.coverUrl} alt="Portada" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(255,255,255,.3)' }}>{IC.image}</div>
             }
           </div>

@@ -228,7 +228,7 @@ export default function StudentDashboard() {
                         style={{ display: 'flex', gap: '.85rem', alignItems: 'center', cursor: 'pointer', padding: '.6rem .75rem', borderRadius: 9, border: '1px solid var(--border)', transition: 'box-shadow .15s, border-color .15s' }}
                         onClick={() => navigate('aprender', { courseId: c.id })}>
                         <div style={{ width: 60, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 7, flexShrink: 0, overflow: 'hidden' }}>
-                          {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                          {c.cover_image_url && <img loading="lazy" src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '.84rem', fontWeight: 600, color: 'var(--carbon)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '.3rem' }}>{c.title}</div>

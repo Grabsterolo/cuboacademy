@@ -184,7 +184,7 @@ export default function CourseDetailPage() {
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1rem' }}>Tu instructor</h2>
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   {instructor.avatar_url
-                    ? <img src={instructor.avatar_url} alt={instructor.full_name} style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--border)' }} />
+                    ? <img loading="lazy" src={instructor.avatar_url} alt={instructor.full_name} style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--border)' }} />
                     : <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>{instructorInitials}</div>
                   }
                   <div>

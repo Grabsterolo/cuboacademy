@@ -4,6 +4,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { Toast } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
+import { validateImageFile, resizeImage } from '../../../lib/imageProcessing'
 
 const COUNTRIES = ['Costa Rica','México','Colombia','Argentina','Chile','Perú','Ecuador','Guatemala','Honduras','El Salvador','Nicaragua','Panamá','Uruguay','Paraguay','Bolivia','Venezuela','República Dominicana','España','Otro']
 const EXP_OPTIONS = [{ value: 2, label: '1-2 años' }, { value: 5, label: '3-5 años' }, { value: 10, label: '6-10 años' }, { value: 15, label: '10+ años' }]
@@ -82,10 +83,17 @@ export default function InstructorProfilePage() {
   async function handleAvatarUpload(e) {
     const file = e.target.files?.[0]
     if (!file || !user) return
+    const validationErr = validateImageFile(file)
+    if (validationErr) { showToast(validationErr); return }
     setAvatarUploading(true)
-    const ext = file.name.split('.').pop()
-    const path = `avatars/${user.id}.${ext}`
-    const { error: upErr } = await supabase.storage.from('course-images').upload(path, file, { upsert: true })
+    const path = `avatars/${user.id}.jpg`
+    let resized
+    try {
+      resized = await resizeImage(file, { maxDimension: 400, quality: 0.85 })
+    } catch {
+      showToast('No se pudo procesar la imagen.'); setAvatarUploading(false); return
+    }
+    const { error: upErr } = await supabase.storage.from('course-images').upload(path, resized, { upsert: true, contentType: 'image/jpeg' })
     if (upErr) { showToast('Error al subir la imagen.'); setAvatarUploading(false); return }
     const { data: { publicUrl } } = supabase.storage.from('course-images').getPublicUrl(path)
     setAvatarUrl(publicUrl)
@@ -157,7 +165,7 @@ export default function InstructorProfilePage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '1.5rem' }}>
                   <div style={{ flexShrink: 0 }}>
                     {avatarUrl
-                      ? <img src={avatarUrl} alt="avatar" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
+                      ? <img loading="lazy" src={avatarUrl} alt="avatar" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
                       : <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 700, color: 'white' }}>{initials}</div>
                     }
                   </div>
@@ -261,7 +269,7 @@ export default function InstructorProfilePage() {
                 </div>
                 <div style={{ background: 'white', padding: '1.75rem 1.4rem', textAlign: 'center' }}>
                   {avatarUrl
-                    ? <img src={avatarUrl} alt="avatar" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', margin: '0 auto .9rem', display: 'block', border: '2px solid var(--border)' }} />
+                    ? <img loading="lazy" src={avatarUrl} alt="avatar" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', margin: '0 auto .9rem', display: 'block', border: '2px solid var(--border)' }} />
                     : <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto .9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'white', background: 'var(--jade)' }}>{initials}</div>
                   }
                   <div style={{ fontFamily: 'var(--serif)', fontSize: '.93rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.2rem' }}>{displayName}</div>
