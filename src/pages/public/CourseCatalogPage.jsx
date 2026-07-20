@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
+import { useCourseRatingSummaries, RatingBadge } from '../../components/reviews/CourseReviews'
 
 const LEVEL_OPTS = [
   { value: '', label: 'Todos los niveles' },
@@ -10,7 +11,7 @@ const LEVEL_OPTS = [
 ]
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
-function CourseCard({ course }) {
+function CourseCard({ course, rating }) {
   const { navigate } = useNavigation()
   const cover = course.cover_image_url
   const priceNum = Number(course.price)
@@ -37,6 +38,7 @@ function CourseCard({ course }) {
       <div style={{ padding: '1rem 1.1rem 1.2rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
         {category && <div style={{ fontSize: '.66rem', fontWeight: 700, color: 'var(--jade)', marginBottom: '.3rem', letterSpacing: '.06em', textTransform: 'uppercase' }}>{category}</div>}
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.35, flex: 1, marginBottom: '.6rem' }}>{course.title}</h3>
+        {rating?.count > 0 && <div style={{ marginBottom: '.4rem' }}><RatingBadge avg={rating.avg} count={rating.count} /></div>}
         <div style={{ fontSize: '.75rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           {instructor}
@@ -68,6 +70,7 @@ export default function CourseCatalogPage() {
   const [search, setSearch] = useState(params.search || '')
   const [catFilter, setCatFilter] = useState(params.categoryId || '')
   const [levelFilter, setLevelFilter] = useState('')
+  const ratings = useCourseRatingSummaries(courses.map(c => c.id))
 
   useEffect(() => {
     Promise.all([
@@ -182,7 +185,7 @@ export default function CourseCatalogPage() {
           </div>
         ) : (
           <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
-            {filtered.map(c => <CourseCard key={c.id} course={c} />)}
+            {filtered.map(c => <CourseCard key={c.id} course={c} rating={ratings[c.id]} />)}
           </div>
         )}
       </div>

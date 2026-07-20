@@ -177,7 +177,7 @@ export default function StudentCertificatesPage() {
                       </div>
                       {cover && (
                         <div style={{ width: 72, height: 50, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
-                          <img loading="lazy" src={cover} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img loading="lazy" src={cover} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                       )}
                     </div>

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { enrollCourse } from '../../lib/enrollCourse'
+import { CourseReviews } from '../../components/reviews/CourseReviews'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
@@ -230,6 +231,9 @@ export default function CourseDetailPage() {
                 })}
               </div>
             )}
+
+            {/* Reviews */}
+            <CourseReviews courseId={course.id} currentUserId={user?.id} canReview={enrolled} />
           </div>
 
           {/* Right column — sticky price card */}

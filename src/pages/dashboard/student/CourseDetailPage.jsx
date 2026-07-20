@@ -5,13 +5,14 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 import { enrollCourse } from '../../../lib/enrollCourse'
+import { CourseReviews } from '../../../components/reviews/CourseReviews'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
 function Avatar({ name, url, size = 40 }) {
   const initials = (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   return url
-    ? <img loading="lazy" src={url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+    ? <img loading="lazy" src={url} alt={name || ''} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
     : <div style={{ width: size, height: size, borderRadius: '50%', background: 'linear-gradient(140deg,var(--jade),var(--jade-dark,#0d4a46))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ fontSize: size * 0.34 + 'px', fontWeight: 700, color: 'white', fontFamily: 'var(--serif)' }}>{initials}</span>
       </div>
@@ -228,7 +229,8 @@ export default function CourseDetailPage() {
                     const isOpen = expandedMods.has(mod.id)
                     return (
                       <div key={mod.id} style={{ borderBottom: mi < modules.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                        <div className="cdp-mod-row" onClick={() => toggleMod(mod.id)}>
+                        <div className="cdp-mod-row" onClick={() => toggleMod(mod.id)} role="button" tabIndex={0}
+                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMod(mod.id) } }}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"
                             style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }}>
                             <polyline points="6 9 12 15 18 9"/>
@@ -258,6 +260,9 @@ export default function CourseDetailPage() {
                   })}
                 </div>
               )}
+
+              {/* Reviews */}
+              <CourseReviews courseId={course.id} currentUserId={user?.id} canReview={isEnrolled} />
             </div>
 
             {/* ── Right: purchase card ── */}

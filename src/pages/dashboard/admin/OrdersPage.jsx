@@ -62,6 +62,16 @@ export default function OrdersPage() {
         .insert({ student_id: order.student_id, course_id: order.course_id, enrolled_at: new Date().toISOString() })
     }
 
+    // 3. Best-effort transactional email — never blocks the UI on failure.
+    supabase.functions.invoke('send-notification-email', {
+      body: {
+        recipientId: order.student_id,
+        type: 'purchase',
+        subject: 'Tu pago fue confirmado',
+        message: `Tu pago para "${order.courses?.title || 'tu curso'}" fue confirmado. Ya tienes acceso al curso en Cubo Campus.`,
+      },
+    }).catch(() => {})
+
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'completed' } : o))
     setActing(null)
   }
@@ -200,7 +210,7 @@ export default function OrdersPage() {
                 <div key={order.id} className="op-row">
                   {/* Student avatar */}
                   {student?.avatar_url
-                    ? <img loading="lazy" src={student.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                    ? <img loading="lazy" src={student.avatar_url} alt={student?.full_name || ''} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                     : <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>{initials}</div>
                   }
 

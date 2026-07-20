@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { useSettings } from '../../context/SettingsContext'
+import { supabase } from '../../lib/supabase'
 
 export default function RegisterScreen() {
   const { signUp } = useAuth()
@@ -29,13 +30,26 @@ export default function RegisterScreen() {
     if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return }
     if (password !== confirm) { setError('Las contraseñas no coinciden.'); return }
     setLoading(true)
-    const { error: err } = await signUp({
+    const { data, error: err } = await signUp({
       email, password,
       fullName: `${firstName.trim()} ${lastName.trim()}`,
       role: 'student',
     })
     setLoading(false)
     if (err) { setError(err.message); return }
+
+    // Best-effort welcome email — never blocks the UI on failure.
+    if (data?.user?.id) {
+      supabase.functions.invoke('send-notification-email', {
+        body: {
+          recipientId: data.user.id,
+          type: 'welcome',
+          subject: '¡Bienvenido a Cubo Campus!',
+          message: `Hola ${firstName.trim()}, tu cuenta en Cubo Campus fue creada con éxito. Ya puedes explorar el catálogo de cursos y comenzar a aprender.`,
+        },
+      }).catch(() => {})
+    }
+
     setDone(true)
   }
 
@@ -98,24 +112,24 @@ export default function RegisterScreen() {
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem', marginBottom: '1rem' }}>
                 <div>
-                  <label style={LBL_STYLE}>Nombre</label>
-                  <input style={INP_STYLE} type="text" required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" onFocus={focusIn} onBlur={focusOut} />
+                  <label htmlFor="register-first-name" style={LBL_STYLE}>Nombre</label>
+                  <input id="register-first-name" style={INP_STYLE} type="text" required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" onFocus={focusIn} onBlur={focusOut} />
                 </div>
                 <div>
-                  <label style={LBL_STYLE}>Apellidos</label>
-                  <input style={INP_STYLE} type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="García" onFocus={focusIn} onBlur={focusOut} />
+                  <label htmlFor="register-last-name" style={LBL_STYLE}>Apellidos</label>
+                  <input id="register-last-name" style={INP_STYLE} type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="García" onFocus={focusIn} onBlur={focusOut} />
                 </div>
               </div>
 
               <div style={{ marginBottom: '1rem' }}>
-                <label style={LBL_STYLE}>Correo electrónico</label>
-                <input style={INP_STYLE} type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tucorreo@email.com" onFocus={focusIn} onBlur={focusOut} />
+                <label htmlFor="register-email" style={LBL_STYLE}>Correo electrónico</label>
+                <input id="register-email" style={INP_STYLE} type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tucorreo@email.com" onFocus={focusIn} onBlur={focusOut} />
               </div>
 
               <div style={{ marginBottom: '1rem' }}>
-                <label style={LBL_STYLE}>Contraseña</label>
+                <label htmlFor="register-password" style={LBL_STYLE}>Contraseña</label>
                 <div style={{ position: 'relative' }}>
-                  <input style={{ ...INP_STYLE, paddingRight: '2.8rem' }} type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" onFocus={focusIn} onBlur={focusOut} />
+                  <input id="register-password" style={{ ...INP_STYLE, paddingRight: '2.8rem' }} type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" onFocus={focusIn} onBlur={focusOut} />
                   <button type="button" onClick={() => setShowPass(v => !v)} tabIndex={-1}
                     style={{ position: 'absolute', right: '.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.4)', padding: 0, display: 'flex' }}>
                     {showPass
@@ -127,8 +141,8 @@ export default function RegisterScreen() {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={LBL_STYLE}>Confirmar contraseña</label>
-                <input style={INP_STYLE} type="password" required value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repite tu contraseña" onFocus={focusIn} onBlur={focusOut} />
+                <label htmlFor="register-confirm-password" style={LBL_STYLE}>Confirmar contraseña</label>
+                <input id="register-confirm-password" style={INP_STYLE} type="password" required value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repite tu contraseña" onFocus={focusIn} onBlur={focusOut} />
               </div>
 
               {error && (

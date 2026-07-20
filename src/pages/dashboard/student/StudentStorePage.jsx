@@ -3,20 +3,13 @@ import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
+import { useCourseRatingSummaries, RatingBadge } from '../../../components/reviews/CourseReviews'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const LEVEL_OPTS = ['', 'beginner', 'intermediate', 'advanced']
 const LEVEL_NAMES = { '': 'Todos', beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
-const WL_KEY = 'cubo_wishlist' // localStorage key, stores array of course IDs
 
-function getWishlist() {
-  try { return JSON.parse(localStorage.getItem(WL_KEY) || '[]') } catch { return [] }
-}
-function saveWishlist(ids) {
-  localStorage.setItem(WL_KEY, JSON.stringify(ids))
-}
-
-function CourseCard({ course, wishlistIds, onToggleWishlist }) {
+function CourseCard({ course, wishlistIds, onToggleWishlist, rating }) {
   const { navigate } = useNavigation()
   const cover = course.cover_image_url
   const priceNum = Number(course.price)
@@ -27,8 +20,12 @@ function CourseCard({ course, wishlistIds, onToggleWishlist }) {
   const level = LEVEL_LABEL[course.level] || ''
   const inWishlist = wishlistIds.includes(course.id)
 
+  const goToDetail = () => navigate('curso-detalle', { slug: course.slug })
+
   return (
-    <div className="s-card" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div className="s-card" role="button" tabIndex={0} onClick={goToDetail}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToDetail() } }}
+      style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', cursor: 'pointer' }}>
       {/* Wishlist button */}
       <button onClick={e => { e.stopPropagation(); onToggleWishlist(course.id) }} title={inWishlist ? 'Quitar de lista de deseos' : 'Agregar a lista de deseos'}
         style={{ position: 'absolute', top: 10, right: 10, zIndex: 2, background: inWishlist ? 'rgba(201,110,75,.9)' : 'rgba(0,0,0,.4)', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)', transition: 'background .18s' }}>
@@ -38,7 +35,7 @@ function CourseCard({ course, wishlistIds, onToggleWishlist }) {
       </button>
 
       {/* Cover */}
-      <div onClick={() => navigate('curso-detalle', { slug: course.slug })} style={{ height: 160, background: cover ? `url(${cover}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', cursor: 'pointer', flexShrink: 0 }}>
+      <div style={{ height: 160, background: cover ? `url(${cover}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', flexShrink: 0 }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.65) 0%,transparent 55%)' }} />
         {level && <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.64rem', fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,.4)', color: 'white', backdropFilter: 'blur(4px)', letterSpacing: '.04em' }}>{level}</span>}
         <span style={{ position: 'absolute', bottom: 9, left: 10, fontSize: '.72rem', fontWeight: 700, color: 'white', background: isGratis ? 'rgba(22,125,120,.9)' : 'var(--jade)', padding: '2px 8px', borderRadius: 10 }}>{price}</span>
@@ -49,9 +46,10 @@ function CourseCard({ course, wishlistIds, onToggleWishlist }) {
       </div>
 
       {/* Body */}
-      <div onClick={() => navigate('curso-detalle', { slug: course.slug })} style={{ padding: '.9rem 1rem 1rem', flex: 1, cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '.9rem 1rem 1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
         {category && <div style={{ fontSize: '.66rem', fontWeight: 700, color: 'var(--jade)', marginBottom: '.3rem', letterSpacing: '.06em', textTransform: 'uppercase' }}>{category}</div>}
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.93rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.35, flex: 1, marginBottom: '.5rem' }}>{course.title}</h3>
+        {rating?.count > 0 && <div style={{ marginBottom: '.35rem' }}><RatingBadge avg={rating.avg} count={rating.count} /></div>}
         <div style={{ fontSize: '.74rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           {instructor}
@@ -82,6 +80,7 @@ function CatalogTab({ wishlistIds, onToggleWishlist }) {
   const [search, setSearch] = useState('')
   const [catFilter, setCatFilter] = useState('')
   const [levelFilter, setLevelFilter] = useState('')
+  const ratings = useCourseRatingSummaries(courses.map(c => c.id))
 
   useEffect(() => {
     Promise.all([
@@ -142,7 +141,7 @@ function CatalogTab({ wishlistIds, onToggleWishlist }) {
         </div>
       ) : (
         <div className="st-grid">
-          {filtered.map(c => <CourseCard key={c.id} course={c} wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} />)}
+          {filtered.map(c => <CourseCard key={c.id} course={c} wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} rating={ratings[c.id]} />)}
         </div>
       )}
     </div>
@@ -259,15 +258,26 @@ function PurchasesTab({ user }) {
 export default function StudentStorePage() {
   const { user } = useAuth()
   const [tab, setTab] = useState('catalog')
-  const [wishlistIds, setWishlistIds] = useState(() => getWishlist())
+  const [wishlistIds, setWishlistIds] = useState([])
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('wishlist_items').select('course_id').eq('student_id', user.id)
+      .then(({ data }) => setWishlistIds((data || []).map(r => r.course_id)))
+  }, [user])
 
   const toggleWishlist = useCallback((courseId) => {
+    if (!user) return
     setWishlistIds(prev => {
-      const next = prev.includes(courseId) ? prev.filter(id => id !== courseId) : [...prev, courseId]
-      saveWishlist(next)
-      return next
+      const inWishlist = prev.includes(courseId)
+      if (inWishlist) {
+        supabase.from('wishlist_items').delete().eq('student_id', user.id).eq('course_id', courseId).then()
+        return prev.filter(id => id !== courseId)
+      }
+      supabase.from('wishlist_items').insert({ student_id: user.id, course_id: courseId }).then()
+      return [...prev, courseId]
     })
-  }, [])
+  }, [user])
 
   const TABS = [
     { id: 'catalog', label: 'Catálogo' },

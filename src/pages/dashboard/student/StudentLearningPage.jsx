@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
@@ -32,7 +32,60 @@ const RES_ICONS = {
   link:     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
 }
 
-function VideoPlayer({ links, activeIdx, onSelectIdx }) {
+const VIDEO_POS_KEY = 'cubo_video_pos'
+
+function getVideoPos(lessonId, idx) {
+  try { return JSON.parse(localStorage.getItem(VIDEO_POS_KEY) || '{}')[`${lessonId}_${idx}`] || 0 } catch { return 0 }
+}
+function setVideoPos(lessonId, idx, time) {
+  try {
+    const all = JSON.parse(localStorage.getItem(VIDEO_POS_KEY) || '{}')
+    all[`${lessonId}_${idx}`] = time
+    localStorage.setItem(VIDEO_POS_KEY, JSON.stringify(all))
+  } catch { /* ignore quota/storage errors */ }
+}
+
+function NativeVideo({ lessonId, idx, url }) {
+  const videoRef = useRef(null)
+  const lastSaveRef = useRef(0)
+  const [error, setError] = useState(false)
+
+  useEffect(() => { setError(false) }, [url])
+
+  function handleLoadedMetadata() {
+    const resumeAt = getVideoPos(lessonId, idx)
+    if (resumeAt > 0 && videoRef.current && resumeAt < videoRef.current.duration - 5) {
+      videoRef.current.currentTime = resumeAt
+    }
+  }
+
+  function handleTimeUpdate() {
+    const t = videoRef.current?.currentTime || 0
+    if (t - lastSaveRef.current >= 5) {
+      lastSaveRef.current = t
+      setVideoPos(lessonId, idx, t)
+    }
+  }
+
+  if (error) {
+    return (
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.6rem', color: 'rgba(255,255,255,.7)', textAlign: 'center', padding: '1.5rem' }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p style={{ fontSize: '.85rem', margin: 0 }}>No se pudo cargar este video. El enlace podría estar roto — avisa a tu instructor.</p>
+      </div>
+    )
+  }
+
+  return (
+    <video key={url} ref={videoRef} src={url} controls
+      onLoadedMetadata={handleLoadedMetadata}
+      onTimeUpdate={handleTimeUpdate}
+      onError={() => setError(true)}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+  )
+}
+
+function VideoPlayer({ lessonId, links, activeIdx, onSelectIdx }) {
   const link = links[activeIdx]
   if (!link) return null
   const embed = embedUrl(link.url)
@@ -53,7 +106,7 @@ function VideoPlayer({ links, activeIdx, onSelectIdx }) {
           <iframe src={embed} title={link.label || 'Video'} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} />
         ) : (
-          <video src={link.url} controls style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+          <NativeVideo lessonId={lessonId} idx={activeIdx} url={link.url} />
         )}
       </div>
     </div>
@@ -384,7 +437,7 @@ export default function StudentLearningPage() {
                   </div>
                 </a>
               ) : (activeLesson?.type === 'video' && activeLinks.length > 0 && (
-                <VideoPlayer links={activeLinks} activeIdx={activeVideoIdx} onSelectIdx={setActiveVideoIdx} />
+                <VideoPlayer lessonId={activeLesson.id} links={activeLinks} activeIdx={activeVideoIdx} onSelectIdx={setActiveVideoIdx} />
               ))}
 
               {/* Lesson header */}
@@ -580,7 +633,8 @@ export default function StudentLearningPage() {
                 const modCompleted = mod.lessons.filter(l => completedIds.has(l.id)).length
                 return (
                   <div key={mod.id} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, marginBottom: '.65rem', overflow: 'hidden' }}>
-                    <div onClick={() => toggleMod(mod.id)}
+                    <div onClick={() => toggleMod(mod.id)} role="button" tabIndex={0}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMod(mod.id) } }}
                       style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.85rem 1rem', cursor: 'pointer', userSelect: 'none', WebkitUserSelect: 'none', transition: 'background .15s' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'var(--cream)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'white'}>

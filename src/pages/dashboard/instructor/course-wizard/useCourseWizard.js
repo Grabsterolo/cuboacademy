@@ -114,7 +114,7 @@ export function useCourseWizard() {
             if (l.video_url) {
               try { const p = JSON.parse(l.video_url); video_url = Array.isArray(p) ? (p[0]?.url || '') : l.video_url } catch { video_url = l.video_url }
             }
-            const links = (l.resources || []).filter(r => r.file_type === 'link').map(r => ({ id: uid(), url: r.file_url, label: r.title || '' }))
+            const links = (l.resources || []).map(r => ({ id: uid(), url: r.file_url, label: r.title || '', fileType: r.file_type || 'link' }))
             return { id: uid(), dbId: l.id, title: l.title, type: l.type || 'video', duration_mins: l.duration_mins != null ? String(l.duration_mins) : '', video_url, content_text: l.description || '', links }
           }),
         }))
@@ -358,19 +358,20 @@ export function useCourseWizard() {
       }
     }
 
-    // external links: nothing references a resource's own id, so nuke-and-reinsert
-    // stays safe — batched across every lesson in one delete + one insert instead
-    // of a delete/insert pair per lesson (was the biggest source of round-trips
-    // on courses with many lessons)
+    // resources (links + uploaded PDFs/plantillas): nothing references a
+    // resource's own id, so nuke-and-reinsert stays safe — batched across
+    // every lesson in one delete + one insert instead of a delete/insert
+    // pair per lesson (was the biggest source of round-trips on courses
+    // with many lessons)
     const allLessonDbIds = modules.flatMap(mod => mod.lessons.map(les => lessonIdMap[les.id]))
     if (allLessonDbIds.length > 0) {
-      await supabase.from('resources').delete().in('lesson_id', allLessonDbIds).eq('file_type', 'link').throwOnError()
+      await supabase.from('resources').delete().in('lesson_id', allLessonDbIds).throwOnError()
     }
     const linkRows = modules.flatMap(mod => mod.lessons.flatMap(les => {
       const dbLesId = lessonIdMap[les.id]
       return (les.links || [])
         .filter(lk => lk.url && lk.url.trim())
-        .map(lk => ({ lesson_id: dbLesId, title: lk.label?.trim() || lk.url.trim(), file_url: lk.url.trim(), file_type: 'link' }))
+        .map(lk => ({ lesson_id: dbLesId, title: lk.label?.trim() || lk.url.trim(), file_url: lk.url.trim(), file_type: lk.fileType || 'link' }))
     }))
     if (linkRows.length > 0) {
       const { error: resErr } = await supabase.from('resources').insert(linkRows)
