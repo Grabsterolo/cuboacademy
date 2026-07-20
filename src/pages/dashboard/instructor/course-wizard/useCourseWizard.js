@@ -32,6 +32,7 @@ export function useCourseWizard() {
   const [loadFailed, setLoadFailed] = useState(false)
   const [categories, setCategories]   = useState([])
   const [instructors, setInstructors] = useState([])
+  const [enrolledCount, setEnrolledCount] = useState(0)
   const isAdmin = profile?.role === 'admin'
 
   // Step 1 state
@@ -82,11 +83,14 @@ export function useCourseWizard() {
         { data: course, error: courseErr },
         { data: mods, error: modsErr },
         { data: evalMod, error: evalErr },
+        { count: enrollCount },
       ] = await Promise.all([
         supabase.from('courses').select('*').eq('id', cId).single(),
         supabase.from('modules').select('*, lessons(*, resources(*))').eq('course_id', cId).neq('title', 'Evaluación Final').order('order_index').order('order_index', { foreignTable: 'lessons' }),
         supabase.from('modules').select('*, lessons(*, quizzes(*, questions(*, answers(id, text, order_index))))').eq('course_id', cId).eq('title', 'Evaluación Final').maybeSingle(),
+        supabase.from('enrollments').select('id', { count: 'exact', head: true }).eq('course_id', cId),
       ])
+      setEnrolledCount(enrollCount || 0)
 
       if (courseErr || modsErr || evalErr) {
         setError('No se pudo cargar el curso. Recarga la página antes de continuar — guardar ahora podría sobrescribirlo con datos en blanco.')
@@ -616,7 +620,7 @@ export function useCourseWizard() {
   return {
     step, setStep, completed, isEdit, loading, saving, error, setError, courseId,
     info, setInfo, imgUploading, imgErr, handleImgUpload,
-    categories, instructors, isAdmin,
+    categories, instructors, isAdmin, enrolledCount,
     modules, setModules,
     evalData, setEvalData,
     cert, setCert, pricing, setPricing,

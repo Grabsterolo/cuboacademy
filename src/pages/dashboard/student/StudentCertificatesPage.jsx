@@ -32,9 +32,11 @@ export default function StudentCertificatesPage() {
   const { user, profile } = useAuth()
   const [certs, setCerts]   = useState([])
   const [rejectedCerts, setRejectedCerts] = useState([])
+  const [pendingCerts, setPendingCerts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [requestingId, setRequestingId] = useState(null)
 
-  useEffect(() => {
+  function load() {
     if (!user) return
     supabase
       .from('certificates')
@@ -43,15 +45,25 @@ export default function StudentCertificatesPage() {
         courses!course_id(id, title, certificate_name, cover_image_url, level, duration_hours, categories(name), profiles!instructor_id(full_name))
       `)
       .eq('student_id', user.id)
-      .in('status', ['approved', 'rejected'])
+      .in('status', ['approved', 'rejected', 'pending'])
       .order('approved_at', { ascending: false })
       .then(({ data }) => {
         setCerts((data || []).filter(c => c.status === 'approved'))
         setRejectedCerts((data || []).filter(c => c.status === 'rejected'))
+        setPendingCerts((data || []).filter(c => c.status === 'pending'))
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [user])
+  }
+
+  useEffect(load, [user])
+
+  async function requestReview(certId) {
+    setRequestingId(certId)
+    const { error } = await supabase.rpc('request_certificate_review', { p_certificate_id: certId })
+    setRequestingId(null)
+    if (!error) load()
+  }
 
   return (
     <DashboardLayout>
@@ -69,12 +81,28 @@ export default function StudentCertificatesPage() {
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Certificados</h1>
         </div>
 
+        {!loading && pendingCerts.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem', marginBottom: '1.5rem' }}>
+            {pendingCerts.map(cert => (
+              <div key={cert.id} style={{ padding: '.85rem 1.1rem', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 10, fontSize: '.82rem', color: '#92400E' }}>
+                <strong>Tu certificado de "{cert.courses?.certificate_name || cert.courses?.title}" está en revisión.</strong> Te notificaremos cuando el equipo lo apruebe.
+              </div>
+            ))}
+          </div>
+        )}
+
         {!loading && rejectedCerts.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem', marginBottom: '1.5rem' }}>
             {rejectedCerts.map(cert => (
-              <div key={cert.id} style={{ padding: '.85rem 1.1rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, fontSize: '.82rem', color: '#B91C1C' }}>
-                <strong>Tu certificado de "{cert.courses?.certificate_name || cert.courses?.title}" fue rechazado.</strong>
-                {cert.admin_notes && <span> {cert.admin_notes}</span>}
+              <div key={cert.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', padding: '.85rem 1.1rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, fontSize: '.82rem', color: '#B91C1C' }}>
+                <div>
+                  <strong>Tu certificado de "{cert.courses?.certificate_name || cert.courses?.title}" fue rechazado.</strong>
+                  {cert.admin_notes && <span> {cert.admin_notes}</span>}
+                </div>
+                <button onClick={() => requestReview(cert.id)} disabled={requestingId === cert.id}
+                  style={{ padding: '.45rem .9rem', background: 'white', border: '1px solid #FECACA', borderRadius: 7, color: '#B91C1C', fontSize: '.78rem', fontWeight: 700, cursor: requestingId === cert.id ? 'wait' : 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, opacity: requestingId === cert.id ? .6 : 1 }}>
+                  {requestingId === cert.id ? 'Solicitando…' : 'Solicitar revisión'}
+                </button>
               </div>
             ))}
           </div>
@@ -84,7 +112,7 @@ export default function StudentCertificatesPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
             {[1,2].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, height: 140, opacity: 1 - i * 0.3 }} />)}
           </div>
-        ) : certs.length === 0 ? (
+        ) : certs.length === 0 && pendingCerts.length === 0 && rejectedCerts.length === 0 ? (
           <>
             <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '3rem 2.5rem', textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ width: 64, height: 64, background: 'var(--jade-soft)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--jade)' }}>
@@ -120,9 +148,11 @@ export default function StudentCertificatesPage() {
           </>
         ) : (
           <>
-            <div style={{ fontSize: '.78rem', color: 'var(--text-2)', marginBottom: '1.25rem' }}>
-              {certs.length} certificado{certs.length !== 1 ? 's' : ''} obtenido{certs.length !== 1 ? 's' : ''}
-            </div>
+            {certs.length > 0 && (
+              <div style={{ fontSize: '.78rem', color: 'var(--text-2)', marginBottom: '1.25rem' }}>
+                {certs.length} certificado{certs.length !== 1 ? 's' : ''} obtenido{certs.length !== 1 ? 's' : ''}
+              </div>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {certs.map(cert => {
                 const c = cert.courses

@@ -12,12 +12,6 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString('es-CR', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-function genUniqueCode() {
-  const a = Date.now().toString(36).toUpperCase()
-  const b = Math.random().toString(36).slice(2, 6).toUpperCase()
-  return `CUBO-${a}-${b}`
-}
-
 const TABS = [
   { value: 'pending',  label: 'Pendientes' },
   { value: 'reviewed', label: 'Revisadas' },
@@ -146,38 +140,17 @@ export default function InstructorEvaluationsPage() {
     setProcessing(sub.id)
     const now = new Date().toISOString()
 
-    const { error: e1 } = await supabase
-      .from('exam_submissions')
-      .update({ status: 'approved', reviewed_at: now, reviewed_by: user.id })
-      .eq('id', sub.id)
+    // single DB transaction: approves the submission, marks the course
+    // complete, and creates the certificate (if applicable) all-or-nothing —
+    // avoids leaving the student in an inconsistent state if one of the
+    // three writes fails partway through
+    const { error } = await supabase.rpc('approve_exam_submission', { p_submission_id: sub.id })
 
-    if (e1) { setProcessing(null); return }
-
-    const { error: e2 } = await supabase
-      .from('enrollments')
-      .update({ completed_at: now })
-      .eq('id', sub.enrollment_id)
-
-    if (e2) {
-      setToast('La evaluación se aprobó, pero no se pudo marcar el curso como completado: ' + e2.message)
+    if (error) {
+      setToast('No se pudo aprobar la evaluación: ' + error.message)
       setTimeout(() => setToast(''), 4500)
-    }
-
-    if (sub.courses?.has_certificate) {
-      const { error: certErr } = await supabase
-        .from('certificates')
-        .insert({
-          student_id:    sub.student_id,
-          course_id:     sub.course_id,
-          enrollment_id: sub.enrollment_id,
-          unique_code:   genUniqueCode(),
-          issued_at:     now,
-          status:        'pending',
-        })
-      if (certErr && certErr.code !== '23505') {
-        setToast('La evaluación se aprobó, pero no se pudo generar el certificado: ' + certErr.message)
-        setTimeout(() => setToast(''), 4500)
-      }
+      setProcessing(null)
+      return
     }
 
     setSubmissions(prev => prev.map(s =>

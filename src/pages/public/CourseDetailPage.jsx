@@ -35,14 +35,28 @@ export default function CourseDetailPage() {
       if (error || !c) { setNotFound(true); setLoading(false); return }
       setCourse(c)
 
-      // Load modules + lessons
+      // Load modules, then lesson metadata separately from the public syllabus
+      // preview view — the lessons table itself no longer exposes rows to
+      // non-enrolled visitors (video_url/description require enrollment)
       const { data: mods } = await supabase
         .from('modules')
-        .select('*, lessons(id, title, duration_mins, order_index)')
+        .select('*')
         .eq('course_id', c.id)
         .order('order_index', { ascending: true })
-        .order('order_index', { ascending: true, foreignTable: 'lessons' })
-      setModules((mods || []).map(m => ({ ...m, lessons: m.lessons || [] })))
+
+      const moduleIds = (mods || []).map(m => m.id)
+      const { data: lessonRows } = moduleIds.length > 0
+        ? await supabase
+            .from('lessons_syllabus_preview')
+            .select('id, module_id, title, duration_mins, order_index')
+            .in('module_id', moduleIds)
+            .order('order_index', { ascending: true })
+        : { data: [] }
+
+      setModules((mods || []).map(m => ({
+        ...m,
+        lessons: (lessonRows || []).filter(l => l.module_id === m.id),
+      })))
 
       // Open first module
       if (mods?.length) setExpanded(new Set([mods[0].id]))

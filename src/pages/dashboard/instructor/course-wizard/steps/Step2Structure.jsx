@@ -82,7 +82,7 @@ const ModuleRow = memo(function ModuleRow({
   )
 })
 
-export function Step2Structure({ modules, setModules }) {
+export function Step2Structure({ modules, setModules, enrolledCount = 0 }) {
   const dragMod  = useRef(null)
   const dragLes  = useRef(null) // {modId, idx}
 
@@ -91,8 +91,13 @@ export function Step2Structure({ modules, setModules }) {
   }, [setModules])
 
   const removeModule = useCallback((mId) => {
+    const mod = modules.find(m => m.id === mId)
+    if (mod?.dbId && enrolledCount > 0) {
+      const ok = window.confirm(`Este módulo ya está guardado y hay ${enrolledCount} estudiante${enrolledCount !== 1 ? 's' : ''} inscrito${enrolledCount !== 1 ? 's' : ''} en este curso. Si lo eliminas, se perderá su progreso y evaluaciones asociadas a sus lecciones. ¿Deseas continuar?`)
+      if (!ok) return
+    }
     setModules(ms => ms.filter(m => m.id !== mId))
-  }, [setModules])
+  }, [modules, setModules, enrolledCount])
 
   const updateModule = useCallback((mId, patch) => {
     setModules(ms => ms.map(m => m.id === mId ? { ...m, ...patch } : m))
@@ -108,8 +113,13 @@ export function Step2Structure({ modules, setModules }) {
   }, [setModules])
 
   const removeLesson = useCallback((mId, lId) => {
+    const les = modules.find(m => m.id === mId)?.lessons.find(l => l.id === lId)
+    if (les?.dbId && enrolledCount > 0) {
+      const ok = window.confirm(`Esta lección ya está guardada y hay ${enrolledCount} estudiante${enrolledCount !== 1 ? 's' : ''} inscrito${enrolledCount !== 1 ? 's' : ''} en este curso. Si la eliminas, se perderá su progreso registrado en ella. ¿Deseas continuar?`)
+      if (!ok) return
+    }
     setModules(ms => ms.map(m => m.id === mId ? { ...m, lessons: m.lessons.filter(l => l.id !== lId) } : m))
-  }, [setModules])
+  }, [modules, setModules, enrolledCount])
 
   const updateLesson = useCallback((mId, lId, patch) => {
     setModules(ms => ms.map(m => m.id === mId
@@ -145,6 +155,13 @@ export function Step2Structure({ modules, setModules }) {
   return (
     <div>
       <StepHeader n={2} title="Estructura del contenido" sub="Crea los módulos y define las lecciones de tu curso. Arrastra para reordenar." />
+
+      {enrolledCount > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 9, padding: '.75rem 1rem', marginBottom: '1.1rem', fontSize: '.82rem', color: '#9A3412' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          Este curso tiene {enrolledCount} estudiante{enrolledCount !== 1 ? 's' : ''} inscrito{enrolledCount !== 1 ? 's' : ''}. Eliminar un módulo o lección ya guardado borra el progreso que tengan registrado en él.
+        </div>
+      )}
 
       {modules.length === 0 && (
         <div style={{ border: '2px dashed var(--border)', borderRadius: 12, padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--text-2)', marginBottom: '1.25rem' }}>

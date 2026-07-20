@@ -15,7 +15,7 @@ export default function CourseWizardPage() {
   const {
     step, setStep, completed, isEdit, loading, saving, error, setError, courseId,
     info, setInfo, imgUploading, imgErr, handleImgUpload,
-    categories, instructors, isAdmin,
+    categories, instructors, isAdmin, enrolledCount,
     modules, setModules,
     evalData, setEvalData,
     cert, setCert, pricing, setPricing,
@@ -28,7 +28,7 @@ export default function CourseWizardPage() {
   function renderStep() {
     switch (step) {
       case 1: return <Step1Info info={info} onChange={(k, v) => setInfo(i => ({ ...i, [k]: v }))} categories={categories} instructors={instructors} isAdmin={isAdmin} imgUploading={imgUploading} imgErr={imgErr} onImgUpload={handleImgUpload} />
-      case 2: return <Step2Structure modules={modules} setModules={setModules} />
+      case 2: return <Step2Structure modules={modules} setModules={setModules} enrolledCount={enrolledCount} />
       case 3: return <Step3Content modules={modules} setModules={setModules} />
       case 4: return <Step4Evaluation eval={evalData} setEval={setEvalData} />
       case 5: return <Step5Certificate cert={cert} setCert={setCert} />
