@@ -130,12 +130,6 @@ const HOW_STEPS = [
 
 const INST_COLORS = ['var(--jade)', '#C96E4B', 'var(--jade-dark)', '#104447']
 
-const TESTIMONIALS = [
-  { text: '"Tomé el curso de BPMN y al mes siguiente lo estaba aplicando en un rediseño real. No hay otro lugar donde aprendas esto tan aplicado."', name: 'Andrea Gutiérrez', role: 'Analista de Procesos, ICE', initials: 'AG' },
-  { text: '"Por fin formación que no está desconectada de la realidad. Los casos de estudio son exactamente los problemas que enfrentamos a diario."', name: 'Rodrigo Mora', role: 'Gerente TI, Grupo Bimbo CR', initials: 'RM' },
-  { text: '"La plataforma es intuitiva y el contenido es denso en el buen sentido. Cada hora aprendes algo accionable."', name: 'Sofía Chavarría', role: 'Directora RH, BAC Credomatic', initials: 'SC' },
-]
-
 const LEVEL_LABELS = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
 function useReveal() {
@@ -162,6 +156,13 @@ function useReveal() {
 
 const ROTATING_WORDS = ['organizaciones', 'equipos', 'líderes', 'empresas']
 
+function formatCount(n) {
+  if (n == null) return '—'
+  if (n >= 1000) return `${Math.floor(n / 1000)}K+`
+  if (n >= 10) return `${Math.floor(n / 10) * 10}+`
+  return `${n}`
+}
+
 export default function HomePage() {
   const { navigate } = useNavigation()
   const { settings } = useSettings()
@@ -173,6 +174,7 @@ export default function HomePage() {
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [instructors, setInstructors] = useState(null)
   const [saveData, setSaveData] = useState(false)
+  const [stats, setStats] = useState({ courses: null, students: null, instructors: null })
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-data: reduce)')
@@ -217,6 +219,16 @@ export default function HomePage() {
       .order('created_at', { ascending: false })
       .limit(4)
       .then(({ data }) => setInstructors(data || []))
+  }, [])
+
+  useEffect(() => {
+    Promise.all([
+      supabase.from('courses').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+      supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
+      supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'instructor').eq('is_active', true),
+    ]).then(([coursesRes, studentsRes, instructorsRes]) => {
+      setStats({ courses: coursesRes.count ?? 0, students: studentsRes.count ?? 0, instructors: instructorsRes.count ?? 0 })
+    })
   }, [])
 
   useEffect(() => {
@@ -309,7 +321,6 @@ export default function HomePage() {
           .how-grid { grid-template-columns: repeat(2,1fr) !important; gap: 2rem 1rem !important; }
           .how-connector { display: none !important; }
           .inst-grid { grid-template-columns: repeat(2,1fr) !important; }
-          .test-grid { grid-template-columns: 1fr !important; }
           .cta-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
           .cta-right { align-items: flex-start !important; }
         }
@@ -409,9 +420,9 @@ export default function HomePage() {
           </div>
           <div className="hero-metrics" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {[
-              { val: '40+', accent: true, label: 'Cursos activos', desc: 'En tres áreas de especialización' },
-              { val: '2K+', accent: false, label: 'Estudiantes', desc: 'Profesionales activos en la región' },
-              { val: '18+', accent: true, label: 'Instructores', desc: 'Consultores activos en el campo' },
+              { val: formatCount(stats.courses), accent: true, label: 'Cursos activos', desc: 'En tres áreas de especialización' },
+              { val: formatCount(stats.students), accent: false, label: 'Estudiantes', desc: 'Profesionales activos en la región' },
+              { val: formatCount(stats.instructors), accent: true, label: 'Instructores', desc: 'Consultores activos en el campo' },
             ].map((m) => (
               <div key={m.label} className="metric-card" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 12, padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', backdropFilter: 'blur(6px)' }}>
                 <div style={{ fontFamily: 'var(--serif)', fontSize: '2.4rem', fontWeight: 700, lineHeight: 1, color: m.accent ? 'var(--terra)' : 'white', minWidth: 70 }}>{m.val}</div>
@@ -698,32 +709,6 @@ export default function HomePage() {
               })}
             </div>
           )}
-        </div>
-      </section>
-
-      {/* ── TESTIMONIOS ── */}
-      <section className="section-pad" style={{ padding: '7.5rem 5%', background: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '10%', left: '-8%', width: 380, height: 380, borderRadius: '50%', background: 'rgba(22,125,120,.04)', filter: 'blur(85px)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
-          <div className="reveal" style={{ marginBottom: '4rem' }}>
-            <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Lo que dicen</div>
-            <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Resultados que hablan solos</h2>
-          </div>
-          <div className="test-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.4rem' }}>
-            {TESTIMONIALS.map((t, i) => (
-              <div key={t.name} className="reveal" style={{ transitionDelay: `${i * 100}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '1.75rem' }}>
-                <div style={{ color: 'var(--terra)', fontSize: '.8rem', letterSpacing: '.1em', marginBottom: '.85rem' }}>★★★★★</div>
-                <div style={{ fontSize: '.875rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.75, marginBottom: '1.3rem', fontStyle: 'italic' }}>{t.text}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem' }}>
-                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--jade-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 700, color: 'var(--jade)', flexShrink: 0 }}>{t.initials}</div>
-                  <div>
-                    <div style={{ fontFamily: 'var(--serif)', fontSize: '.84rem', fontWeight: 600, color: 'var(--carbon)' }}>{t.name}</div>
-                    <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

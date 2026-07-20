@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 
@@ -48,6 +48,7 @@ export default function InstructorApplicationPage() {
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [categories, setCategories] = useState([])
+  const formCardRef = useRef(null)
 
   // Step 1
   const [nombre, setNombre] = useState('')
@@ -115,18 +116,22 @@ export default function InstructorApplicationPage() {
     setCvFile(file)
   }
 
+  function scrollToFormTop() {
+    formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   function goNext() {
     const err = step === 1 ? validateStep1() : validateStep2()
     if (err) { setError(err); return }
     setError('')
     setStep(s => s + 1)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollToFormTop()
   }
 
   function goBack() {
     setError('')
     setStep(s => s - 1)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollToFormTop()
   }
 
   async function handleSubmit(e) {
@@ -175,8 +180,6 @@ export default function InstructorApplicationPage() {
   if (submitted) {
     return (
       <>
-        {/* Navbar */}
-        <div style={{ paddingTop: 66 }} />
         <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 1rem', background: 'var(--cream)' }}>
           <div style={{ textAlign: 'center', maxWidth: 480 }}>
             <div style={{ width: 80, height: 80, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.75rem' }}>
@@ -208,8 +211,7 @@ export default function InstructorApplicationPage() {
       `}</style>
 
       {/* Hero */}
-      <div style={{ paddingTop: 66 }} />
-      <div style={{ background: 'var(--carbon)', padding: '4rem 5% 3.5rem', textAlign: 'center' }}>
+      <div style={{ background: 'var(--carbon)', padding: '2rem 5% 1.75rem', textAlign: 'center' }}>
         <p style={{ fontSize: '.73rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.5rem' }}>Comparte tu expertise</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.8rem,4vw,2.6rem)', fontWeight: 700, color: 'white', lineHeight: 1.15, marginBottom: '.9rem', maxWidth: 620, margin: '0 auto .9rem' }}>
           Conviértete en instructor de Cubo Campus
@@ -224,7 +226,7 @@ export default function InstructorApplicationPage() {
         <div style={{ maxWidth: 620, margin: '0 auto' }}>
           <StepBar current={step} />
 
-          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', boxShadow: '0 4px 24px rgba(23,26,28,.07)' }}>
+          <div ref={formCardRef} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', boxShadow: '0 4px 24px rgba(23,26,28,.07)' }}>
 
             {error && (
               <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 8, padding: '.65rem 1rem', fontSize: '.82rem', marginBottom: '1.25rem' }}>

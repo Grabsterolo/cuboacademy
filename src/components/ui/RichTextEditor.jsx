@@ -47,7 +47,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
   })
 
   useEffect(() => {
-    if (!editor) return
+    if (!editor || editor.isDestroyed) return
     if ((value || '') !== editor.getHTML()) editor.commands.setContent(value || '', { emitUpdate: false })
   }, [value, editor])
 
