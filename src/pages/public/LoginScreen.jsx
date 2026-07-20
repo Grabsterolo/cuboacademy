@@ -84,7 +84,13 @@ export default function LoginScreen() {
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Contraseña</label>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.4rem' }}>
+                <label style={{ fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', letterSpacing: '.07em', textTransform: 'uppercase' }}>Contraseña</label>
+                <button type="button" onClick={() => navigate('forgot-password')}
+                  style={{ background: 'none', border: 'none', color: 'var(--jade-light)', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <div style={{ position: 'relative' }}>
                 <input type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password"
                   style={{ width: '100%', padding: '.8rem 2.8rem .8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}

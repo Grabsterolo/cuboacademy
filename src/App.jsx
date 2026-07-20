@@ -13,6 +13,8 @@ import Portal from './components/portal/Portal'
 const HomePage = lazy(() => import('./pages/public/HomePage'))
 const LoginScreen = lazy(() => import('./pages/public/LoginScreen'))
 const RegisterScreen = lazy(() => import('./pages/public/RegisterScreen'))
+const ForgotPasswordScreen = lazy(() => import('./pages/public/ForgotPasswordScreen'))
+const ResetPasswordScreen = lazy(() => import('./pages/public/ResetPasswordScreen'))
 const InstructorApplicationPage = lazy(() => import('./pages/public/InstructorApplicationPage'))
 const CourseCatalogPage = lazy(() => import('./pages/public/CourseCatalogPage'))
 const CourseDetailPage = lazy(() => import('./pages/public/CourseDetailPage'))
@@ -27,8 +29,8 @@ function LoadingSection() {
 }
 
 function AppShell() {
-  const { user, loading } = useAuth()
-  const { screen, exitPortal } = useNavigation()
+  const { user, loading, passwordRecovery } = useAuth()
+  const { screen, navigate, exitPortal } = useNavigation()
 
   // Sign-out (from anywhere) always kicks back to the landing page. Signing
   // in does NOT auto-enter the portal here — a session restored from storage
@@ -42,6 +44,13 @@ function AppShell() {
     }
   }, [user, loading]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Landing back from a "reset password" email link opens a temporary
+  // recovery session — route straight to the set-new-password screen
+  // instead of treating it like a normal login into the dashboard.
+  useEffect(() => {
+    if (passwordRecovery) navigate('reset-password')
+  }, [passwordRecovery]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--cream)', fontFamily: 'var(--sans)', color: 'var(--text-2)', fontSize: '.9rem', gap: '.5rem' }}>
@@ -53,8 +62,10 @@ function AppShell() {
   }
 
   // Fullscreen auth screens (no navbar)
-  if (screen === 'login')    return <Suspense fallback={<LoadingSection />}><LoginScreen /></Suspense>
-  if (screen === 'register') return <Suspense fallback={<LoadingSection />}><RegisterScreen /></Suspense>
+  if (screen === 'login')           return <Suspense fallback={<LoadingSection />}><LoginScreen /></Suspense>
+  if (screen === 'register')        return <Suspense fallback={<LoadingSection />}><RegisterScreen /></Suspense>
+  if (screen === 'forgot-password') return <Suspense fallback={<LoadingSection />}><ForgotPasswordScreen /></Suspense>
+  if (screen === 'reset-password')  return <Suspense fallback={<LoadingSection />}><ResetPasswordScreen /></Suspense>
 
   // Portal (authenticated shell)
   if (screen === 'portal') return <Portal />

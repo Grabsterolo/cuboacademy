@@ -7,6 +7,10 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  // True right after the user lands back from a "reset password" email link —
+  // AppShell watches this to route to the set-new-password screen instead of
+  // treating the temporary recovery session like a normal login.
+  const [passwordRecovery, setPasswordRecovery] = useState(false)
 
   // Single source of truth for turning a Supabase session into { user, profile } state.
   // Deactivated accounts are signed out here and never exposed as a truthy `user` —
@@ -44,7 +48,10 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(({ data: { session } }) => establishSession(session))
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => { establishSession(session) }
+      (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true)
+        establishSession(session)
+      }
     )
 
     return () => subscription.unsubscribe()
@@ -82,8 +89,21 @@ export function AuthProvider({ children }) {
     setProfile(null)
   }
 
+  async function resetPasswordForEmail(email) {
+    return supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin })
+  }
+
+  // Only valid during the temporary recovery session opened from the email
+  // link — sets the new password, then the recovery flag is cleared so the
+  // app returns to normal auth behavior.
+  async function updatePassword(newPassword) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (!error) setPasswordRecovery(false)
+    return { error }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, passwordRecovery, signUp, signIn, signOut, resetPasswordForEmail, updatePassword }}>
       {children}
     </AuthContext.Provider>
   )

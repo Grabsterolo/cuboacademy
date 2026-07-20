@@ -43,6 +43,12 @@ export default function UsersPage() {
   const [editLoading, setEditLoading] = useState(false)
   const [editError, setEditError] = useState('')
 
+  // Reset password (admin-mediated — no email required)
+  const [showResetPw, setShowResetPw] = useState(false)
+  const [resetPw, setResetPw] = useState('')
+  const [resetPwLoading, setResetPwLoading] = useState(false)
+  const [resetPwMsg, setResetPwMsg] = useState('')
+
   // Delete modal
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -131,11 +137,39 @@ export default function UsersPage() {
     setEditRole(u.role || 'student')
     setEditActive(u.is_active !== false)
     setEditError('')
+    setShowResetPw(false)
+    setResetPw('')
+    setResetPwMsg('')
   }
 
   function closeEdit() {
     setEditTarget(null)
     setEditError('')
+    setShowResetPw(false)
+    setResetPw('')
+    setResetPwMsg('')
+  }
+
+  // Admin-mediated reset — sets the password directly, no email involved.
+  // The admin is responsible for sharing the new password with the user
+  // out of band (matches how new-user passwords are handled today).
+  async function handleResetPassword(e) {
+    e.preventDefault()
+    if (!editTarget || resetPw.length < 8) return
+    setResetPwLoading(true)
+    setResetPwMsg('')
+
+    const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+      body: { userId: editTarget.id, newPassword: resetPw },
+    })
+
+    setResetPwLoading(false)
+    if (error || data?.error) {
+      setResetPwMsg(data?.error || error?.message || 'Error al restablecer la contraseña.')
+      return
+    }
+    setResetPwMsg('Contraseña actualizada. Comunícasela al usuario.')
+    setResetPw('')
   }
 
   async function handleSaveEdit(e) {
@@ -451,6 +485,37 @@ export default function UsersPage() {
                 {editLoading ? 'Guardando…' : 'Guardar cambios'}
               </button>
             </form>
+
+            {/* Restablecer contraseña — directo, sin depender de correo */}
+            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
+              {!showResetPw ? (
+                <button type="button" onClick={() => setShowResetPw(true)}
+                  style={{ width: '100%', padding: '.7rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.85rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                  Restablecer contraseña
+                </button>
+              ) : (
+                <form onSubmit={handleResetPassword}>
+                  <LabelField>Nueva contraseña</LabelField>
+                  <p style={{ fontSize: '.75rem', color: 'var(--text-2)', margin: '-.1rem 0 .5rem' }}>
+                    Se aplica de inmediato — comunícasela al usuario tú mismo (no se envía correo).
+                  </p>
+                  <input type="password" className="form-inp-u" placeholder="Mínimo 8 caracteres" minLength={8} value={resetPw} onChange={e => setResetPw(e.target.value)} />
+                  {resetPwMsg && (
+                    <p style={{ fontSize: '.78rem', color: resetPwMsg.includes('Error') || resetPwMsg.includes('error') ? '#dc2626' : 'var(--jade)', margin: '.5rem 0 0' }}>{resetPwMsg}</p>
+                  )}
+                  <div style={{ display: 'flex', gap: '.6rem', marginTop: '.75rem' }}>
+                    <button type="button" onClick={() => { setShowResetPw(false); setResetPw(''); setResetPwMsg('') }}
+                      style={{ flex: 1, padding: '.65rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.82rem', fontWeight: 600, color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                      Cancelar
+                    </button>
+                    <button type="submit" disabled={resetPwLoading || resetPw.length < 8}
+                      style={{ flex: 1, padding: '.65rem', background: 'var(--jade)', border: 'none', borderRadius: 8, fontSize: '.82rem', fontWeight: 700, color: 'white', cursor: resetPwLoading || resetPw.length < 8 ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: resetPwLoading || resetPw.length < 8 ? .6 : 1 }}>
+                      {resetPwLoading ? 'Aplicando…' : 'Aplicar'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       )}
