@@ -140,8 +140,9 @@ export default function AnnouncementsPage() {
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState('')
 
-  // Create modal
+  // Create/edit modal
   const [showCreate, setShowCreate] = useState(false)
+  const [editTarget, setEditTarget] = useState(null)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [annType, setAnnType] = useState('general')
@@ -182,14 +183,36 @@ export default function AnnouncementsPage() {
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3200) }
 
   function closeCreate() {
-    setShowCreate(false); setTitle(''); setContent('')
+    setShowCreate(false); setEditTarget(null); setTitle(''); setContent('')
     setAnnType('general'); setTargetRole('all'); setCreateError('')
+  }
+
+  function openEdit(item) {
+    setEditTarget(item)
+    setTitle(item.title); setContent(item.content)
+    setAnnType(item.type); setTargetRole(item.target_role)
+    setCreateError(''); setShowCreate(true)
   }
 
   async function handleCreate(e) {
     e.preventDefault()
     if (!title.trim() || !content.trim()) { setCreateError('Completa todos los campos.'); return }
     setSaving(true); setCreateError('')
+
+    if (editTarget) {
+      const { data, error } = await supabase
+        .from('announcements')
+        .update({ title: title.trim(), content: content.trim(), type: annType, target_role: targetRole })
+        .eq('id', editTarget.id)
+        .select().single()
+      setSaving(false)
+      if (error) { setCreateError(error.message || 'Error al guardar los cambios.'); return }
+      setItems(prev => prev.map(i => i.id === data.id ? data : i))
+      showToast('Comunicado actualizado correctamente.')
+      closeCreate()
+      return
+    }
+
     const { data, error } = await supabase
       .from('announcements')
       .insert({ title: title.trim(), content: content.trim(), type: annType, target_role: targetRole, created_by: profile?.id })
@@ -229,6 +252,7 @@ export default function AnnouncementsPage() {
         .ann-inp:focus { border-color: var(--jade); background: white; }
         .ann-icon-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; min-width: 30px; min-height: 30px; }
         .ann-icon-btn:hover { background: rgba(220,38,38,.09); color: #dc2626; }
+        .ann-icon-btn-edit:hover { background: var(--jade-soft); color: var(--jade); }
         .ann-toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--carbon); color: white; padding: .65rem 1.25rem; border-radius: 8px; font-size: .84rem; font-family: var(--sans); font-weight: 500; z-index: 400; white-space: nowrap; box-shadow: 0 4px 20px rgba(23,26,28,.2); pointer-events: none; }
         .ann-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem 1.35rem; display: flex; align-items: flex-start; gap: 1rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
         .ann-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.07); border-color: rgba(22,125,120,.25); }
@@ -343,7 +367,7 @@ export default function AnnouncementsPage() {
                       <DotTag color={t.color} label={t.label} />
                       <DotTag color={tgt.color} label={tgt.label} />
                     </div>
-                    <p style={{ fontSize: '.89rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0, fontWeight: 400 }}>
+                    <p style={{ fontSize: '.93rem', color: 'var(--text-2)', lineHeight: 1.65, margin: 0, fontWeight: 400 }}>
                       {item.content.length > 190 ? item.content.slice(0, 190) + '…' : item.content}
                     </p>
                   </div>
@@ -351,11 +375,18 @@ export default function AnnouncementsPage() {
                     <span style={{ fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap' }}>
                       {new Date(item.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </span>
-                    <button className="ann-icon-btn" onClick={e => { e.stopPropagation(); setDeleteTarget(item) }} title="Eliminar">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                      </svg>
-                    </button>
+                    <div style={{ display: 'flex', gap: '.25rem' }}>
+                      <button className="ann-icon-btn ann-icon-btn-edit" onClick={e => { e.stopPropagation(); openEdit(item) }} title="Editar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button className="ann-icon-btn" onClick={e => { e.stopPropagation(); setDeleteTarget(item) }} title="Eliminar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
                 )
@@ -380,8 +411,8 @@ export default function AnnouncementsPage() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 </div>
                 <div>
-                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Nuevo comunicado</h2>
-                  <p style={{ fontSize: '.75rem', color: 'var(--text-2)', margin: 0, marginTop: '.1rem' }}>Completa los campos para publicar</p>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{editTarget ? 'Editar comunicado' : 'Nuevo comunicado'}</h2>
+                  <p style={{ fontSize: '.75rem', color: 'var(--text-2)', margin: 0, marginTop: '.1rem' }}>{editTarget ? 'Modifica los campos y guarda los cambios' : 'Completa los campos para publicar'}</p>
                 </div>
               </div>
               <button onClick={closeCreate}
@@ -456,7 +487,7 @@ export default function AnnouncementsPage() {
 
               {/* Submit */}
               <button type="submit" className="ann-pub-btn" disabled={saving}>
-                {saving ? 'Publicando…' : 'Publicar comunicado'}
+                {saving ? (editTarget ? 'Guardando…' : 'Publicando…') : (editTarget ? 'Guardar cambios' : 'Publicar comunicado')}
               </button>
             </form>
           </div>
@@ -491,7 +522,7 @@ export default function AnnouncementsPage() {
                   <TargetBadge value={readItem.target_role} />
                 </div>
 
-                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.55rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.28, margin: '0 0 1.25rem' }}>{readItem.title}</h2>
+                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.32rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.3, margin: '0 0 1.25rem' }}>{readItem.title}</h2>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.55rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.6rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 9 }}>
@@ -512,7 +543,7 @@ export default function AnnouncementsPage() {
 
               {/* Contenido */}
               <div style={{ padding: '1.75rem 2rem 2.25rem', overflowY: 'auto' }}>
-                <p style={{ fontSize: '.96rem', color: 'var(--carbon)', lineHeight: 1.85, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 300 }}>{readItem.content}</p>
+                <p style={{ fontSize: '1.03rem', color: 'var(--carbon)', lineHeight: 1.75, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 400 }}>{readItem.content}</p>
               </div>
             </div>
           </div>

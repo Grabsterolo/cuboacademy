@@ -139,7 +139,7 @@ export default function InstructorAnnouncementsPage() {
                         {new Date(item.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
-                    <p style={{ fontSize: '.85rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0, fontWeight: 300 }}>
+                    <p style={{ fontSize: '.92rem', color: 'var(--text-2)', lineHeight: 1.65, margin: 0, fontWeight: 400 }}>
                       {item.content.length > 140 ? item.content.slice(0, 140) + '…' : item.content}
                     </p>
                     {item.content.length > 140 && (
@@ -179,7 +179,7 @@ export default function InstructorAnnouncementsPage() {
                   <TypeBadge value={readItem.type} />
                 </div>
 
-                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.55rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.28, margin: '0 0 1.25rem' }}>{readItem.title}</h2>
+                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.32rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.3, margin: '0 0 1.25rem' }}>{readItem.title}</h2>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.6rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 9, width: 'fit-content' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -194,7 +194,7 @@ export default function InstructorAnnouncementsPage() {
 
               {/* Contenido */}
               <div style={{ padding: '1.75rem 2rem 2.25rem', overflowY: 'auto' }}>
-                <p style={{ fontSize: '.96rem', color: 'var(--carbon)', lineHeight: 1.85, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 300 }}>{readItem.content}</p>
+                <p style={{ fontSize: '1.03rem', color: 'var(--carbon)', lineHeight: 1.75, margin: 0, whiteSpace: 'pre-wrap', fontWeight: 400 }}>{readItem.content}</p>
               </div>
             </div>
           </div>
