@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, cloneElement, isValidElement } from 'react'
 
 export { Icon } from './icons'
 export { INP, SEL, fi, fb } from './tokens'
 
 // ─── FieldLabel ───────────────────────────────────────────────────────────────
 // Simple label used by CategoriesPage and UsersPage forms.
-export function FieldLabel({ children }) {
+export function FieldLabel({ children, htmlFor }) {
   return (
-    <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
+    <label htmlFor={htmlFor} style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
       {children}
     </label>
   )
@@ -15,12 +15,18 @@ export function FieldLabel({ children }) {
 
 // ─── Field ────────────────────────────────────────────────────────────────────
 // Full field wrapper: outer div with margin, label, optional hint, children.
-export function Field({ label, children, hint }) {
+// Pass `id` to associate the label with its input for screen readers — it's
+// cloned onto the child automatically when the child is a single element.
+const FORM_TAGS = ['input', 'textarea', 'select']
+export function Field({ label, children, hint, id }) {
+  const input = id && isValidElement(children) && FORM_TAGS.includes(children.type) && !children.props.id
+    ? cloneElement(children, { id })
+    : children
   return (
     <div style={{ marginBottom: '1.1rem' }}>
-      <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>{label}</label>
+      <label htmlFor={id} style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>{label}</label>
       {hint && <p style={{ fontSize: '.72rem', color: 'var(--text-2)', marginTop: '-.2rem', marginBottom: '.4rem' }}>{hint}</p>}
-      {children}
+      {input}
     </div>
   )
 }

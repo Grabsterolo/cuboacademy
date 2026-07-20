@@ -12,7 +12,7 @@ export function Step5Certificate({ cert, setCert }) {
         </div>
         {cert.hasCert && (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-            <Field label="Nombre en el certificado" hint="El nombre que aparecerá en el certificado junto al del estudiante" req>
+            <Field label="Nombre en el certificado" hint="El nombre que aparecerá en el certificado junto al del estudiante" req id="wiz-cert-name">
               <input style={INP} value={cert.certName} placeholder="ej. Diseño UX desde cero"
                 onChange={e => set('certName', e.target.value)} onFocus={fi} onBlur={fb} />
             </Field>

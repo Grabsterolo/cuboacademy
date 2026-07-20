@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, cloneElement, isValidElement } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useSettings } from '../../../context/SettingsContext'
@@ -58,14 +58,16 @@ function Toggle({ on, onChange }) {
   )
 }
 
-function Field({ label, hint, children }) {
+const FORM_TAGS = ['input', 'textarea', 'select']
+function Field({ label, hint, children, id }) {
+  const input = id && isValidElement(children) && FORM_TAGS.includes(children.type) && !children.props.id ? cloneElement(children, { id }) : children
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '.35rem' }}>
-      <label style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--carbon)', fontFamily: 'var(--sans)' }}>
+      <label htmlFor={id} style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--carbon)', fontFamily: 'var(--sans)' }}>
         {label}
         {hint && <span style={{ fontWeight: 400, color: 'var(--text-2)', marginLeft: '.4rem' }}>— {hint}</span>}
       </label>
-      {children}
+      {input}
     </div>
   )
 }
@@ -233,24 +235,24 @@ export default function SettingsPage() {
               </div>
             ) : (
               <form onSubmit={handleSavePlatform} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                <Field label="Nombre de la plataforma">
+                <Field label="Nombre de la plataforma" id="setting-platform-name">
                   <input className="sett-inp" style={inp} type="text" value={settings.platform_name}
                     onChange={e => set('platform_name', e.target.value)} placeholder="Cubo Campus" />
                 </Field>
-                <Field label="Descripción" hint="meta tags y emails">
+                <Field label="Descripción" hint="meta tags y emails" id="setting-platform-description">
                   <input className="sett-inp" style={inp} type="text" value={settings.platform_description}
                     onChange={e => set('platform_description', e.target.value)} placeholder="Formación práctica para profesionales consultivos" />
                 </Field>
-                <Field label="URL del logo" hint="imagen pública por URL">
+                <Field label="URL del logo" hint="imagen pública por URL" id="setting-logo-url">
                   <input className="sett-inp" style={inp} type="text" value={settings.logo_url}
                     onChange={e => set('logo_url', e.target.value)} placeholder="https://..." />
                 </Field>
-                <Field label="Color principal">
+                <Field label="Color principal" id="setting-color-hex">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
                     <input type="color" value={settings.primary_color || '#167D78'}
                       onChange={e => set('primary_color', e.target.value)}
                       style={{ width: 40, height: 40, padding: 2, border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', background: 'white', flexShrink: 0 }} />
-                    <input className="sett-inp" style={{ ...inp, width: 120, fontFamily: 'monospace', fontSize: '.85rem' }}
+                    <input id="setting-color-hex" className="sett-inp" style={{ ...inp, width: 120, fontFamily: 'monospace', fontSize: '.85rem' }}
                       type="text" value={settings.primary_color}
                       onChange={e => set('primary_color', e.target.value)}
                       placeholder="#167D78" maxLength={7} />
@@ -286,18 +288,18 @@ export default function SettingsPage() {
               </div>
             ) : (
               <form onSubmit={handleSaveLanding} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                <Field label="Título principal">
+                <Field label="Título principal" id="setting-hero-title">
                   <input className="sett-inp" style={inp} type="text" value={settings.hero_title}
                     onChange={e => set('hero_title', e.target.value)} placeholder="El conocimiento que transforma" />
                 </Field>
-                <Field label="Subtítulo">
+                <Field label="Subtítulo" id="setting-hero-subtitle">
                   <textarea className="sett-inp" style={{ ...inp, resize: 'vertical', minHeight: 90 }}
                     value={settings.hero_subtitle}
                     onChange={e => set('hero_subtitle', e.target.value)}
                     placeholder="Cubo Campus convierte experiencia consultiva real en cursos de alto impacto…" />
                 </Field>
-                <Field label="Video de fondo del hero" hint="MP4 · máx. 50 MB · se reproduce en loop, sin sonido · deja vacío para usar el fondo por defecto">
-                  <input ref={heroVideoInputRef} type="file" accept="video/mp4" style={{ display: 'none' }}
+                <Field label="Video de fondo del hero" hint="MP4 · máx. 50 MB · se reproduce en loop, sin sonido · deja vacío para usar el fondo por defecto" id="setting-hero-video">
+                  <input id="setting-hero-video" ref={heroVideoInputRef} type="file" accept="video/mp4" style={{ display: 'none' }}
                     onChange={e => { handleHeroVideoUpload(e.target.files[0]); e.target.value = '' }} />
                   {pendingHeroVideoUrl && (
                     <p style={{ fontSize: '.75rem', color: '#A16207', margin: '0 0 .5rem' }}>Video nuevo listo — se aplica al sitio cuando guardes los cambios.</p>
@@ -325,7 +327,7 @@ export default function SettingsPage() {
                   )}
                   {heroVideoErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.5rem 0 0' }}>{heroVideoErr}</p>}
                 </Field>
-                <Field label="Email de contacto">
+                <Field label="Email de contacto" id="setting-contact-email">
                   <input className="sett-inp" style={inp} type="email" value={settings.contact_email}
                     onChange={e => set('contact_email', e.target.value)} placeholder="contacto@cuboacademy.com" />
                 </Field>
@@ -342,15 +344,15 @@ export default function SettingsPage() {
               </div>
             ) : (
               <form onSubmit={handleSaveSocial} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                <Field label="Instagram">
+                <Field label="Instagram" id="setting-instagram">
                   <input className="sett-inp" style={inp} type="text" value={settings.social_instagram}
                     onChange={e => set('social_instagram', e.target.value)} placeholder="https://instagram.com/..." />
                 </Field>
-                <Field label="LinkedIn">
+                <Field label="LinkedIn" id="setting-linkedin">
                   <input className="sett-inp" style={inp} type="text" value={settings.social_linkedin}
                     onChange={e => set('social_linkedin', e.target.value)} placeholder="https://linkedin.com/company/..." />
                 </Field>
-                <Field label="YouTube">
+                <Field label="YouTube" id="setting-youtube">
                   <input className="sett-inp" style={inp} type="text" value={settings.social_youtube}
                     onChange={e => set('social_youtube', e.target.value)} placeholder="https://youtube.com/@..." />
                 </Field>

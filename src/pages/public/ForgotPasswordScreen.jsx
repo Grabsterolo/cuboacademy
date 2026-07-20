@@ -63,8 +63,8 @@ export default function ForgotPasswordScreen() {
                 Escribe tu correo y te enviamos un enlace para crear una contraseña nueva.
               </p>
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Correo electrónico</label>
-                <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tucorreo@email.com" autoComplete="email"
+                <label htmlFor="forgot-email" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Correo electrónico</label>
+                <input id="forgot-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tucorreo@email.com" autoComplete="email"
                   style={{ width: '100%', padding: '.8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
                   onFocus={e => e.target.style.borderColor = 'rgba(22,125,120,.7)'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.12)'} />

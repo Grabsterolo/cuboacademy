@@ -403,7 +403,7 @@ export default function InstructorEvaluationsPage() {
                 <div key={sub.id}>
                   <div className="ev-card">
                     <div style={{ width: 52, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
-                      {course?.cover_image_url && <img loading="lazy" src={course.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      {course?.cover_image_url && <img loading="lazy" src={course.cover_image_url} alt={course.title || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -477,10 +477,11 @@ export default function InstructorEvaluationsPage() {
             <p style={{ fontSize: '.82rem', color: 'var(--text-2)', marginBottom: '1.25rem' }}>
               Estudiante: <strong>{rejectModal.profiles?.full_name || rejectModal.profiles?.email}</strong>
             </p>
-            <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.4rem' }}>
+            <label htmlFor="eval-reject-notes" style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.4rem' }}>
               Motivo (opcional)
             </label>
             <textarea
+              id="eval-reject-notes"
               value={rejectNotes}
               onChange={e => setRejectNotes(e.target.value)}
               rows={3}

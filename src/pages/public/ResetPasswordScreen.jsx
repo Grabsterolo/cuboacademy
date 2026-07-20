@@ -58,16 +58,16 @@ export default function ResetPasswordScreen() {
           ) : (
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Contraseña nueva</label>
-                <input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" autoComplete="new-password"
+                <label htmlFor="reset-password-new" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Contraseña nueva</label>
+                <input id="reset-password-new" type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" autoComplete="new-password"
                   style={{ width: '100%', padding: '.8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
                   onFocus={e => e.target.style.borderColor = 'rgba(22,125,120,.7)'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.12)'} />
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Confirmar contraseña</label>
-                <input type="password" required value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repite tu contraseña" autoComplete="new-password"
+                <label htmlFor="reset-password-confirm" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Confirmar contraseña</label>
+                <input id="reset-password-confirm" type="password" required value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repite tu contraseña" autoComplete="new-password"
                   style={{ width: '100%', padding: '.8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
                   onFocus={e => e.target.style.borderColor = 'rgba(22,125,120,.7)'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.12)'} />

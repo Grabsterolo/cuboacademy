@@ -1,3 +1,4 @@
+import { cloneElement, isValidElement } from 'react'
 import { Icon } from '../../../../../components/ui/icons'
 import { INP, SEL, fi, fb } from '../../../../../components/ui/tokens'
 
@@ -74,15 +75,19 @@ export const Q_TYPES = [
 
 // ─── micro ui ─────────────────────────────────────────────────────────────────
 
-export function Field({ label, req, hint, children }) {
+const FORM_TAGS = ['input', 'textarea', 'select']
+export function Field({ label, req, hint, children, id }) {
+  const input = id && isValidElement(children) && FORM_TAGS.includes(children.type) && !children.props.id
+    ? cloneElement(children, { id })
+    : children
   return (
     <div style={{ marginBottom: '1.1rem' }}>
       {label && (
-        <label style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: '#9B9894', marginBottom: '.35rem' }}>
+        <label htmlFor={id} style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: '#9B9894', marginBottom: '.35rem' }}>
           {label}{req && <span style={{ color: 'var(--jade)', marginLeft: 3 }}>*</span>}
         </label>
       )}
-      {children}
+      {input}
       {hint && <p style={{ fontSize: '.71rem', color: 'var(--text-2)', margin: '.3rem 0 0' }}>{hint}</p>}
     </div>
   )

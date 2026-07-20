@@ -14,19 +14,19 @@ export function Step1Info({ info, onChange, categories, instructors, isAdmin, im
       <StepHeader n={1} title="Información del curso" sub="Define qué es tu curso y cómo lo verán los estudiantes." />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.75rem' }} className="wiz-grid">
         <div>
-          <Field label="Título del curso" req>
+          <Field label="Título del curso" req id="wiz-title">
             <input style={INP} value={info.title} placeholder="ej. Diseño UX desde cero"
               onChange={e => onChange('title', e.target.value)} onFocus={fi} onBlur={fb} />
           </Field>
           {isAdmin && (
-            <Field label="Instructor" req hint="El instructor que aparecerá como autor del curso">
+            <Field label="Instructor" req hint="El instructor que aparecerá como autor del curso" id="wiz-instructor">
               <select style={SEL} value={info.instructorId} onChange={e => onChange('instructorId', e.target.value)} onFocus={fi} onBlur={fb}>
                 <option value="">— Selecciona un instructor —</option>
                 {instructors.map(i => <option key={i.id} value={i.id}>{i.full_name}</option>)}
               </select>
             </Field>
           )}
-          <Field label="Categoría" req>
+          <Field label="Categoría" req id="wiz-category">
             <select style={SEL} value={info.categoryId} onChange={e => onChange('categoryId', e.target.value)} onFocus={fi} onBlur={fb}>
               <option value="">— Selecciona una categoría —</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -42,8 +42,8 @@ export function Step1Info({ info, onChange, categories, instructors, isAdmin, im
         </div>
 
         <div>
-          <Field label="Imagen de portada" req hint="JPG, PNG o WebP · Máx. 5 MB · Recomendado 1280×720 px">
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }}
+          <Field label="Imagen de portada" req hint="JPG, PNG o WebP · Máx. 5 MB · Recomendado 1280×720 px" id="wiz-cover-image">
+            <input id="wiz-cover-image" ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }}
               onChange={e => { onImgUpload(e.target.files[0]); e.target.value = '' }} />
             {info.coverUrl ? (
               <div style={{ position: 'relative' }}>

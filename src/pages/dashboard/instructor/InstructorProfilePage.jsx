@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, cloneElement, isValidElement } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
@@ -12,12 +12,14 @@ const EXP_OPTIONS = [{ value: 2, label: '1-2 años' }, { value: 5, label: '3-5 a
 const INP = { width: '100%', padding: '.7rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', outline: 'none', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
 const LBL = { display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }
 
-function Field({ label, children, hint }) {
+const FORM_TAGS = ['input', 'textarea', 'select']
+function Field({ label, children, hint, id }) {
+  const input = id && isValidElement(children) && FORM_TAGS.includes(children.type) && !children.props.id ? cloneElement(children, { id }) : children
   return (
     <div style={{ marginBottom: '.95rem' }}>
-      <label style={LBL}>{label}</label>
+      <label htmlFor={id} style={LBL}>{label}</label>
       {hint && <p style={{ fontSize: '.72rem', color: '#B5B2AB', marginBottom: '.3rem', marginTop: '-.1rem' }}>{hint}</p>}
-      {children}
+      {input}
     </div>
   )
 }
@@ -181,30 +183,30 @@ export default function InstructorProfilePage() {
                 </div>
 
                 <div className="ipr-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
-                  <Field label="Nombre *">
+                  <Field label="Nombre *" id="ipr-first-name">
                     <input className="ipr-inp" style={INP} type="text" required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="María" />
                   </Field>
-                  <Field label="Apellidos">
+                  <Field label="Apellidos" id="ipr-last-name">
                     <input className="ipr-inp" style={INP} type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Rodríguez Pérez" />
                   </Field>
                 </div>
 
-                <Field label="Correo electrónico">
+                <Field label="Correo electrónico" id="ipr-email">
                   <input style={{ ...INP, background: '#F5F5F0', color: '#9B9894', cursor: 'not-allowed' }} type="email" value={user?.email || ''} readOnly />
                 </Field>
 
-                <Field label="Biografía profesional" hint="Describe tu trayectoria y experiencia (máx. 300 caracteres)">
-                  <textarea className="ipr-ta" style={{ ...INP, resize: 'vertical', minHeight: 100 }} maxLength={300}
+                <Field label="Biografía profesional" hint="Describe tu trayectoria y experiencia (máx. 300 caracteres)" id="ipr-bio">
+                  <textarea id="ipr-bio" className="ipr-ta" style={{ ...INP, resize: 'vertical', minHeight: 100 }} maxLength={300}
                     value={bio} onChange={e => setBio(e.target.value)}
                     placeholder="Soy consultor con X años de experiencia en..." />
                   <div style={{ fontSize: '.68rem', color: '#B5B2AB', textAlign: 'right', marginTop: '.2rem' }}>{bio.length}/300</div>
                 </Field>
 
                 <div className="ipr-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
-                  <Field label="Teléfono">
+                  <Field label="Teléfono" id="ipr-phone">
                     <input className="ipr-inp" style={INP} type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+506 8888-0000" />
                   </Field>
-                  <Field label="País">
+                  <Field label="País" id="ipr-country">
                     <select className="ipr-sel" style={{ ...INP, cursor: 'pointer' }} value={country} onChange={e => setCountry(e.target.value)}>
                       <option value="">Selecciona</option>
                       {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -217,21 +219,21 @@ export default function InstructorProfilePage() {
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.1rem' }}>Perfil profesional</h2>
                 <div className="ipr-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
-                  <Field label="Profesión / Título">
+                  <Field label="Profesión / Título" id="ipr-profession">
                     <input className="ipr-inp" style={INP} type="text" value={profession} onChange={e => setProfession(e.target.value)} placeholder="Consultor de procesos" />
                   </Field>
-                  <Field label="Especialidad">
+                  <Field label="Especialidad" id="ipr-specialty">
                     <input className="ipr-inp" style={INP} type="text" value={specialty} onChange={e => setSpecialty(e.target.value)} placeholder="Gestión de procesos BPM" />
                   </Field>
                 </div>
                 <div className="ipr-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
-                  <Field label="Años de experiencia">
+                  <Field label="Años de experiencia" id="ipr-years-exp">
                     <select className="ipr-sel" style={{ ...INP, cursor: 'pointer' }} value={yearsExp} onChange={e => setYearsExp(e.target.value)}>
                       <option value="">Selecciona</option>
                       {EXP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </Field>
-                  <Field label="Empresa actual">
+                  <Field label="Empresa actual" id="ipr-company">
                     <input className="ipr-inp" style={INP} type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder="Consultora XYZ" />
                   </Field>
                 </div>
@@ -240,13 +242,13 @@ export default function InstructorProfilePage() {
               {/* Social links */}
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.1rem' }}>Redes y contacto</h2>
-                <Field label="LinkedIn">
+                <Field label="LinkedIn" id="ipr-linkedin">
                   <input className="ipr-inp" style={INP} type="url" value={linkedin} onChange={e => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/tu-perfil" />
                 </Field>
-                <Field label="Sitio web / Portafolio">
+                <Field label="Sitio web / Portafolio" id="ipr-website">
                   <input className="ipr-inp" style={INP} type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://tusitioweb.com" />
                 </Field>
-                <Field label="Twitter / X">
+                <Field label="Twitter / X" id="ipr-twitter">
                   <input className="ipr-inp" style={INP} type="url" value={twitter} onChange={e => setTwitter(e.target.value)} placeholder="https://twitter.com/tu_usuario" />
                 </Field>
               </div>

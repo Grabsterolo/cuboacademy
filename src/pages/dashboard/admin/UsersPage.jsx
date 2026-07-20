@@ -403,20 +403,20 @@ export default function UsersPage() {
                   <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 7, padding: '.6rem .9rem', fontSize: '.8rem', marginBottom: '.9rem' }}>{createError}</div>
                 )}
                 <div style={{ marginBottom: '.85rem' }}>
-                  <LabelField>Nombre completo</LabelField>
-                  <input type="text" className="form-inp-u" placeholder="Nombre del usuario" required value={newName} onChange={e => setNewName(e.target.value)} />
+                  <LabelField htmlFor="user-new-name">Nombre completo</LabelField>
+                  <input id="user-new-name" type="text" className="form-inp-u" placeholder="Nombre del usuario" required value={newName} onChange={e => setNewName(e.target.value)} />
                 </div>
                 <div style={{ marginBottom: '.85rem' }}>
-                  <LabelField>Correo electrónico</LabelField>
-                  <input type="email" className="form-inp-u" placeholder="correo@ejemplo.com" required value={newEmail} onChange={e => setNewEmail(e.target.value)} />
+                  <LabelField htmlFor="user-new-email">Correo electrónico</LabelField>
+                  <input id="user-new-email" type="email" className="form-inp-u" placeholder="correo@ejemplo.com" required value={newEmail} onChange={e => setNewEmail(e.target.value)} />
                 </div>
                 <div style={{ marginBottom: '.85rem' }}>
-                  <LabelField>Contraseña</LabelField>
-                  <input type="password" className="form-inp-u" placeholder="Mínimo 8 caracteres" required minLength={8} value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                  <LabelField htmlFor="user-new-password">Contraseña</LabelField>
+                  <input id="user-new-password" type="password" className="form-inp-u" placeholder="Mínimo 8 caracteres" required minLength={8} value={newPassword} onChange={e => setNewPassword(e.target.value)} />
                 </div>
                 <div style={{ marginBottom: '1.1rem' }}>
-                  <LabelField>Rol</LabelField>
-                  <select className="form-sel-u" value={newRole} onChange={e => setNewRole(e.target.value)}>
+                  <LabelField htmlFor="user-new-role">Rol</LabelField>
+                  <select id="user-new-role" className="form-sel-u" value={newRole} onChange={e => setNewRole(e.target.value)}>
                     <option value="student">Estudiante</option>
                     <option value="instructor">Instructor</option>
                     <option value="admin">Administrador</option>
@@ -455,13 +455,13 @@ export default function UsersPage() {
               </div>
 
               <div style={{ marginBottom: '.85rem' }}>
-                <LabelField>Nombre completo</LabelField>
-                <input type="text" className="form-inp-u" placeholder="Nombre del usuario" required value={editName} onChange={e => setEditName(e.target.value)} />
+                <LabelField htmlFor="user-edit-name">Nombre completo</LabelField>
+                <input id="user-edit-name" type="text" className="form-inp-u" placeholder="Nombre del usuario" required value={editName} onChange={e => setEditName(e.target.value)} />
               </div>
 
               <div style={{ marginBottom: '.85rem' }}>
-                <LabelField>Rol</LabelField>
-                <select className="form-sel-u" value={editRole} onChange={e => setEditRole(e.target.value)}>
+                <LabelField htmlFor="user-edit-role">Rol</LabelField>
+                <select id="user-edit-role" className="form-sel-u" value={editRole} onChange={e => setEditRole(e.target.value)}>
                   <option value="student">Estudiante</option>
                   <option value="instructor">Instructor</option>
                   <option value="admin">Administrador</option>
@@ -495,11 +495,11 @@ export default function UsersPage() {
                 </button>
               ) : (
                 <form onSubmit={handleResetPassword}>
-                  <LabelField>Nueva contraseña</LabelField>
+                  <LabelField htmlFor="user-reset-password">Nueva contraseña</LabelField>
                   <p style={{ fontSize: '.75rem', color: 'var(--text-2)', margin: '-.1rem 0 .5rem' }}>
                     Se aplica de inmediato — comunícasela al usuario tú mismo (no se envía correo).
                   </p>
-                  <input type="password" className="form-inp-u" placeholder="Mínimo 8 caracteres" minLength={8} value={resetPw} onChange={e => setResetPw(e.target.value)} />
+                  <input id="user-reset-password" type="password" className="form-inp-u" placeholder="Mínimo 8 caracteres" minLength={8} value={resetPw} onChange={e => setResetPw(e.target.value)} />
                   {resetPwMsg && (
                     <p style={{ fontSize: '.78rem', color: resetPwMsg.includes('Error') || resetPwMsg.includes('error') ? '#dc2626' : 'var(--jade)', margin: '.5rem 0 0' }}>{resetPwMsg}</p>
                   )}

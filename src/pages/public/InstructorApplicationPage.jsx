@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, cloneElement, isValidElement } from 'react'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 
@@ -37,8 +37,12 @@ const INP_STYLE = { width: '100%', padding: '.72rem 1rem', background: 'var(--cr
 const LBL_STYLE = { display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }
 const FIELD_STYLE = { marginBottom: '.95rem' }
 
-function Fld({ label, children }) {
-  return <div style={FIELD_STYLE}><label style={LBL_STYLE}>{label}</label>{children}</div>
+const FORM_TAGS = ['input', 'textarea', 'select']
+function Fld({ label, children, id }) {
+  const input = id && isValidElement(children) && FORM_TAGS.includes(children.type) && !children.props.id
+    ? cloneElement(children, { id })
+    : children
+  return <div style={FIELD_STYLE}><label htmlFor={id} style={LBL_STYLE}>{label}</label>{input}</div>
 }
 
 export default function InstructorApplicationPage() {
@@ -239,43 +243,43 @@ export default function InstructorApplicationPage() {
               <>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.5rem' }}>Información personal y perfil profesional</h2>
                 <div className="app-grid2">
-                  <Fld label="Nombre *">
+                  <Fld label="Nombre *" id="app-first-name">
                     <input className="app-inp" style={INP_STYLE} type="text" placeholder="Juan" value={nombre} onChange={e => setNombre(e.target.value)} />
                   </Fld>
-                  <Fld label="Apellidos *">
+                  <Fld label="Apellidos *" id="app-last-name">
                     <input className="app-inp" style={INP_STYLE} type="text" placeholder="García López" value={apellidos} onChange={e => setApellidos(e.target.value)} />
                   </Fld>
                 </div>
                 <div className="app-grid2">
-                  <Fld label="Correo electrónico *">
+                  <Fld label="Correo electrónico *" id="app-email">
                     <input className="app-inp" style={INP_STYLE} type="email" placeholder="tu@correo.com" value={email} onChange={e => setEmail(e.target.value)} />
                   </Fld>
-                  <Fld label="Teléfono *">
+                  <Fld label="Teléfono *" id="app-phone">
                     <input className="app-inp" style={INP_STYLE} type="tel" placeholder="+506 8888-0000" value={phone} onChange={e => setPhone(e.target.value)} />
                   </Fld>
                 </div>
-                <Fld label="País *">
+                <Fld label="País *" id="app-country">
                   <select className="app-inp" style={selStyle} value={country} onChange={e => setCountry(e.target.value)}>
                     <option value="">Selecciona tu país</option>
                     {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </Fld>
                 <div className="app-grid2">
-                  <Fld label="Profesión *">
+                  <Fld label="Profesión *" id="app-profession">
                     <input className="app-inp" style={INP_STYLE} type="text" placeholder="ej. Consultor financiero" value={profession} onChange={e => setProfession(e.target.value)} />
                   </Fld>
-                  <Fld label="Especialidad *">
+                  <Fld label="Especialidad *" id="app-specialty">
                     <input className="app-inp" style={INP_STYLE} type="text" placeholder="ej. Finanzas personales" value={specialty} onChange={e => setSpecialty(e.target.value)} />
                   </Fld>
                 </div>
                 <div className="app-grid2">
-                  <Fld label="Años de experiencia *">
+                  <Fld label="Años de experiencia *" id="app-years-exp">
                     <select className="app-inp" style={selStyle} value={yearsExp} onChange={e => setYearsExp(e.target.value)}>
                       <option value="">Selecciona</option>
                       {Object.keys(EXP_MAP).map(k => <option key={k} value={k}>{k} años</option>)}
                     </select>
                   </Fld>
-                  <Fld label="Empresa actual (opcional)">
+                  <Fld label="Empresa actual (opcional)" id="app-company">
                     <input className="app-inp" style={INP_STYLE} type="text" placeholder="ej. Consultora XYZ" value={company} onChange={e => setCompany(e.target.value)} />
                   </Fld>
                 </div>
@@ -289,10 +293,10 @@ export default function InstructorApplicationPage() {
             {step === 2 && (
               <>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.5rem' }}>Sobre ti</h2>
-                <Fld label={`Biografía corta * (${bio.length}/300)`}>
+                <Fld label={`Biografía corta * (${bio.length}/300)`} id="app-bio">
                   <textarea className="app-inp" style={{ ...taStyle, minHeight: 120 }} placeholder="Cuéntanos sobre tu experiencia, logros y por qué serías un gran instructor..." maxLength={300} value={bio} onChange={e => setBio(e.target.value)} />
                 </Fld>
-                <Fld label="LinkedIn o portafolio (opcional)">
+                <Fld label="LinkedIn o portafolio (opcional)" id="app-linkedin">
                   <input className="app-inp" style={INP_STYLE} type="url" placeholder="https://linkedin.com/in/tu-perfil" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
                 </Fld>
                 <Fld label="CV, título o certificación (PDF) *">
@@ -321,24 +325,24 @@ export default function InstructorApplicationPage() {
             {step === 3 && (
               <form onSubmit={handleSubmit}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.5rem' }}>Propuesta de curso</h2>
-                <Fld label="Título del primer curso *">
+                <Fld label="Título del primer curso *" id="app-course-title">
                   <input className="app-inp" style={INP_STYLE} type="text" placeholder="ej. Finanzas personales para profesionales" value={courseTitle} onChange={e => setCourseTitle(e.target.value)} />
                 </Fld>
                 <div className="app-grid2">
-                  <Fld label="Categoría">
+                  <Fld label="Categoría" id="app-course-category">
                     <select className="app-inp" style={selStyle} value={categoryId} onChange={e => setCategoryId(e.target.value)}>
                       <option value="">Selecciona (opcional)</option>
                       {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </Fld>
-                  <Fld label="Nivel *">
+                  <Fld label="Nivel *" id="app-course-level">
                     <select className="app-inp" style={selStyle} value={courseLevel} onChange={e => setCourseLevel(e.target.value)}>
                       <option value="">Selecciona</option>
                       {Object.keys(LEVEL_MAP).map(k => <option key={k} value={k}>{k}</option>)}
                     </select>
                   </Fld>
                 </div>
-                <Fld label="Descripción del curso *">
+                <Fld label="Descripción del curso *" id="app-course-desc">
                   <textarea className="app-inp" style={{ ...taStyle, minHeight: 110 }} placeholder="Describe de qué trata el curso, a quién va dirigido y qué aprenderán los estudiantes..." value={courseDesc} onChange={e => setCourseDesc(e.target.value)} />
                 </Fld>
 

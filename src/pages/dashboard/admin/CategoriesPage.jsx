@@ -261,8 +261,9 @@ export default function CategoriesPage() {
                 )}
                 <div className="cat-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '.85rem' }}>
                   <div>
-                    <LabelField>Nombre</LabelField>
+                    <LabelField htmlFor="cat-name">Nombre</LabelField>
                     <input
+                      id="cat-name"
                       type="text"
                       className="form-inp-c"
                       placeholder="Ej: Marketing Digital"
@@ -272,8 +273,9 @@ export default function CategoriesPage() {
                     />
                   </div>
                   <div>
-                    <LabelField>Slug</LabelField>
+                    <LabelField htmlFor="cat-slug">Slug</LabelField>
                     <input
+                      id="cat-slug"
                       type="text"
                       className="form-inp-c"
                       placeholder="marketing-digital"
@@ -287,8 +289,9 @@ export default function CategoriesPage() {
                   </div>
                 </div>
                 <div style={{ marginBottom: '1.1rem' }}>
-                  <LabelField>Descripción <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span></LabelField>
+                  <LabelField htmlFor="cat-desc">Descripción <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span></LabelField>
                   <textarea
+                    id="cat-desc"
                     className="form-area-c"
                     placeholder="Breve descripción de la categoría…"
                     value={formDesc}

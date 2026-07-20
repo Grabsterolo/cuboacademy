@@ -148,18 +148,18 @@ function QuestionCard({ q, idx, onToggle, onUpdate, onRemove, onAddAnswer, onUpd
       {q.expanded && (
         <div style={{ padding: '1rem 1.1rem 1.25rem', background: '#FAFAF9', borderTop: '1px solid var(--border)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '.75rem', marginBottom: '.85rem' }}>
-            <Field label="Pregunta" req>
+            <Field label="Pregunta" req id={`wiz-q-text-${q.id}`}>
               <textarea style={{ ...INP, resize: 'vertical', minHeight: 70, lineHeight: 1.6 }}
                 value={q.text} placeholder="Escribe la pregunta aquí…"
                 onChange={e => onUpdate({ text: e.target.value })} onFocus={fi} onBlur={fb} />
             </Field>
             <div style={{ display: 'flex', gap: '.75rem' }}>
-              <Field label="Tipo">
+              <Field label="Tipo" id={`wiz-q-type-${q.id}`}>
                 <select style={{ ...SEL, width: 'auto' }} value={q.type} onChange={e => onUpdate({ type: e.target.value, answers: [] })} onFocus={fi} onBlur={fb}>
                   {Q_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
               </Field>
-              <Field label="Puntos">
+              <Field label="Puntos" id={`wiz-q-score-${q.id}`}>
                 <input type="number" min="1" step="1" style={{ ...INP, width: 72 }} value={q.score}
                   onChange={e => onUpdate({ score: Math.max(1, parseInt(e.target.value) || 1) })} onFocus={fi} onBlur={fb} />
               </Field>
@@ -168,9 +168,9 @@ function QuestionCard({ q, idx, onToggle, onUpdate, onRemove, onAddAnswer, onUpd
 
           {showAnswers && (
             <div>
-              <label style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: '#9B9894', marginBottom: '.6rem' }}>
+              <div style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: '#9B9894', marginBottom: '.6rem' }}>
                 {isTrueFalse ? 'Opciones' : `Opciones de respuesta ${isMultiple ? '(marca todas las correctas)' : '(marca la correcta)'}`}
-              </label>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem', marginBottom: '.6rem' }}>
                 {isTrueFalse
                   ? ['Verdadero', 'Falso'].map((opt, i) => {

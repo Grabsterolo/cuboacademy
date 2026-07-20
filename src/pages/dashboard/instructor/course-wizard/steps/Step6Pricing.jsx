@@ -12,18 +12,18 @@ export function Step6Pricing({ pricing, setPricing }) {
         </div>
         {!pricing.isFree && (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <Field label="Precio (USD)" req>
+            <Field label="Precio (USD)" req id="wiz-price">
               <div style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-2)', fontSize: '.95rem', pointerEvents: 'none' }}>$</span>
-                <input type="number" min="0" step="0.01" value={pricing.price}
+                <input id="wiz-price" type="number" min="0" step="0.01" value={pricing.price}
                   onChange={e => set('price', e.target.value)} onFocus={fi} onBlur={fb}
                   style={{ ...INP, paddingLeft: '1.8rem' }} placeholder="0.00" />
               </div>
             </Field>
-            <Field label="Descuento (opcional)" hint="Deja vacío si no aplica descuento">
+            <Field label="Descuento (opcional)" hint="Deja vacío si no aplica descuento" id="wiz-discount">
               <div style={{ display: 'flex', gap: '.6rem', alignItems: 'center' }}>
                 <div style={{ position: 'relative', flex: 1 }}>
-                  <input type="number" min="0" max="100" value={pricing.discount}
+                  <input id="wiz-discount" type="number" min="0" max="100" value={pricing.discount}
                     onChange={e => set('discount', e.target.value)} onFocus={fi} onBlur={fb}
                     style={{ ...INP }} placeholder="0" />
                 </div>

@@ -130,7 +130,8 @@ export default function StudentAnnouncementsPage() {
           <>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
             {filtered.map(item => (
-              <div key={item.id} className="ann-s-card" onClick={() => setReadItem(item)}>
+              <div key={item.id} className="ann-s-card" onClick={() => setReadItem(item)} role="button" tabIndex={0}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setReadItem(item) } }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '.55rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap' }}>
                     <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{item.title}</h2>

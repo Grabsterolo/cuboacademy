@@ -337,10 +337,11 @@ export default function RequestsPage() {
               {selected.status === 'pending' && (
                 <Section title="Decisión">
                   <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
+                    <label htmlFor="req-reviewer-notes" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
                       Notas del revisor (opcional)
                     </label>
                     <textarea
+                      id="req-reviewer-notes"
                       value={notes}
                       onChange={e => setNotes(e.target.value)}
                       placeholder="Agrega notas o feedback para el solicitante…"

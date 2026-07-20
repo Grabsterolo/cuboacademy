@@ -76,8 +76,8 @@ export default function LoginScreen() {
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Correo electrónico</label>
-              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tucorreo@email.com" autoComplete="email"
+              <label htmlFor="login-email" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Correo electrónico</label>
+              <input id="login-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tucorreo@email.com" autoComplete="email"
                 style={{ width: '100%', padding: '.8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
                 onFocus={e => e.target.style.borderColor = 'rgba(22,125,120,.7)'}
                 onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.12)'} />
@@ -85,14 +85,14 @@ export default function LoginScreen() {
 
             <div style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.4rem' }}>
-                <label style={{ fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', letterSpacing: '.07em', textTransform: 'uppercase' }}>Contraseña</label>
+                <label htmlFor="login-password" style={{ fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', letterSpacing: '.07em', textTransform: 'uppercase' }}>Contraseña</label>
                 <button type="button" onClick={() => navigate('forgot-password')}
                   style={{ background: 'none', border: 'none', color: 'var(--jade-light)', fontSize: '.75rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>
                   ¿Olvidaste tu contraseña?
                 </button>
               </div>
               <div style={{ position: 'relative' }}>
-                <input type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password"
+                <input id="login-password" type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password"
                   style={{ width: '100%', padding: '.8rem 2.8rem .8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
                   onFocus={e => e.target.style.borderColor = 'rgba(22,125,120,.7)'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.12)'} />

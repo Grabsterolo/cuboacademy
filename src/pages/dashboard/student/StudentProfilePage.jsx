@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, cloneElement, isValidElement } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
@@ -11,12 +11,14 @@ const COUNTRIES = ['Costa Rica','México','Colombia','Argentina','Chile','Perú'
 const INP = { width: '100%', padding: '.7rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', outline: 'none', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
 const LBL = { display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }
 
-function Field({ label, children, hint }) {
+const FORM_TAGS = ['input', 'textarea', 'select']
+function Field({ label, children, hint, id }) {
+  const input = id && isValidElement(children) && FORM_TAGS.includes(children.type) && !children.props.id ? cloneElement(children, { id }) : children
   return (
     <div style={{ marginBottom: '.95rem' }}>
-      <label style={LBL}>{label}</label>
+      <label htmlFor={id} style={LBL}>{label}</label>
       {hint && <p style={{ fontSize: '.72rem', color: '#B5B2AB', marginBottom: '.3rem', marginTop: '-.1rem' }}>{hint}</p>}
-      {children}
+      {input}
     </div>
   )
 }
@@ -193,29 +195,29 @@ export default function StudentProfilePage() {
                 </div>
 
                 <div className="prf-name-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
-                  <Field label="Nombre *">
+                  <Field label="Nombre *" id="prf-first-name">
                     <input className="prf-inp" style={INP} type="text" required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" />
                   </Field>
-                  <Field label="Apellidos">
+                  <Field label="Apellidos" id="prf-last-name">
                     <input className="prf-inp" style={INP} type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="García López" />
                   </Field>
                 </div>
 
-                <Field label="Correo electrónico">
+                <Field label="Correo electrónico" id="prf-email">
                   <input style={{ ...INP, background: '#F5F5F0', color: '#9B9894', cursor: 'not-allowed' }} type="email" value={user?.email || ''} readOnly />
                 </Field>
 
-                <Field label="Biografía" hint="Cuéntanos quién eres (máx. 300 caracteres)">
-                  <textarea className="prf-ta" style={{ ...INP, resize: 'vertical', minHeight: 90 }} maxLength={300}
+                <Field label="Biografía" hint="Cuéntanos quién eres (máx. 300 caracteres)" id="prf-bio">
+                  <textarea id="prf-bio" className="prf-ta" style={{ ...INP, resize: 'vertical', minHeight: 90 }} maxLength={300}
                     value={bio} onChange={e => setBio(e.target.value)} placeholder="Soy profesional en..." />
                   <div style={{ fontSize: '.68rem', color: '#B5B2AB', textAlign: 'right', marginTop: '.2rem' }}>{bio.length}/300</div>
                 </Field>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
-                  <Field label="Teléfono">
+                  <Field label="Teléfono" id="prf-phone">
                     <input className="prf-inp" style={INP} type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+506 8888-0000" />
                   </Field>
-                  <Field label="País">
+                  <Field label="País" id="prf-country">
                     <select className="prf-sel" style={{ ...INP, cursor: 'pointer' }} value={country} onChange={e => setCountry(e.target.value)}>
                       <option value="">Selecciona</option>
                       {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -255,10 +257,10 @@ export default function StudentProfilePage() {
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.1rem' }}>Perfil profesional</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
-                  <Field label="Profesión / Cargo">
+                  <Field label="Profesión / Cargo" id="prf-profession">
                     <input className="prf-inp" style={INP} type="text" value={profession} onChange={e => setProfession(e.target.value)} placeholder="Analista de procesos" />
                   </Field>
-                  <Field label="Empresa actual">
+                  <Field label="Empresa actual" id="prf-company">
                     <input className="prf-inp" style={INP} type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder="Empresa XYZ" />
                   </Field>
                 </div>
@@ -267,13 +269,13 @@ export default function StudentProfilePage() {
               {/* Redes sociales */}
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem' }}>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '1.1rem' }}>Redes y contacto</h2>
-                <Field label="LinkedIn">
+                <Field label="LinkedIn" id="prf-linkedin">
                   <input className="prf-inp" style={INP} type="url" value={linkedin} onChange={e => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/tu-perfil" />
                 </Field>
-                <Field label="Sitio web / Portafolio">
+                <Field label="Sitio web / Portafolio" id="prf-website">
                   <input className="prf-inp" style={INP} type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://tusitioweb.com" />
                 </Field>
-                <Field label="Twitter / X">
+                <Field label="Twitter / X" id="prf-twitter">
                   <input className="prf-inp" style={INP} type="url" value={twitter} onChange={e => setTwitter(e.target.value)} placeholder="https://twitter.com/tu_usuario" />
                 </Field>
               </div>

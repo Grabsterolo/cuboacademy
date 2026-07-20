@@ -8,7 +8,7 @@ const USERS_ICON = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
 function Avatar({ name, url, size = 56 }) {
   const initials = (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   return url
-    ? <img loading="lazy" src={url} alt="" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+    ? <img loading="lazy" src={url} alt={name || ''} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
     : <div style={{ width: size, height: size, borderRadius: '50%', background: 'linear-gradient(140deg,var(--jade),var(--jade-dark,#0d4a46))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ fontSize: size * 0.32 + 'px', fontWeight: 700, color: 'white', fontFamily: 'var(--serif)' }}>{initials}</span>
       </div>

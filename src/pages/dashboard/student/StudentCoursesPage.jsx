@@ -163,7 +163,8 @@ export default function StudentCoursesPage() {
                 const pct  = progressByCourse[enr.course_id] ?? 0
                 const done = tab === 'completed'
                 return (
-                  <div key={enr.id} className="sc-card" onClick={() => navigate('aprender', { courseId: c.id })}>
+                  <div key={enr.id} className="sc-card" onClick={() => navigate('aprender', { courseId: c.id })} role="button" tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('aprender', { courseId: c.id }) } }}>
                     {/* Thumbnail */}
                     <div style={{ width: 64, height: 54, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
                       {c.cover_image_url && <img src={c.cover_image_url} alt={c.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
