@@ -4,9 +4,10 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 
 const STATUS_STYLE = {
-  published: { label: 'Publicado', bg: 'var(--jade-soft)', color: 'var(--jade)',  border: 'rgba(22,125,120,.25)' },
-  draft:     { label: 'Borrador',  bg: '#F5F5F0',          color: '#9B9894',      border: 'var(--border)' },
-  archived:  { label: 'Archivado', bg: '#FEF2F2',          color: '#B91C1C',      border: '#FECACA' },
+  published: { label: 'Publicado',   bg: 'var(--jade-soft)', color: 'var(--jade)',  border: 'rgba(22,125,120,.25)' },
+  draft:     { label: 'Borrador',    bg: '#F5F5F0',          color: '#9B9894',      border: 'var(--border)' },
+  pending:   { label: 'En revisión', bg: '#FFFBEB',          color: '#A16207',      border: '#FDE68A' },
+  archived:  { label: 'Archivado',   bg: '#FEF2F2',          color: '#B91C1C',      border: '#FECACA' },
 }
 const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 

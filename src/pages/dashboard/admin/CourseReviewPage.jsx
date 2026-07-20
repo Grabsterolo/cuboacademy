@@ -231,7 +231,7 @@ export default function CourseReviewPage() {
 
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap', marginBottom: '.4rem' }}>
-                <span style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.09em', textTransform: 'uppercase', color: '#C2410C', background: 'rgba(234,88,12,.08)', padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(234,88,12,.25)' }}>
+                <span style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.09em', textTransform: 'uppercase', color: '#A16207', background: '#FFFBEB', padding: '3px 10px', borderRadius: 20, border: '1px solid #FDE68A' }}>
                   En revisión
                 </span>
                 {course.categories?.name && <Tag>{course.categories.name}</Tag>}

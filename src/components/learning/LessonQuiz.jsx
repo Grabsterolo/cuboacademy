@@ -134,8 +134,8 @@ export default function LessonQuiz({ lessonId, studentId, onPassed }) {
       </div>
 
       {bestAttempt && (
-        <div style={{ marginBottom: '1rem', padding: '.75rem 1rem', borderRadius: 9, background: bestAttempt.passed ? '#F0FDF4' : '#FFF7ED', border: `1px solid ${bestAttempt.passed ? '#BBF7D0' : '#FED7AA'}`, display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-          <span style={{ fontSize: '.85rem', fontWeight: 700, color: bestAttempt.passed ? '#16A34A' : '#C2410C' }}>
+        <div style={{ marginBottom: '1rem', padding: '.75rem 1rem', borderRadius: 9, background: bestAttempt.passed ? '#F0FDF4' : '#FEF2F2', border: `1px solid ${bestAttempt.passed ? '#BBF7D0' : '#FECACA'}`, display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+          <span style={{ fontSize: '.85rem', fontWeight: 700, color: bestAttempt.passed ? '#16A34A' : '#DC2626' }}>
             {bestAttempt.passed ? '✓ Aprobado' : 'No aprobado'}
           </span>
           <span style={{ fontSize: '.8rem', color: 'var(--text-2)' }}>· última puntuación: {bestAttempt.score}%</span>

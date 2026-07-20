@@ -251,7 +251,7 @@ export default function CoursesPage() {
 
                       {c.status !== 'published' && c.status !== 'archived' && (
                         <button onClick={() => navigate('curso-revision', { courseId: c.id })} title="Abrir detalle del curso"
-                          style={{ display: 'flex', alignItems: 'center', gap: '.3rem', padding: '4px 10px', background: 'rgba(234,88,12,.08)', border: '1.5px solid rgba(234,88,12,.3)', borderRadius: 6, color: '#C2410C', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
+                          style={{ display: 'flex', alignItems: 'center', gap: '.3rem', padding: '4px 10px', background: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: 6, color: '#A16207', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                           Ver detalle
                         </button>

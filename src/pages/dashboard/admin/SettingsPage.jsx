@@ -300,7 +300,7 @@ export default function SettingsPage() {
                   <input ref={heroVideoInputRef} type="file" accept="video/mp4" style={{ display: 'none' }}
                     onChange={e => { handleHeroVideoUpload(e.target.files[0]); e.target.value = '' }} />
                   {pendingHeroVideoUrl && (
-                    <p style={{ fontSize: '.75rem', color: '#C2410C', margin: '0 0 .5rem' }}>Video nuevo listo — se aplica al sitio cuando guardes los cambios.</p>
+                    <p style={{ fontSize: '.75rem', color: '#A16207', margin: '0 0 .5rem' }}>Video nuevo listo — se aplica al sitio cuando guardes los cambios.</p>
                   )}
                   {(pendingHeroVideoUrl || settings.hero_video_url) ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>
