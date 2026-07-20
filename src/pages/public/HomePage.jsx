@@ -123,9 +123,9 @@ const COURSES = [
 
 const HOW_STEPS = [
   { num: '1', title: 'Crea tu cuenta', desc: 'Regístrate como estudiante o instructor. En 2 minutos ya estás adentro.' },
-  { num: '2', title: 'Explora el catálogo', desc: 'Filtra por área, nivel o duración, y revisa el temario de cada curso.' },
-  { num: '3', title: 'Aprende a tu ritmo', desc: 'Video, recursos descargables y ejercicios prácticos. Sin fechas límite.' },
-  { num: '4', title: 'Certifícate', desc: 'Certificado digital avalado por Grupo Cubo 130. Listo para tu perfil.' },
+  { num: '2', title: 'Elige tu curso', desc: 'Filtra por área, nivel o duración, y revisa el temario de cada curso.' },
+  { num: '3', title: 'Inscríbete', desc: 'Realiza el pago y tu inscripción se confirma manualmente en menos de 48 horas.' },
+  { num: '4', title: 'Aprende y certifícate', desc: 'Video, recursos y ejercicios a tu ritmo. Certificado digital al terminar.' },
 ]
 
 const INST_COLORS = ['var(--jade)', '#C96E4B', 'var(--jade-dark)', '#104447']
@@ -413,9 +413,6 @@ export default function HomePage() {
               <button onClick={() => navigate('courses')} style={{ padding: '.9rem 2rem', background: 'var(--jade)', color: 'white', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 600, border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(22,125,120,.4)' }}>
                 Explorar cursos
               </button>
-              <button onClick={() => navigate('courses')} style={{ padding: '.9rem 1.75rem', background: 'transparent', color: 'rgba(248,246,241,.75)', border: '1px solid rgba(248,246,241,.18)', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.95rem', fontWeight: 500, cursor: 'pointer' }}>
-                Cómo es diferente
-              </button>
             </div>
           </div>
           <div className="hero-metrics" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -438,7 +435,7 @@ export default function HomePage() {
       </section>
 
       {/* ── TRACKS ── */}
-      <section className="tracks-section" style={{ padding: '8rem 0 7.5rem', position: 'relative', overflow: 'hidden' }}>
+      <section id="areas-formacion" className="tracks-section" style={{ padding: '8rem 0 7.5rem', position: 'relative', overflow: 'hidden', scrollMarginTop: 66 }}>
         <div style={{ position: 'absolute', top: '-10%', right: '-8%', width: 460, height: 460, borderRadius: '50%', background: 'rgba(22,125,120,.05)', filter: 'blur(90px)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: '-15%', left: '-6%', width: 360, height: 360, borderRadius: '50%', background: 'rgba(201,110,75,.04)', filter: 'blur(80px)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 5%' }}>
@@ -669,7 +666,7 @@ export default function HomePage() {
       </section>
 
       {/* ── INSTRUCTORES ── */}
-      <section className="section-pad" style={{ padding: '7.5rem 5%' }}>
+      <section id="equipo" className="section-pad" style={{ padding: '7.5rem 5%', scrollMarginTop: 66 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="reveal" style={{ marginBottom: '4rem' }}>
             <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>El equipo docente</div>
@@ -729,9 +726,6 @@ export default function HomePage() {
           <div className="cta-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.9rem', flexShrink: 0 }}>
             <button onClick={() => navigate('register')} style={{ padding: '1rem 2.2rem', background: 'var(--terra)', color: 'var(--carbon)', borderRadius: 9, fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(201,110,75,.35)' }}>
               Crear cuenta gratis
-            </button>
-            <button onClick={() => navigate('courses')} style={{ padding: '.75rem 1.75rem', background: 'rgba(255,255,255,.06)', color: 'rgba(248,246,241,.75)', border: '1px solid rgba(248,246,241,.18)', borderRadius: 8, fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 500, whiteSpace: 'nowrap', textAlign: 'center', cursor: 'pointer', backdropFilter: 'blur(6px)' }}>
-              Ver planes y precios
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'rgba(248,246,241,.55)', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, padding: '.4rem .85rem', backdropFilter: 'blur(6px)' }}>
               Sin tarjeta de crédito · Cancela cuando quieras

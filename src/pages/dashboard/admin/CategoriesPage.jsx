@@ -144,6 +144,7 @@ export default function CategoriesPage() {
           .cat-header { flex-direction: column !important; align-items: flex-start !important; }
           .cat-grid { grid-template-columns: 1fr; }
           .cat-modal { padding: 1.5rem 1.25rem !important; border-radius: 12px !important; }
+          .cat-form-row { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
@@ -229,7 +230,7 @@ export default function CategoriesPage() {
       {/* Create / edit modal */}
       {showModal && (
         <div className="cat-overlay" onClick={e => { if (e.target === e.currentTarget) closeModal() }}>
-          <div className="cat-modal" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.25rem', width: '100%', maxWidth: 420, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
+          <div className="cat-modal" style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2.75rem', width: '100%', maxWidth: 580, position: 'relative', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
             <button onClick={closeModal} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', padding: 6, borderRadius: 6, minWidth: 32, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -258,30 +259,32 @@ export default function CategoriesPage() {
                     {formError}
                   </div>
                 )}
-                <div style={{ marginBottom: '.85rem' }}>
-                  <LabelField>Nombre</LabelField>
-                  <input
-                    type="text"
-                    className="form-inp-c"
-                    placeholder="Ej: Marketing Digital"
-                    required
-                    value={formName}
-                    onChange={e => handleNameChange(e.target.value)}
-                  />
-                </div>
-                <div style={{ marginBottom: '.85rem' }}>
-                  <LabelField>Slug</LabelField>
-                  <input
-                    type="text"
-                    className="form-inp-c"
-                    placeholder="marketing-digital"
-                    required
-                    value={formSlug}
-                    onChange={e => { setSlugManual(true); setFormSlug(e.target.value) }}
-                  />
-                  <span style={{ fontSize: '.7rem', color: 'var(--text-2)', marginTop: '.3rem', display: 'block' }}>
-                    Se genera automáticamente. Puedes editarlo manualmente.
-                  </span>
+                <div className="cat-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '.85rem' }}>
+                  <div>
+                    <LabelField>Nombre</LabelField>
+                    <input
+                      type="text"
+                      className="form-inp-c"
+                      placeholder="Ej: Marketing Digital"
+                      required
+                      value={formName}
+                      onChange={e => handleNameChange(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <LabelField>Slug</LabelField>
+                    <input
+                      type="text"
+                      className="form-inp-c"
+                      placeholder="marketing-digital"
+                      required
+                      value={formSlug}
+                      onChange={e => { setSlugManual(true); setFormSlug(e.target.value) }}
+                    />
+                    <span style={{ fontSize: '.7rem', color: 'var(--text-2)', marginTop: '.3rem', display: 'block' }}>
+                      Se genera automáticamente.
+                    </span>
+                  </div>
                 </div>
                 <div style={{ marginBottom: '1.1rem' }}>
                   <LabelField>Descripción <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span></LabelField>

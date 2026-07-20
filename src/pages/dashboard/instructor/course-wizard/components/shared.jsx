@@ -7,6 +7,22 @@ export function uid() { return `_${Date.now()}_${Math.random().toString(36).slic
 
 export function stripHtml(html) { return (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() }
 
+// a lesson has usable content once it carries what its type promises: a
+// video/document URL, or actual explanatory text for text-only lessons
+export function isLessonContentComplete(les) {
+  if (les.type === 'video' || les.type === 'document') return Boolean(les.video_url && les.video_url.trim())
+  if (les.type === 'text') return stripHtml(les.content_text).length > 0
+  return false
+}
+
+// a question is gradable once it has text, and — unless it's an open/manually
+// graded question — at least one answer marked correct
+export function isQuestionComplete(q) {
+  if (!q.text.trim()) return false
+  if (q.type === 'open') return true
+  return (q.answers || []).some(a => a.correct)
+}
+
 // ─── icons ────────────────────────────────────────────────────────────────────
 
 export const IC = {

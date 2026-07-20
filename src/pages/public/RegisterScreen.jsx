@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
+import { useSettings } from '../../context/SettingsContext'
 
 export default function RegisterScreen() {
   const { signUp } = useAuth()
   const { navigate } = useNavigation()
+  const { settings } = useSettings()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -14,6 +16,12 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const [saveData, setSaveData] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-data: reduce)')
+    setSaveData(mq.matches || navigator.connection?.saveData || false)
+  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -42,10 +50,20 @@ export default function RegisterScreen() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)', backgroundSize: '48px 48px', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', width: 450, height: 450, borderRadius: '50%', background: 'rgba(22,125,120,.15)', filter: 'blur(80px)', top: '-10%', left: '-5%', pointerEvents: 'none' }} />
+      {settings.hero_video_url && !saveData ? (
+        <>
+          <video src={settings.hero_video_url} autoPlay muted loop playsInline preload="metadata"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
+          <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(140deg, rgba(8,26,30,.82), rgba(13,56,52,.75))' }} />
+        </>
+      ) : (
+        <>
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)', backgroundSize: '48px 48px', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', width: 450, height: 450, borderRadius: '50%', background: 'rgba(22,125,120,.15)', filter: 'blur(80px)', top: '-10%', left: '-5%', pointerEvents: 'none' }} />
+        </>
+      )}
 
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 440 }}>
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 440 }}>
         <button onClick={() => navigate('login')}
           style={{ display: 'flex', alignItems: 'center', gap: '.4rem', background: 'none', border: 'none', color: 'rgba(255,255,255,.55)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: '.82rem', marginBottom: '2rem', padding: 0 }}
           onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.9)'}

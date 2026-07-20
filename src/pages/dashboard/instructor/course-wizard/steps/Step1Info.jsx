@@ -1,10 +1,13 @@
 import { useRef } from 'react'
 import RichTextEditor from '../../../../../components/ui/RichTextEditor'
 import { StepHeader } from '../components/StepHeader'
-import { Field, PillSelector, INP, SEL, fi, fb, IC } from '../components/shared'
+import { Field, PillSelector, INP, SEL, fi, fb, IC, stripHtml } from '../components/shared'
+
+const DESC_MAX = 400
 
 export function Step1Info({ info, onChange, categories, instructors, isAdmin, imgUploading, imgErr, onImgUpload }) {
   const fileRef = useRef()
+  const descLen = stripHtml(info.description).length
 
   return (
     <div>
@@ -35,10 +38,6 @@ export function Step1Info({ info, onChange, categories, instructors, isAdmin, im
                 options={[{ value: 'beginner', label: 'Básico' }, { value: 'intermediate', label: 'Intermedio' }, { value: 'advanced', label: 'Avanzado' }]}
                 value={info.level} onChange={v => onChange('level', v)} />
             </div>
-          </Field>
-          <Field label="Descripción corta" req hint="2-3 oraciones que resuman lo que aprenderá el estudiante.">
-            <RichTextEditor value={info.description} placeholder="En este curso aprenderás…"
-              onChange={html => onChange('description', html)} />
           </Field>
         </div>
 
@@ -80,6 +79,17 @@ export function Step1Info({ info, onChange, categories, instructors, isAdmin, im
             {imgErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.4rem 0 0' }}>{imgErr}</p>}
           </Field>
         </div>
+      </div>
+
+      <div style={{ marginTop: '.3rem' }}>
+        <Field label="Descripción corta" req>
+          <RichTextEditor value={info.description} placeholder="En este curso aprenderás…"
+            onChange={html => onChange('description', html)} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '.75rem', marginTop: '.35rem' }}>
+            <p style={{ fontSize: '.71rem', color: 'var(--text-2)', margin: 0 }}>2-3 oraciones que resuman lo que aprenderá el estudiante.</p>
+            <span style={{ fontSize: '.71rem', color: descLen > DESC_MAX ? '#DC2626' : 'var(--text-2)', flexShrink: 0 }}>{descLen}/{DESC_MAX}</span>
+          </div>
+        </Field>
       </div>
     </div>
   )

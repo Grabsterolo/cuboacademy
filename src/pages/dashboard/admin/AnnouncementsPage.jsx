@@ -121,6 +121,17 @@ function TargetBadge({ value }) {
   )
 }
 
+// discreet dot + label — used in the list row, where a full colored pill per
+// badge competed visually with the title (metadata shouldn't outweigh content)
+function DotTag({ color, label }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '.71rem', fontWeight: 600, color, flexShrink: 0 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0 }} />
+      {label}
+    </span>
+  )
+}
+
 const MAX_CHARS = 800
 
 export default function AnnouncementsPage() {
@@ -321,16 +332,19 @@ export default function AnnouncementsPage() {
         ) : (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
-              {filtered.map(item => (
+              {filtered.map(item => {
+                const t = typeInfo(item.type)
+                const tgt = targetInfo(item.target_role)
+                return (
                 <div key={item.id} className="ann-card" onClick={() => setReadItem(item)}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', flexWrap: 'wrap', marginBottom: '.45rem' }}>
-                      <span style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)' }}>{item.title}</span>
-                      <TypeBadge value={item.type} />
-                      <TargetBadge value={item.target_role} />
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: '.82rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.35rem' }}>{item.title}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexWrap: 'wrap', marginBottom: '.4rem' }}>
+                      <DotTag color={t.color} label={t.label} />
+                      <DotTag color={tgt.color} label={tgt.label} />
                     </div>
-                    <p style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.55, margin: 0, fontWeight: 300 }}>
-                      {item.content.length > 130 ? item.content.slice(0, 130) + '…' : item.content}
+                    <p style={{ fontSize: '.89rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0, fontWeight: 400 }}>
+                      {item.content.length > 190 ? item.content.slice(0, 190) + '…' : item.content}
                     </p>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.5rem', flexShrink: 0 }}>
@@ -344,7 +358,8 @@ export default function AnnouncementsPage() {
                     </button>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
             <div style={{ marginTop: '.75rem', fontSize: '.75rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>
               {filtered.length} de {items.length} comunicado{items.length !== 1 ? 's' : ''}

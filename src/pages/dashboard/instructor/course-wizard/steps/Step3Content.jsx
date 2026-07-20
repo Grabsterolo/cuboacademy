@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { supabase } from '../../../../../lib/supabase'
 import RichTextEditor from '../../../../../components/ui/RichTextEditor'
 import { StepHeader } from '../components/StepHeader'
-import { Field, IC, INP, fi, fb, SmallBtn, uid } from '../components/shared'
+import { Field, IC, INP, fi, fb, SmallBtn, uid, isLessonContentComplete } from '../components/shared'
 
 export function Step3Content({ modules, setModules }) {
   function updateLesson(mId, lId, patch) {
@@ -103,6 +103,11 @@ function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onUpdateLin
           {les.title || `Lección ${lIdx + 1}`}
         </span>
         <span style={{ fontSize: '.72rem', color: 'var(--text-2)', marginRight: '.3rem' }}>{typeLabel[les.type]}</span>
+        {isLessonContentComplete(les) ? (
+          <span title="Contenido listo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: 'var(--jade-soft)', color: 'var(--jade)', flexShrink: 0 }}>{IC.check}</span>
+        ) : (
+          <span title="Falta contenido" style={{ width: 8, height: 8, borderRadius: '50%', background: '#DC2626', flexShrink: 0 }} />
+        )}
         <div style={{ transform: open ? 'rotate(0)' : 'rotate(-90deg)', transition: 'transform .2s', color: 'var(--text-2)' }}>{IC.chevD}</div>
       </div>
 

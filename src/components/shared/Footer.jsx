@@ -1,5 +1,4 @@
 import { useSettings } from '../../context/SettingsContext'
-import { useNavigation } from '../../context/NavigationContext'
 
 const INSTAGRAM_ICON = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -26,8 +25,6 @@ const YOUTUBE_ICON = (
 
 export default function Footer() {
   const { settings } = useSettings()
-  const { navigate } = useNavigation()
-  const contactEmail = settings.contact_email || 'contacto@cuboacademy.com'
   const hasSocial = settings.social_instagram || settings.social_linkedin || settings.social_youtube
 
   return (
@@ -43,11 +40,6 @@ export default function Footer() {
           <span style={{ color: 'var(--carbon)' }}>Cubo </span>
           <span style={{ color: 'var(--jade)' }}>Campus</span>
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <button onClick={() => navigate('courses')} style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 400, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Cursos</button>
-          <span style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 400 }}>Términos</span>
-          <a href={`mailto:${contactEmail}`} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 400 }}>{contactEmail}</a>
-        </div>
         <div className="footer-right" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {hasSocial && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>

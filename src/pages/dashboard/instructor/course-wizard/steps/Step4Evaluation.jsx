@@ -1,5 +1,5 @@
 import { StepHeader } from '../components/StepHeader'
-import { Field, PillSelector, Toggle, SmallBtn, IC, INP, SEL, fi, fb, Q_TYPES, uid } from '../components/shared'
+import { Field, PillSelector, Toggle, SmallBtn, IC, INP, SEL, fi, fb, Q_TYPES, uid, isQuestionComplete } from '../components/shared'
 
 export function Step4Evaluation({ eval: ev, setEval }) {
   const { hasEval, minScore, maxAttempts, questions } = ev
@@ -67,11 +67,9 @@ export function Step4Evaluation({ eval: ev, setEval }) {
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem', marginBottom: '1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }} className="wiz-grid">
             <div>
               <Field label="Puntaje mínimo para aprobar (%)">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-                  <input type="range" min="0" max="100" value={minScore} onChange={e => set('minScore', parseInt(e.target.value))}
-                    style={{ flex: 1, accentColor: 'var(--jade)' }} />
-                  <span style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--jade)', minWidth: 40, textAlign: 'right' }}>{minScore}%</span>
-                </div>
+                <PillSelector
+                  options={[60, 70, 80, 90, 100].map(v => ({ value: v, label: `${v}%` }))}
+                  value={minScore} onChange={v => set('minScore', v)} />
               </Field>
             </div>
             <div>
@@ -138,6 +136,11 @@ function QuestionCard({ q, idx, onToggle, onUpdate, onRemove, onAddAnswer, onUpd
         <span style={{ fontSize: '.73rem', color: 'var(--text-2)', padding: '.2rem .55rem', background: 'var(--cream)', borderRadius: 6, flexShrink: 0 }}>
           {Q_TYPES.find(t => t.value === q.type)?.label}
         </span>
+        {isQuestionComplete(q) ? (
+          <span title="Pregunta completa" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: 'var(--jade-soft)', color: 'var(--jade)', flexShrink: 0 }}>{IC.check}</span>
+        ) : (
+          <span title="Falta texto o respuesta correcta" style={{ width: 8, height: 8, borderRadius: '50%', background: '#DC2626', flexShrink: 0 }} />
+        )}
         <SmallBtn danger onClick={e => { e.stopPropagation(); onRemove() }} title="Eliminar">{IC.trash}</SmallBtn>
         <div style={{ transform: q.expanded ? 'rotate(0)' : 'rotate(-90deg)', transition: 'transform .2s', color: 'var(--text-2)', flexShrink: 0 }}>{IC.chevD}</div>
       </div>

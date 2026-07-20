@@ -3,7 +3,19 @@ import { useNavigation } from '../../../../context/NavigationContext'
 import { useAuth } from '../../../../context/AuthContext'
 import { supabase } from '../../../../lib/supabase'
 import { slugify } from '../../../../lib/slugify'
-import { uid, stripHtml } from './components/shared'
+import { uid, stripHtml, isLessonContentComplete, isQuestionComplete } from './components/shared'
+
+// content-only snapshot of modules/lessons (excludes UI state like `expanded`
+// and client-local ids), used to detect no-op saves of step 2/3
+function snapshotModules(mods) {
+  return JSON.stringify(mods.map(m => ({
+    dbId: m.dbId, title: m.title.trim(),
+    lessons: m.lessons.map(l => ({
+      dbId: l.dbId, title: l.title.trim(), type: l.type, duration_mins: l.duration_mins,
+      video_url: l.video_url, content_text: l.content_text, links: l.links,
+    })),
+  })))
+}
 
 export function useCourseWizard() {
   const { params, navigate } = useNavigation()
@@ -47,6 +59,10 @@ export function useCourseWizard() {
   // re-fires this effect a second time — loadedRef keeps loadExisting from
   // running twice and overwriting whatever the instructor has already typed.
   const loadedRef = useRef(false)
+  // snapshot of the last-saved step 2/3 structure (content fields only, no UI
+  // state like `expanded`) — lets saveStep2 skip the whole round-trip when
+  // the instructor re-saves without touching structure/content
+  const lastSavedModulesRef = useRef(null)
   useEffect(() => {
     supabase.from('categories').select('id, name').order('name').then(({ data }) => setCategories(data || []))
     if (profile?.role === 'admin') {
@@ -86,7 +102,7 @@ export function useCourseWizard() {
       }
 
       if (mods) {
-        setModules(mods.map(m => ({
+        const loadedModules = mods.map(m => ({
           id: uid(), dbId: m.id, title: m.title, expanded: true,
           lessons: (m.lessons || []).map(l => {
             let video_url = ''
@@ -96,7 +112,9 @@ export function useCourseWizard() {
             const links = (l.resources || []).filter(r => r.file_type === 'link').map(r => ({ id: uid(), url: r.file_url, label: r.title || '' }))
             return { id: uid(), dbId: l.id, title: l.title, type: l.type || 'video', duration_mins: l.duration_mins != null ? String(l.duration_mins) : '', video_url, content_text: l.description || '', links }
           }),
-        })))
+        }))
+        setModules(loadedModules)
+        lastSavedModulesRef.current = snapshotModules(loadedModules)
       }
 
       if (evalMod) {
@@ -156,6 +174,7 @@ export function useCourseWizard() {
         if (isAdmin && !info.instructorId)        return 'Selecciona un instructor.'
         if (!info.categoryId)                     return 'Selecciona una categoría.'
         if (!stripHtml(info.description))         return 'La descripción es obligatoria.'
+        if (stripHtml(info.description).length > 400) return 'La descripción no puede superar los 400 caracteres.'
         if (!info.coverUrl)                       return 'Sube una imagen de portada.'
         return null
       case 2:
@@ -164,12 +183,18 @@ export function useCourseWizard() {
         if (modules.some(m => !m.title.trim()))             return 'Todos los módulos necesitan un título.'
         if (modules.some(m => m.title.trim().toLowerCase() === 'evaluación final')) return '"Evaluación Final" es un nombre reservado para el examen del curso. Renombra ese módulo.'
         if (modules.some(m => m.lessons.some(l => !l.title.trim()))) return 'Todas las lecciones necesitan un título.'
+        if (modules.some(m => m.lessons.some(l => !l.type)))        return 'Elige un modo (video, texto o documento) para cada lección.'
+        return null
+      case 3:
+        if (modules.some(m => m.lessons.some(l => !isLessonContentComplete(l)))) {
+          return 'Cada lección necesita su contenido: URL de video/documento, o texto explicativo para lecciones de texto.'
+        }
         return null
       case 4:
         if (evalData.hasEval && evalData.questions.length === 0) return 'Agrega al menos una pregunta.'
         if (evalData.hasEval) {
           if (evalData.questions.some(q => !q.text.trim())) return 'Todas las preguntas necesitan un texto.'
-          if (evalData.questions.some(q => q.type !== 'open' && !(q.answers || []).some(a => a.correct))) {
+          if (evalData.questions.some(q => !isQuestionComplete(q))) {
             return 'Cada pregunta de opción o verdadero/falso necesita al menos una respuesta marcada como correcta.'
           }
         }
@@ -234,6 +259,8 @@ export function useCourseWizard() {
   // untouched lessons survive a structure re-save; excludes eval module) ────
   async function saveStep2(cId) {
     if (!cId) return
+    const snapshot = snapshotModules(modules)
+    if (snapshot === lastSavedModulesRef.current) return // nothing changed since the last save
 
     const { data: existingMods, error: modsReadErr } = await supabase.from('modules')
       .select('id, lessons(id)').eq('course_id', cId).neq('title', 'Evaluación Final')
@@ -318,27 +345,34 @@ export function useCourseWizard() {
         if (lesErr) throw lesErr
         newLessons.forEach((les, i) => { lessonIdMap[les.id] = lesRows[i].id })
       }
-
-      // external links: nothing references a resource's own id, so nuke-and-reinsert
-      // per lesson stays safe here — only re-scoped to that one lesson's links
-      for (const les of mod.lessons) {
-        const dbLesId = lessonIdMap[les.id]
-        await supabase.from('resources').delete().eq('lesson_id', dbLesId).eq('file_type', 'link').throwOnError()
-        const linkRows = (les.links || [])
-          .filter(lk => lk.url && lk.url.trim())
-          .map(lk => ({ lesson_id: dbLesId, title: lk.label?.trim() || lk.url.trim(), file_url: lk.url.trim(), file_type: 'link' }))
-        if (linkRows.length > 0) {
-          const { error: resErr } = await supabase.from('resources').insert(linkRows)
-          if (resErr) throw resErr
-        }
-      }
     }
 
-    setModules(ms => ms.map(m => ({
+    // external links: nothing references a resource's own id, so nuke-and-reinsert
+    // stays safe — batched across every lesson in one delete + one insert instead
+    // of a delete/insert pair per lesson (was the biggest source of round-trips
+    // on courses with many lessons)
+    const allLessonDbIds = modules.flatMap(mod => mod.lessons.map(les => lessonIdMap[les.id]))
+    if (allLessonDbIds.length > 0) {
+      await supabase.from('resources').delete().in('lesson_id', allLessonDbIds).eq('file_type', 'link').throwOnError()
+    }
+    const linkRows = modules.flatMap(mod => mod.lessons.flatMap(les => {
+      const dbLesId = lessonIdMap[les.id]
+      return (les.links || [])
+        .filter(lk => lk.url && lk.url.trim())
+        .map(lk => ({ lesson_id: dbLesId, title: lk.label?.trim() || lk.url.trim(), file_url: lk.url.trim(), file_type: 'link' }))
+    }))
+    if (linkRows.length > 0) {
+      const { error: resErr } = await supabase.from('resources').insert(linkRows)
+      if (resErr) throw resErr
+    }
+
+    const updatedModules = modules.map(m => ({
       ...m,
       dbId: modIdMap[m.id] ?? m.dbId,
       lessons: m.lessons.map(l => ({ ...l, dbId: lessonIdMap[l.id] ?? l.dbId })),
-    })))
+    }))
+    setModules(updatedModules)
+    lastSavedModulesRef.current = snapshotModules(updatedModules)
   }
 
   // ── save step 4 (evaluation quiz) ─────────────────────────────────────────

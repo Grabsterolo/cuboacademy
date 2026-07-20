@@ -20,7 +20,8 @@ const LessonRow = memo(function LessonRow({ mod, les, lIdx, updateLesson, remove
       <select
         value={les.type}
         onChange={e => updateLesson(mod.id, les.id, { type: e.target.value })}
-        style={{ ...SEL, width: 'auto', padding: '.35rem .6rem', fontSize: '.79rem', flexShrink: 0 }}>
+        style={{ ...SEL, width: 'auto', padding: '.35rem .6rem', fontSize: '.79rem', flexShrink: 0, border: les.type ? SEL.border : '1px solid #DC2626' }}>
+        <option value="">Elige un modo</option>
         {LESSON_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
       </select>
       <div style={{ display: 'flex', alignItems: 'center', gap: '.3rem', flexShrink: 0 }}>
@@ -102,7 +103,7 @@ export function Step2Structure({ modules, setModules }) {
   }, [setModules])
 
   const addLesson = useCallback((mId) => {
-    const lesson = { id: uid(), dbId: null, title: '', type: 'video', duration_mins: '' }
+    const lesson = { id: uid(), dbId: null, title: '', type: '', duration_mins: '' }
     setModules(ms => ms.map(m => m.id === mId ? { ...m, lessons: [...m.lessons, lesson] } : m))
   }, [setModules])
 

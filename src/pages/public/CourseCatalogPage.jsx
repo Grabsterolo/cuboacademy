@@ -65,7 +65,7 @@ export default function CourseCatalogPage() {
   const [courses, setCourses] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(params.search || '')
   const [catFilter, setCatFilter] = useState(params.categoryId || '')
   const [levelFilter, setLevelFilter] = useState('')
 

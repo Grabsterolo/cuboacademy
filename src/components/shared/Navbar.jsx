@@ -64,6 +64,22 @@ export default function Navbar() {
     navigate('landing')
   }
 
+  function goToSection(id) {
+    setMenuOpen(false)
+    if (screen === 'landing') {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      navigate('landing')
+      setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 150)
+    }
+  }
+
+  function runSearch() {
+    if (!searchQuery.trim()) return
+    navigate('courses', { search: searchQuery.trim() })
+    setSearchOpen(false); setSearchQuery('')
+  }
+
   function goToDashboard() {
     setMenuOpen(false)
     enterPortal('panel')
@@ -125,6 +141,8 @@ export default function Navbar() {
         <div className="nav-desktop-center">
           <ul style={{ display: 'flex', alignItems: 'center', gap: '2rem', listStyle: 'none', margin: 0, padding: 0 }}>
             <li><button className="nav-link" onClick={() => navigate('courses')}>Cursos</button></li>
+            <li><button className="nav-link" onClick={() => goToSection('areas-formacion')}>Áreas de formación</button></li>
+            <li><button className="nav-link" onClick={() => goToSection('equipo')}>Nuestro equipo</button></li>
           </ul>
 
           <div ref={searchRef} style={{ position: 'relative' }}>
@@ -136,6 +154,7 @@ export default function Navbar() {
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
               <input type="text" placeholder="Buscar curso o tema..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') runSearch() }}
                 style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '.83rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', width: '100%', opacity: searchOpen ? 1 : 0, pointerEvents: searchOpen ? 'auto' : 'none' }}
                 autoFocus={searchOpen} />
               {searchOpen && searchQuery && (
@@ -149,15 +168,17 @@ export default function Navbar() {
             </div>
             {searchOpen && searchQuery.length > 1 && (
               <div style={{ position: 'absolute', top: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', width: 280, background: 'white', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 8px 32px rgba(23,26,28,.12)', overflow: 'hidden', zIndex: 200 }}>
-                <div style={{ padding: '1rem 1.1rem', fontSize: '.82rem', color: 'var(--text-2)', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                <button onClick={runSearch}
+                  style={{ width: '100%', textAlign: 'left', padding: '.85rem 1.1rem', fontSize: '.82rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.6rem', background: 'none', border: 'none', cursor: 'pointer' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  Próximamente podrás buscar cursos aquí
-                </div>
+                  Buscar <strong>"{searchQuery}"</strong> en el catálogo
+                </button>
                 {categories.length > 0 && (
                   <div style={{ borderTop: '1px solid var(--border)', padding: '.75rem 1.1rem' }}>
                     <div style={{ fontSize: '.72rem', color: '#B5B2AB', marginBottom: '.5rem', letterSpacing: '.04em', textTransform: 'uppercase', fontWeight: 600 }}>Áreas disponibles</div>
-                    {categories.map(cat => (
-                      <div key={cat.id} style={{ padding: '.4rem 0', fontSize: '.83rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer' }}>
+                    {categories.filter(cat => cat.name.toLowerCase().includes(searchQuery.toLowerCase())).map(cat => (
+                      <div key={cat.id} onClick={() => { navigate('courses', { categoryId: cat.id }); setSearchOpen(false); setSearchQuery('') }}
+                        style={{ padding: '.4rem 0', fontSize: '.83rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer' }}>
                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block', flexShrink: 0 }} />
                         {cat.name}
                       </div>
@@ -210,6 +231,8 @@ export default function Navbar() {
       <div className={`nav-mobile-drawer${menuOpen ? ' open' : ''}`}>
         <nav>
           <button className="nav-mobile-link" onClick={() => { navigate('courses'); setMenuOpen(false) }}>Cursos</button>
+          <button className="nav-mobile-link" onClick={() => goToSection('areas-formacion')}>Áreas de formación</button>
+          <button className="nav-mobile-link" onClick={() => goToSection('equipo')}>Nuestro equipo</button>
         </nav>
         <div style={{ flex: 1 }} />
         <div style={{ paddingTop: '1.5rem', paddingBottom: 'max(1.5rem,env(safe-area-inset-bottom))', display: 'flex', flexDirection: 'column', gap: '.75rem' }}>

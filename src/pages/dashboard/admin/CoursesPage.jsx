@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
@@ -21,6 +21,44 @@ const TABS = [
 
 const BOOK = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
 
+// Single badge-styled control: click to open a dropdown of status options,
+// replacing what used to be a read-only badge sitting next to a redundant
+// native <select> showing the same value twice.
+function StatusBadgeSelect({ status, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const st = STATUS[status] || STATUS.draft
+
+  useEffect(() => {
+    if (!open) return
+    function onClickOutside(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [open])
+
+  return (
+    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+      <button type="button" onClick={() => setOpen(o => !o)}
+        title={status === 'published' ? 'Para despublicar, elige Borrador o Archivado' : 'Publicar requiere revisar el curso — usa "Ver detalle"'}
+        style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '.7rem', fontWeight: 600, padding: '3px 8px 3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+        {st.label}
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><polyline points="6 9 12 15 18 9" /></svg>
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 10, background: 'white', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 6px 20px rgba(23,26,28,.12)', minWidth: 130, overflow: 'hidden' }}>
+          {Object.entries(STATUS).map(([value, s]) => (
+            <button key={value} type="button" disabled={value === 'published' && status !== 'published'}
+              onClick={() => { onChange(value); setOpen(false) }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '.5rem .75rem', fontSize: '.78rem', fontWeight: 600, color: s.color, background: value === status ? s.bg : 'white', border: 'none', cursor: value === 'published' && status !== 'published' ? 'not-allowed' : 'pointer', opacity: value === 'published' && status !== 'published' ? .5 : 1, fontFamily: 'var(--sans)' }}>
+              {s.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function CoursesPage() {
   const { navigate } = useNavigation()
   const [courses,       setCourses]       = useState([])
@@ -29,6 +67,7 @@ export default function CoursesPage() {
   const [search,        setSearch]        = useState('')
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [toast,         setToast]         = useState('')
+  const [topCourseId,   setTopCourseId]   = useState(null)
 
   useEffect(() => { load() }, [])
   useEffect(() => {
@@ -39,12 +78,21 @@ export default function CoursesPage() {
 
   async function load() {
     setLoading(true)
-    const { data } = await supabase
-      .from('courses')
-      .select('id, title, cover_image_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
-      .order('created_at', { ascending: false })
-      .limit(500)
+    const [{ data }, { data: orderRows }] = await Promise.all([
+      supabase
+        .from('courses')
+        .select('id, title, cover_image_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
+        .order('created_at', { ascending: false })
+        .limit(500),
+      supabase.from('orders').select('course_id').eq('status', 'completed'),
+    ])
     setCourses(data || [])
+    if (orderRows?.length > 0) {
+      const counts = {}
+      for (const o of orderRows) counts[o.course_id] = (counts[o.course_id] || 0) + 1
+      const [topId] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
+      setTopCourseId(topId)
+    }
     setLoading(false)
   }
 
@@ -103,8 +151,6 @@ export default function CoursesPage() {
         .cp-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.08); border-color: rgba(22,125,120,.2); }
         .cp-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
         .cp-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
-        .cp-status-sel { padding: .3rem .55rem; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; color: var(--carbon); font-size: .76rem; font-family: var(--sans); outline: none; cursor: pointer; }
-        .cp-status-sel:focus { border-color: var(--jade); }
       `}</style>
 
       <div className="cp-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -177,7 +223,6 @@ export default function CoursesPage() {
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
               {filtered.map(c => {
-                const st = STATUS[c.status] || STATUS.draft
                 return (
                   <div key={c.id} className="cp-card">
                     {/* Thumbnail */}
@@ -187,7 +232,15 @@ export default function CoursesPage() {
 
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.28rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginBottom: '.28rem' }}>
+                        <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
+                        {c.id === topCourseId && (
+                          <span title="El curso con más órdenes completadas" style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '.65rem', fontWeight: 700, color: '#B4720E', background: '#F5E9D3', border: '1px solid #EAD6A8', borderRadius: 8, padding: '2px 7px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.9L22 9.8l-5.5 4.9L18 22l-6-3.6L6 22l1.5-7.3L2 9.8l7.1-.9L12 2z"/></svg>
+                            Más vendido
+                          </span>
+                        )}
+                      </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap' }}>
                         {c.profiles?.full_name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.profiles.full_name}</span>}
                         {c.categories?.name && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span></>}
@@ -197,16 +250,7 @@ export default function CoursesPage() {
 
                     {/* Actions */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
-                      {c.status !== 'pending' && (
-                        <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap' }}>{st.label}</span>
-                      )}
-
-                      <select className="cp-status-sel" value={c.status || 'draft'} onChange={e => handleStatusChange(c.id, e.target.value)} title={c.status === 'published' ? 'Para despublicar, elige Borrador o Archivado' : 'Publicar requiere revisar el curso — usa "Ver detalle"'}>
-                        <option value="draft">Borrador</option>
-                        <option value="pending">En revisión</option>
-                        <option value="published" disabled={c.status !== 'published'}>Publicado</option>
-                        <option value="archived">Archivado</option>
-                      </select>
+                      <StatusBadgeSelect status={c.status} onChange={v => handleStatusChange(c.id, v)} />
 
                       {c.status !== 'published' && c.status !== 'archived' && (
                         <button onClick={() => navigate('curso-revision', { courseId: c.id })} title="Abrir detalle del curso"
