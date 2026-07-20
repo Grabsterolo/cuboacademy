@@ -1,14 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { IconBtn, Toast } from '../../../components/ui'
 
-const STATUS = {
-  draft:     { label: 'Borrador',    bg: '#F5F5F0',          color: '#9B9894',  border: 'var(--border)' },
-  pending:   { label: 'En revisión', bg: '#FFFBEB',          color: '#A16207',  border: '#FDE68A' },
-  published: { label: 'Publicado',   bg: 'var(--jade-soft)', color: 'var(--jade)', border: 'rgba(22,125,120,.25)' },
-  archived:  { label: 'Archivado',   bg: '#FEF2F2',          color: '#B91C1C',  border: '#FECACA' },
+const STATUS_LABEL = {
+  draft: 'Borrador', pending: 'En revisión', published: 'Publicado', archived: 'Archivado',
 }
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const TABS = [
@@ -21,41 +18,20 @@ const TABS = [
 
 const BOOK = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
 
-// Single badge-styled control: click to open a dropdown of status options,
-// replacing what used to be a read-only badge sitting next to a redundant
-// native <select> showing the same value twice.
-function StatusBadgeSelect({ status, onChange }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  const st = STATUS[status] || STATUS.draft
-
-  useEffect(() => {
-    if (!open) return
-    function onClickOutside(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [open])
-
+// Plain native dropdown, one consistent visual style for every status —
+// no per-word color coding (that read as noisy/confusing next to the
+// other badges in the row).
+function StatusSelect({ status, onChange }) {
   return (
-    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
-      <button type="button" onClick={() => setOpen(o => !o)}
-        title={status === 'published' ? 'Para despublicar, elige Borrador o Archivado' : 'Publicar requiere revisar el curso — usa "Ver detalle"'}
-        style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '.7rem', fontWeight: 600, padding: '3px 8px 3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: `1px solid ${st.border}`, whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-        {st.label}
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><polyline points="6 9 12 15 18 9" /></svg>
-      </button>
-      {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 10, background: 'white', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 6px 20px rgba(23,26,28,.12)', minWidth: 130, overflow: 'hidden' }}>
-          {Object.entries(STATUS).map(([value, s]) => (
-            <button key={value} type="button" disabled={value === 'published' && status !== 'published'}
-              onClick={() => { onChange(value); setOpen(false) }}
-              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '.5rem .75rem', fontSize: '.78rem', fontWeight: 600, color: s.color, background: value === status ? s.bg : 'white', border: 'none', cursor: value === 'published' && status !== 'published' ? 'not-allowed' : 'pointer', opacity: value === 'published' && status !== 'published' ? .5 : 1, fontFamily: 'var(--sans)' }}>
-              {s.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <select value={status} onChange={e => onChange(e.target.value)}
+      title={status === 'published' ? 'Para despublicar, elige Borrador o Archivado' : 'Publicar requiere revisar el curso — usa "Ver detalle"'}
+      style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--carbon)', padding: '5px 8px', borderRadius: 7, border: '1px solid var(--border)', background: 'white', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+      {Object.entries(STATUS_LABEL).map(([value, label]) => (
+        <option key={value} value={value} disabled={value === 'published' && status !== 'published'}>
+          {label}
+        </option>
+      ))}
+    </select>
   )
 }
 
@@ -96,7 +72,7 @@ export default function CoursesPage() {
   async function handleStatusChange(id, newStatus) {
     const prev = courses.find(c => c.id === id)
     if (prev?.status === 'published' && newStatus !== 'published') {
-      const ok = window.confirm(`"${prev.title}" está publicado. ¿Seguro que quieres cambiarlo a "${STATUS[newStatus]?.label || newStatus}"? Dejará de verse en el catálogo.`)
+      const ok = window.confirm(`"${prev.title}" está publicado. ¿Seguro que quieres cambiarlo a "${STATUS_LABEL[newStatus] || newStatus}"? Dejará de verse en el catálogo.`)
       if (!ok) return
     }
     setCourses(cs => cs.map(c => c.id === id ? { ...c, status: newStatus } : c))
@@ -247,7 +223,7 @@ export default function CoursesPage() {
 
                     {/* Actions */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
-                      <StatusBadgeSelect status={c.status} onChange={v => handleStatusChange(c.id, v)} />
+                      <StatusSelect status={c.status} onChange={v => handleStatusChange(c.id, v)} />
 
                       {c.status !== 'published' && c.status !== 'archived' && (
                         <button onClick={() => navigate('curso-revision', { courseId: c.id })} title="Abrir detalle del curso"
