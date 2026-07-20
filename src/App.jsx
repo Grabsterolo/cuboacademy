@@ -18,14 +18,16 @@ import CourseDetailPage from './pages/public/CourseDetailPage'
 
 function AppShell() {
   const { user, loading } = useAuth()
-  const { screen, enterPortal, exitPortal } = useNavigation()
+  const { screen, exitPortal } = useNavigation()
 
-  // Sync auth state → navigation
+  // Sign-out (from anywhere) always kicks back to the landing page. Signing
+  // in does NOT auto-enter the portal here — a session restored from storage
+  // on a fresh page load should land on the public site, not jump straight
+  // into the dashboard. Explicit logins still enter the portal via their own
+  // effect in LoginScreen.jsx (fires only while that screen is mounted).
   useEffect(() => {
     if (loading) return
-    if (user && screen !== 'portal') {
-      enterPortal('panel')
-    } else if (!user && screen === 'portal') {
+    if (!user && screen === 'portal') {
       exitPortal()
     }
   }, [user, loading]) // eslint-disable-line react-hooks/exhaustive-deps
