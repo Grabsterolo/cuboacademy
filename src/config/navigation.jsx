@@ -17,7 +17,6 @@ const ICON = {
   achievements:  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   explore:       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
   requests:      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>,
-  quiz:          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 1 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
 }
 
 export const ADMIN_NAV = [
@@ -26,7 +25,6 @@ export const ADMIN_NAV = [
   { key: 'categorias',    label: 'Categorías',      icon: ICON.categories },
   { key: 'cursos',        label: 'Cursos',          icon: ICON.courses },
   { key: 'solicitudes',      label: 'Solicitudes',       icon: ICON.requests },
-  { key: 'quiz-calificacion', label: 'Calificar quizzes', icon: ICON.quiz },
   { key: 'certificados',  label: 'Certificados',    icon: ICON.certificates },
   { key: 'usuarios',      label: 'Usuarios',        icon: ICON.users },
   { key: 'reportes',      label: 'Reportes',        icon: ICON.reports },
@@ -41,7 +39,6 @@ export const INSTRUCTOR_NAV = [
   { key: 'cursos',        label: 'Mis cursos',      icon: ICON.courses },
   { key: 'estudiantes',   label: 'Mis estudiantes', icon: ICON.users },
   { key: 'evaluaciones',     label: 'Exámenes finales',  icon: ICON.evaluations },
-  { key: 'quiz-calificacion', label: 'Calificar quizzes', icon: ICON.quiz },
   { key: 'reportes',      label: 'Reportes',        icon: ICON.reports },
   { key: 'configuracion', label: 'Configuración',   icon: ICON.settings },
 ]

@@ -21,7 +21,6 @@ const SCREEN_TO_NAV = {
   'curso-wizard':      'cursos',
   'curso-detalle':     'cursos',
   'aprender':          'cursos',
-  'quiz-calificacion': 'evaluaciones',
 }
 const navKeyForScreen = screen => SCREEN_TO_NAV[screen] || screen
 

@@ -29,6 +29,10 @@ export default function InstructorEvaluationsPage() {
   const [quizData, setQuizData]       = useState({})
   const [loadingDetail, setLoadingDetail] = useState(null)
   const [toast, setToast] = useState('')
+  const [pointInputs, setPointInputs] = useState({})   // responseId → string value
+  const [grading, setGrading]         = useState({})   // responseId → bool
+  const [gradedSet, setGradedSet]     = useState(new Set())
+  const [gradeErrors, setGradeErrors] = useState({})   // responseId → message
 
   useEffect(() => {
     if (!user) return
@@ -69,25 +73,26 @@ export default function InstructorEvaluationsPage() {
   async function loadQuizDetails(sub) {
     setLoadingDetail(sub.id)
 
-    const { data: modules } = await supabase
+    // Scoped to the single "Evaluación Final" module — regular per-lesson
+    // quizzes don't exist as a product concept anymore, only the final exam.
+    const { data: evalModule } = await supabase
       .from('modules')
       .select(`
-        id, title, order_index,
+        id, title,
         lessons(id, title, order_index,
           quizzes(id, title, passing_score,
             questions(id, text, type, order_index, points,
               answers(id, text, order_index))))
       `)
       .eq('course_id', sub.course_id)
-      .order('order_index', { ascending: true })
+      .eq('title', 'Evaluación Final')
+      .maybeSingle()
 
     const quizzes = []
-    for (const mod of modules || []) {
-      const lessons = [...(mod.lessons || [])].sort((a, b) => a.order_index - b.order_index)
-      for (const lesson of lessons) {
-        for (const quiz of (lesson.quizzes || [])) {
-          quizzes.push({ ...quiz, lessonTitle: lesson.title, moduleTitle: mod.title })
-        }
+    const lessons = [...(evalModule?.lessons || [])].sort((a, b) => a.order_index - b.order_index)
+    for (const lesson of lessons) {
+      for (const quiz of (lesson.quizzes || [])) {
+        quizzes.push({ ...quiz, lessonTitle: lesson.title, moduleTitle: evalModule.title })
       }
     }
 
@@ -120,7 +125,7 @@ export default function InstructorEvaluationsPage() {
       if (attemptIds.length) {
         const { data: responsesData } = await supabase
           .from('quiz_responses')
-          .select('id, attempt_id, question_id, answer_id, open_response')
+          .select('id, attempt_id, question_id, answer_id, open_response, points_earned')
           .in('attempt_id', attemptIds)
         responses = responsesData || []
       }
@@ -131,8 +136,43 @@ export default function InstructorEvaluationsPage() {
       if (!latestAttemptByQuiz[a.quiz_id]) latestAttemptByQuiz[a.quiz_id] = a
     }
 
+    // seed grading state for any open-question responses so already-graded
+    // ones render as such instead of as an empty input
+    const graded = new Set()
+    const inputs = {}
+    for (const r of responses) {
+      if (r.points_earned != null) { graded.add(r.id); inputs[r.id] = String(r.points_earned) }
+    }
+    setGradedSet(prev => new Set([...prev, ...graded]))
+    setPointInputs(prev => ({ ...prev, ...inputs }))
+
     setQuizData(prev => ({ ...prev, [sub.id]: { quizzes, responses, latestAttemptByQuiz } }))
     setLoadingDetail(null)
+  }
+
+  async function gradeResponse(sub, responseId, maxPoints) {
+    const pts = Number(pointInputs[responseId])
+    if (isNaN(pts) || pts < 0 || pts > maxPoints) {
+      setGradeErrors(prev => ({ ...prev, [responseId]: `Ingresa un número entre 0 y ${maxPoints}` }))
+      return
+    }
+
+    setGrading(prev => ({ ...prev, [responseId]: true }))
+    setGradeErrors(prev => { const n = { ...prev }; delete n[responseId]; return n })
+
+    const { error } = await supabase.rpc('grade_quiz_response', { p_response_id: responseId, p_points: pts })
+
+    setGrading(prev => ({ ...prev, [responseId]: false }))
+
+    if (error) {
+      setGradeErrors(prev => ({ ...prev, [responseId]: error.message || 'Error al calificar' }))
+      return
+    }
+
+    setGradedSet(prev => new Set([...prev, responseId]))
+    // the backend may have just finalized the attempt's score/passed — refresh
+    // this submission's detail so the exam status reflects it
+    await loadQuizDetails(sub)
   }
 
   async function handleApprove(sub) {
@@ -165,12 +205,18 @@ export default function InstructorEvaluationsPage() {
     setProcessing(sub.id)
     const now = new Date().toISOString()
 
-    const { error } = await supabase
-      .from('exam_submissions')
-      .update({ status: 'rejected', reviewed_at: now, reviewed_by: user.id, notes: rejectNotes || null })
-      .eq('id', sub.id)
+    // RPC (not a plain update): also resets the student's attempts on the
+    // final-exam quiz, so a rejection never leaves them stuck once
+    // max_attempts is exhausted
+    const { error } = await supabase.rpc('reject_exam_submission', {
+      p_submission_id: sub.id,
+      p_notes: rejectNotes || null,
+    })
 
-    if (!error) {
+    if (error) {
+      setToast('No se pudo rechazar la evaluación: ' + error.message)
+      setTimeout(() => setToast(''), 4500)
+    } else {
       setSubmissions(prev => prev.map(s =>
         s.id === sub.id ? { ...s, status: 'rejected', reviewed_at: now, notes: rejectNotes || null } : s
       ))
@@ -219,11 +265,40 @@ export default function InstructorEvaluationsPage() {
                     return (
                       <div key={q.id}>
                         <p style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.4rem' }}>{qi + 1}. {q.text}</p>
-                        {q.type === 'open' ? (
-                          <div style={{ padding: '.55rem .75rem', background: 'var(--cream)', borderRadius: 7, fontSize: '.8rem', color: 'var(--carbon)' }}>
-                            {qResponses[0]?.open_response || <em style={{ color: 'var(--text-2)' }}>Sin respuesta</em>}
-                          </div>
-                        ) : (
+                        {q.type === 'open' ? (() => {
+                          const resp = qResponses[0]
+                          const isGraded = resp && (gradedSet.has(resp.id) || resp.points_earned != null)
+                          const isGrading = resp && grading[resp.id]
+                          const inputVal = resp ? (pointInputs[resp.id] ?? '') : ''
+                          const err = resp && gradeErrors[resp.id]
+                          return (
+                            <div style={{ padding: '.55rem .75rem', background: 'var(--cream)', borderRadius: 7, fontSize: '.8rem', color: 'var(--carbon)' }}>
+                              <div style={{ marginBottom: resp ? '.6rem' : 0 }}>
+                                {resp?.open_response || <em style={{ color: 'var(--text-2)' }}>Sin respuesta</em>}
+                              </div>
+                              {resp && (
+                                isGraded ? (
+                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', fontSize: '.78rem', color: '#16A34A', fontWeight: 600, background: '#F0FDF4', borderRadius: 7, padding: '3px 9px' }}>
+                                    ✓ {inputVal} / {q.points} pts — calificado
+                                  </div>
+                                ) : (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: '.78rem', color: 'var(--carbon)', fontWeight: 500 }}>Puntos:</span>
+                                    <input type="number" min={0} max={q.points} step={1} value={inputVal}
+                                      onChange={e => setPointInputs(prev => ({ ...prev, [resp.id]: e.target.value }))}
+                                      style={{ width: 64, padding: '.32rem .5rem', border: `1px solid ${err ? '#FECACA' : 'var(--border)'}`, borderRadius: 7, fontSize: '.8rem', fontFamily: 'var(--sans)', textAlign: 'center', outline: 'none' }} />
+                                    <span style={{ fontSize: '.76rem', color: 'var(--text-2)' }}>/ {q.points}</span>
+                                    <button onClick={() => gradeResponse(sub, resp.id, q.points)} disabled={isGrading || inputVal === ''}
+                                      style={{ padding: '.35rem .8rem', background: inputVal !== '' ? 'var(--jade)' : 'var(--border)', border: 'none', borderRadius: 7, fontSize: '.78rem', fontWeight: 700, color: inputVal !== '' ? 'white' : 'var(--text-2)', cursor: isGrading || inputVal === '' ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)' }}>
+                                      {isGrading ? '…' : 'Calificar'}
+                                    </button>
+                                    {err && <span style={{ fontSize: '.74rem', color: '#DC2626', width: '100%' }}>{err}</span>}
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          )
+                        })() : (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
                             {opts.map(opt => {
                               const chosen = qResponses.some(r => r.answer_id === opt.id)
@@ -272,7 +347,7 @@ export default function InstructorEvaluationsPage() {
         <div style={{ marginBottom: '1.75rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Instructor</p>
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Exámenes finales</h1>
-          <p style={{ fontSize: '.85rem', color: 'var(--text-2)', marginTop: '.35rem' }}>Aprueba o rechaza las solicitudes de examen final y certificación. Para calificar quizzes de lección, ve a "Calificar quizzes".</p>
+          <p style={{ fontSize: '.85rem', color: 'var(--text-2)', marginTop: '.35rem' }}>Aprueba o rechaza las solicitudes de examen final y certificación.</p>
         </div>
 
         {!loading && (
