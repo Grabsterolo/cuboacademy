@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { FieldLabel as LabelField } from '../../../components/ui'
 import { useNavigation } from '../../../context/NavigationContext'
+import { formatDateShort } from '../../../lib/formatDate'
 
 const ROLE_LABELS = { admin: 'Admin', instructor: 'Instructor', student: 'Estudiante' }
 const ROLE_STYLE = {
@@ -52,8 +53,36 @@ export default function UsersPage() {
   // Delete modal
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteImpact, setDeleteImpact] = useState(null)
+  const [deleteImpactLoading, setDeleteImpactLoading] = useState(false)
 
   useEffect(() => { loadUsers() }, [])
+
+  // Preview what deleting this user will actually do before the admin
+  // commits — courses/orders block the delete outright (FK RESTRICT),
+  // everything else (enrollments, certificates, reviews...) cascades away
+  // silently, which the plain "no se puede deshacer" copy didn't convey.
+  useEffect(() => {
+    if (!deleteTarget) { setDeleteImpact(null); return }
+    setDeleteImpactLoading(true)
+    const isInstructor = deleteTarget.role === 'instructor'
+    const query = isInstructor
+      ? supabase.from('courses').select('id', { count: 'exact', head: true }).eq('instructor_id', deleteTarget.id)
+      : Promise.all([
+          supabase.from('enrollments').select('id', { count: 'exact', head: true }).eq('student_id', deleteTarget.id),
+          supabase.from('orders').select('id', { count: 'exact', head: true }).eq('student_id', deleteTarget.id),
+          supabase.from('certificates').select('id', { count: 'exact', head: true }).eq('student_id', deleteTarget.id),
+        ])
+    Promise.resolve(query).then(result => {
+      if (isInstructor) {
+        setDeleteImpact({ courses: result.count || 0 })
+      } else {
+        const [enr, ord, cert] = result
+        setDeleteImpact({ enrollments: enr.count || 0, orders: ord.count || 0, certificates: cert.count || 0 })
+      }
+      setDeleteImpactLoading(false)
+    })
+  }, [deleteTarget])
 
   // Coming from an approved instructor application: prefill and open the create-user form.
   useEffect(() => {
@@ -208,7 +237,12 @@ export default function UsersPage() {
     const { error } = await supabase.rpc('delete_user_by_id', { target_id: deleteTarget.id })
     setDeleteLoading(false)
     if (error) {
-      showToast('Error al eliminar: ' + (error.message || 'inténtalo de nuevo.'))
+      const isBlocked = error.code === '23503'
+      showToast(isBlocked
+        ? (deleteTarget.role === 'instructor'
+          ? 'No se pudo eliminar: el instructor tiene cursos publicados. Elimina o reasigna sus cursos primero.'
+          : 'No se pudo eliminar: el estudiante tiene órdenes de compra asociadas.')
+        : 'Error al eliminar: ' + (error.message || 'inténtalo de nuevo.'))
     } else {
       setUsers(us => us.filter(u => u.id !== deleteTarget.id))
       showToast('Usuario eliminado correctamente.')
@@ -252,7 +286,6 @@ export default function UsersPage() {
         @media (max-width: 768px) {
           .users-pad { padding: 1.25rem 1rem 2rem !important; }
           .users-header { flex-direction: column !important; align-items: flex-start !important; }
-          .users-toolbar { flex-direction: column !important; align-items: stretch !important; }
           .users-search { max-width: 100% !important; flex: none !important; }
           .users-tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
           .users-tabs::-webkit-scrollbar { display: none; }
@@ -341,7 +374,7 @@ export default function UsersPage() {
 
                     {/* Date — pushed to the right */}
                     <div style={{ marginLeft: 'auto', fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                      {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                      {u.created_at ? formatDateShort(u.created_at) : '—'}
                     </div>
 
                     {/* Status badge */}
@@ -530,9 +563,26 @@ export default function UsersPage() {
               </svg>
             </div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', textAlign: 'center', marginBottom: '.5rem' }}>Eliminar usuario</h2>
-            <p style={{ fontSize: '.85rem', color: 'var(--text-2)', textAlign: 'center', lineHeight: 1.5, marginBottom: '1.75rem' }}>
+            <p style={{ fontSize: '.85rem', color: 'var(--text-2)', textAlign: 'center', lineHeight: 1.5, marginBottom: deleteImpactLoading || deleteImpact ? '.85rem' : '1.75rem' }}>
               ¿Eliminar a <strong style={{ color: 'var(--carbon)' }}>{deleteTarget.full_name || deleteTarget.email}</strong>? Esta acción no se puede deshacer.
             </p>
+            {deleteImpactLoading ? (
+              <p style={{ fontSize: '.78rem', color: 'var(--text-2)', textAlign: 'center', marginBottom: '1.5rem' }}>Revisando datos asociados…</p>
+            ) : deleteImpact && (
+              <div style={{ background: deleteImpact.courses > 0 || deleteImpact.orders > 0 ? '#FEF2F2' : 'var(--cream)', border: `1px solid ${deleteImpact.courses > 0 || deleteImpact.orders > 0 ? '#FECACA' : 'var(--border)'}`, borderRadius: 8, padding: '.75rem .9rem', marginBottom: '1.5rem', fontSize: '.78rem', color: 'var(--carbon)', lineHeight: 1.6 }}>
+                {deleteTarget.role === 'instructor' ? (
+                  deleteImpact.courses > 0
+                    ? <><strong style={{ color: '#B91C1C' }}>No se podrá eliminar:</strong> tiene {deleteImpact.courses} curso{deleteImpact.courses !== 1 ? 's' : ''} publicado{deleteImpact.courses !== 1 ? 's' : ''}. Elimina o reasigna sus cursos primero.</>
+                    : 'No tiene cursos asociados — se puede eliminar sin conflictos.'
+                ) : (
+                  deleteImpact.orders > 0
+                    ? <><strong style={{ color: '#B91C1C' }}>No se podrá eliminar:</strong> tiene {deleteImpact.orders} orden{deleteImpact.orders !== 1 ? 'es' : ''} de compra registrada{deleteImpact.orders !== 1 ? 's' : ''}.</>
+                    : (deleteImpact.enrollments > 0 || deleteImpact.certificates > 0)
+                      ? <>Se eliminará también: {deleteImpact.enrollments} inscripción{deleteImpact.enrollments !== 1 ? 'es' : ''}{deleteImpact.certificates > 0 ? ` y ${deleteImpact.certificates} certificado${deleteImpact.certificates !== 1 ? 's' : ''}` : ''}.</>
+                      : 'No tiene cursos ni certificados asociados.'
+                )}
+              </div>
+            )}
             <div style={{ display: 'flex', gap: '.75rem' }}>
               <button onClick={() => setDeleteTarget(null)} disabled={deleteLoading}
                 style={{ flex: 1, padding: '.75rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'background .15s' }}>

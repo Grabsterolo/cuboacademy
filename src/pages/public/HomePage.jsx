@@ -519,6 +519,7 @@ export default function HomePage() {
           </div>
           <div className="reveal" style={{ transitionDelay: '140ms', background: 'var(--jade-dark)', borderRadius: 16, padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(22,125,120,.18)' }} />
+            <div style={{ fontSize: '.66rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(248,246,241,.4)' }}>Ejemplo ilustrativo</div>
             <div style={{ display: 'flex', gap: '1rem' }}>
               {[{ val: '94%', label: 'Tasa de compleción', accent: false }, { val: '4.8', label: 'Calificación promedio', accent: true }].map((s) => (
                 <div key={s.label} style={{ flex: 1, background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10, padding: '1.1rem 1.2rem' }}>
@@ -720,7 +721,7 @@ export default function HomePage() {
               ¿Listo para aprender<br />desde <em style={{ fontStyle: 'normal', color: 'var(--jade-light)' }}>adentro</em>?
             </h2>
             <p style={{ fontSize: '.95rem', color: 'rgba(248,246,241,.6)', maxWidth: 460, fontWeight: 300, lineHeight: 1.7 }}>
-              Únete a miles de profesionales que transforman sus organizaciones con conocimiento consultivo real.
+              Únete a los profesionales que transforman sus organizaciones con conocimiento consultivo real.
             </p>
           </div>
           <div className="cta-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.9rem', flexShrink: 0 }}>
@@ -728,7 +729,7 @@ export default function HomePage() {
               Crear cuenta gratis
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'rgba(248,246,241,.55)', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, padding: '.4rem .85rem', backdropFilter: 'blur(6px)' }}>
-              Sin tarjeta de crédito · Cancela cuando quieras
+              Sin tarjeta de crédito · Regístrate en un minuto
             </div>
           </div>
         </div>
