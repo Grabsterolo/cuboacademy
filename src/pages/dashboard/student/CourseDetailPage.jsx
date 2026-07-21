@@ -6,17 +6,9 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 import { enrollCourse } from '../../../lib/enrollCourse'
 import { CourseReviews } from '../../../components/reviews/CourseReviews'
+import { Avatar } from '../../../components/ui'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
-
-function Avatar({ name, url, size = 40 }) {
-  const initials = (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  return url
-    ? <img loading="lazy" src={url} alt={name || ''} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-    : <div style={{ width: size, height: size, borderRadius: '50%', background: 'linear-gradient(140deg,var(--jade),var(--jade-dark,#0d4a46))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <span style={{ fontSize: size * 0.34 + 'px', fontWeight: 700, color: 'white', fontFamily: 'var(--serif)' }}>{initials}</span>
-      </div>
-}
 
 export default function CourseDetailPage() {
   const { params, navigate } = useNavigation()
@@ -48,15 +40,30 @@ export default function CourseDetailPage() {
       // Filter modules through the embedded courses relation instead of
       // looking up the course id first — one round trip instead of two.
       supabase.from('modules')
-        .select('id, title, order_index, lessons(id, title, duration_mins, order_index), courses!inner(slug, status)')
+        .select('id, title, order_index, courses!inner(slug, status)')
         .eq('courses.slug', slug).eq('courses.status', 'published')
-        .order('order_index', { ascending: true })
-        .order('order_index', { ascending: true, foreignTable: 'lessons' }),
+        .order('order_index', { ascending: true }),
     ])
 
     if (!courseData) { setLoading(false); return }
     setCourse(courseData)
-    const mods = (modsData || []).map(m => ({ ...m, lessons: m.lessons || [] }))
+
+    // Lesson titles/durations for the syllabus outline come from the public
+    // preview view, not the lessons table directly — a non-enrolled student
+    // can't read lessons (RLS requires enrollment or is_free_preview), so
+    // querying the raw table here would silently show every module as empty.
+    const moduleIds = (modsData || []).map(m => m.id)
+    const { data: lessonRows } = moduleIds.length > 0
+      ? await supabase.from('lessons_syllabus_preview')
+          .select('id, module_id, title, duration_mins, order_index')
+          .in('module_id', moduleIds)
+          .order('order_index', { ascending: true })
+      : { data: [] }
+
+    const mods = (modsData || []).map(m => ({
+      ...m,
+      lessons: (lessonRows || []).filter(l => l.module_id === m.id),
+    }))
     setModules(mods)
     if (mods.length > 0) setExpandedMods(new Set([mods[0].id]))
 
@@ -200,7 +207,7 @@ export default function CourseDetailPage() {
                 <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem 1.4rem', marginBottom: '1.5rem' }}>
                   <div style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.85rem' }}>Instructor</div>
                   <div style={{ display: 'flex', gap: '.85rem', alignItems: 'flex-start' }}>
-                    <Avatar name={course.profiles.full_name} url={course.profiles.avatar_url} size={44} />
+                    <Avatar name={course.profiles.full_name} url={course.profiles.avatar_url} size={44} fontScale={0.34} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', fontSize: '.95rem', marginBottom: '.2rem' }}>
                         {course.profiles.full_name}

@@ -4,10 +4,17 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import { useCourseRatingSummaries, RatingBadge } from '../../../components/reviews/CourseReviews'
+import { STATUS_TONE } from '../../../components/ui'
+import { formatDateLong } from '../../../lib/formatDate'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const LEVEL_OPTS = ['', 'beginner', 'intermediate', 'advanced']
 const LEVEL_NAMES = { '': 'Todos', beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
+const ORDER_STATUS_STYLE = {
+  completed: { label: 'Pagado',      hint: null, ...STATUS_TONE.success },
+  pending:   { label: 'En revisión', hint: 'Esperando confirmación de pago — te notificaremos al aprobarse.', ...STATUS_TONE.warning },
+  failed:    { label: 'Rechazada',   hint: null, ...STATUS_TONE.danger },
+}
 
 function CourseCard({ course, wishlistIds, onToggleWishlist, rating }) {
   const { navigate } = useNavigation()
@@ -198,11 +205,6 @@ function PurchasesTab({ user }) {
       .catch(() => setLoading(false))
   }, [user])
 
-  const STATUS_STYLE = {
-    completed: { label: 'Pagado',     hint: null,                                                          bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
-    pending:   { label: 'En revisión', hint: 'Esperando confirmación de pago — te notificaremos al aprobarse.', bg: '#FFFBEB',          color: '#92400E',          border: '1px solid #FDE68A'           },
-    failed:    { label: 'Rechazada',  hint: null,                                                          bg: '#FEF2F2',          color: '#B91C1C',          border: '1px solid #FECACA'           },
-  }
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '.7rem' }}>
@@ -224,8 +226,8 @@ function PurchasesTab({ user }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '.7rem' }}>
       {orders.map(order => {
         const c = order.courses
-        const st = STATUS_STYLE[order.status] || STATUS_STYLE.pending
-        const date = new Date(order.created_at).toLocaleDateString('es-CR', { year: 'numeric', month: 'long', day: 'numeric' })
+        const st = ORDER_STATUS_STYLE[order.status] || ORDER_STATUS_STYLE.pending
+        const date = formatDateLong(order.created_at)
         return (
           <div key={order.id} style={{ background: 'white', border: `1px solid ${order.status === 'pending' ? '#FDE68A' : 'var(--border)'}`, borderRadius: 10, padding: '1rem 1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>

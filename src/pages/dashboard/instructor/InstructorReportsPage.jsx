@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
+import { STATUS_TONE } from '../../../components/ui'
 
 const STATUS_STYLE = {
-  published: { label: 'Publicado',   bg: 'var(--jade-soft)', color: 'var(--jade)',  border: 'rgba(22,125,120,.25)' },
-  draft:     { label: 'Borrador',    bg: '#F5F5F0',          color: '#9B9894',      border: 'var(--border)' },
-  pending:   { label: 'En revisión', bg: '#FFFBEB',          color: '#A16207',      border: '#FDE68A' },
-  archived:  { label: 'Archivado',   bg: '#FEF2F2',          color: '#B91C1C',      border: '#FECACA' },
+  published: { label: 'Publicado',   ...STATUS_TONE.success },
+  draft:     { label: 'Borrador',    ...STATUS_TONE.neutral },
+  pending:   { label: 'En revisión', ...STATUS_TONE.warning },
+  archived:  { label: 'Archivado',   ...STATUS_TONE.danger },
 }
 const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 
@@ -161,7 +162,7 @@ export default function InstructorReportsPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
                           {revenueByCourse[c.id] > 0 && <span style={{ fontSize: '.7rem', fontWeight: 700, color: 'var(--jade)' }}>${revenueByCourse[c.id].toFixed(2)}</span>}
                           <span style={{ fontSize: '.7rem', fontWeight: 600, color: 'var(--text-2)' }}>{n} est.</span>
-                          <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 8, background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>{st.label}</span>
+                          <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 8, background: st.bg, color: st.color, border: st.border }}>{st.label}</span>
                         </div>
                       </div>
                       <div style={{ height: 5, background: 'var(--cream)', borderRadius: 4, overflow: 'hidden' }}>

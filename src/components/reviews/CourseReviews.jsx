@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { formatDateShort } from '../../lib/formatDate'
 
 function Star({ filled, size = 16, onClick, onMouseEnter }) {
   return (
@@ -119,7 +120,7 @@ export function CourseReviews({ courseId, currentUserId, canReview }) {
 
 function ReviewRow({ review, mine }) {
   const name = review.profiles?.full_name || 'Estudiante'
-  const date = new Date(review.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })
+  const date = formatDateShort(review.created_at)
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   return (
     <div style={{ display: 'flex', gap: '.75rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>

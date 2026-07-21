@@ -3,12 +3,14 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
+import { STATUS_TONE } from '../../../components/ui'
+import { formatDateShort } from '../../../lib/formatDate'
 
 const STATUS = {
-  published: { label: 'Publicado',  bg: 'var(--jade-soft)', color: 'var(--jade)',  border: 'rgba(22,125,120,.25)' },
-  pending:   { label: 'En revisión', bg: '#FFFBEB',          color: '#A16207',      border: '#FDE68A' },
-  draft:     { label: 'Borrador',   bg: '#F5F5F0',          color: '#9B9894',      border: 'var(--border)' },
-  archived:  { label: 'Archivado',  bg: '#FEF2F2',          color: '#B91C1C',      border: '#FECACA' },
+  published: { label: 'Publicado',   ...STATUS_TONE.success },
+  pending:   { label: 'En revisión', ...STATUS_TONE.warning },
+  draft:     { label: 'Borrador',    ...STATUS_TONE.neutral },
+  archived:  { label: 'Archivado',   ...STATUS_TONE.danger },
 }
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const TABS  = [
@@ -162,7 +164,7 @@ export default function InstructorCoursesPage() {
                         {c.categories?.name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span>}
                         {c.level && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
                         <span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span>
-                        <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{new Date(c.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                        <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatDateShort(c.created_at)}</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0 }}>
@@ -172,7 +174,7 @@ export default function InstructorCoursesPage() {
                           {n}
                         </div>
                       )}
-                      <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>{st.label}</span>
+                      <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: st.border }}>{st.label}</span>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
                   </div>

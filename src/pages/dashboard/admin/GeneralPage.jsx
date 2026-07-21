@@ -4,6 +4,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
 import { Skeleton } from '../../../components/ui'
+import { formatDateShort } from '../../../lib/formatDate'
 
 const Skel = Skeleton
 
@@ -125,7 +126,7 @@ export default function GeneralPage() {
                           {u.full_name || '—'}
                         </div>
                         <div style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.1rem' }}>
-                          {u.created_at ? new Date(u.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                          {u.created_at ? formatDateShort(u.created_at) : '—'}
                         </div>
                       </div>
                       <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap', background: badge.bg, color: badge.color, border: badge.border }}>
@@ -156,7 +157,7 @@ export default function GeneralPage() {
                   {stats.comunicados_recientes.map((a, i) => (
                     <div key={a.id} style={{ padding: '.6rem 0', borderBottom: i < stats.comunicados_recientes.length - 1 ? '1px solid var(--border)' : 'none' }}>
                       <div style={{ fontSize: '.86rem', fontWeight: 500, color: 'var(--carbon)', fontFamily: 'var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</div>
-                      <div style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.1rem' }}>{new Date(a.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                      <div style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.1rem' }}>{formatDateShort(a.created_at)}</div>
                     </div>
                   ))}
                 </div>

@@ -1,27 +1,14 @@
-import { useState, useEffect, useRef, cloneElement, isValidElement } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigation } from '../../../context/NavigationContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
-import { Toast } from '../../../components/ui/index'
+import { Toast, Field } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
 import { validateImageFile, resizeImage } from '../../../lib/imageProcessing'
 
 const COUNTRIES = ['Costa Rica','México','Colombia','Argentina','Chile','Perú','Ecuador','Guatemala','Honduras','El Salvador','Nicaragua','Panamá','Uruguay','Paraguay','Bolivia','Venezuela','República Dominicana','España','Otro']
 
 const INP = { width: '100%', padding: '.7rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', outline: 'none', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
-const LBL = { display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }
-
-const FORM_TAGS = ['input', 'textarea', 'select']
-function Field({ label, children, hint, id }) {
-  const input = id && isValidElement(children) && FORM_TAGS.includes(children.type) && !children.props.id ? cloneElement(children, { id }) : children
-  return (
-    <div style={{ marginBottom: '.95rem' }}>
-      <label htmlFor={id} style={LBL}>{label}</label>
-      {hint && <p style={{ fontSize: '.72rem', color: '#B5B2AB', marginBottom: '.3rem', marginTop: '-.1rem' }}>{hint}</p>}
-      {input}
-    </div>
-  )
-}
 
 function ReadOnlySection({ icon, title, text, onCtaClick, cta }) {
   return (

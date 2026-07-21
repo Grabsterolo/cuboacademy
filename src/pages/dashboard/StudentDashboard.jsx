@@ -6,6 +6,7 @@ import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 import { ACHIEVEMENTS as ACHIEVEMENT_DEFS } from '../../utils/achievements'
 import { calculateProgressByCourse } from '../../utils/progress'
+import { formatDateShort } from '../../lib/formatDate'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
@@ -264,7 +265,7 @@ export default function StudentDashboard() {
                           <div style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
                           {e.completed_at && (
                             <div style={{ fontSize: '.68rem', color: 'var(--text-2)' }}>
-                              Completado el {new Date(e.completed_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              Completado el {formatDateShort(e.completed_at)}
                             </div>
                           )}
                         </div>
@@ -384,7 +385,7 @@ export default function StudentDashboard() {
                           <div style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
                           {e.completed_at && (
                             <div style={{ fontSize: '.66rem', color: 'var(--text-2)' }}>
-                              {new Date(e.completed_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              {formatDateShort(e.completed_at)}
                             </div>
                           )}
                         </div>

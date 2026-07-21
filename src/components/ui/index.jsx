@@ -1,7 +1,7 @@
 import { useEffect, useState, cloneElement, isValidElement } from 'react'
 
 export { Icon } from './icons'
-export { INP, SEL, fi, fb } from './tokens'
+export { INP, SEL, fi, fb, STATUS_TONE } from './tokens'
 
 // ─── FieldLabel ───────────────────────────────────────────────────────────────
 // Simple label used by CategoriesPage and UsersPage forms.
@@ -29,6 +29,19 @@ export function Field({ label, children, hint, id }) {
       {input}
     </div>
   )
+}
+
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+// Photo if available, otherwise initials on a jade circle. `gradient`/`fontScale`
+// exist only so call sites that predate this component can keep their exact
+// prior look (a flat jade fill, a slightly different initials size).
+export function Avatar({ name, url, size = 40, gradient = true, fontScale = 0.32 }) {
+  const initials = (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  return url
+    ? <img loading="lazy" src={url} alt={name || ''} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+    : <div style={{ width: size, height: size, borderRadius: '50%', background: gradient ? 'linear-gradient(140deg,var(--jade),var(--jade-dark,#0d4a46))' : 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <span style={{ fontSize: size * fontScale + 'px', fontWeight: 700, color: 'white', fontFamily: 'var(--serif)' }}>{initials}</span>
+      </div>
 }
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────

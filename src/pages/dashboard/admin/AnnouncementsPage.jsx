@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../context/AuthContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import { formatDateShort } from '../../../lib/formatDate'
 
 // ── Tipos de comunicado ─────────────────────────────────────────────────────
 const TYPES = [
@@ -355,7 +356,7 @@ export default function AnnouncementsPage() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.5rem', flexShrink: 0 }}>
                     <span style={{ fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap' }}>
-                      {new Date(item.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {formatDateShort(item.created_at)}
                     </span>
                     <div style={{ display: 'flex', gap: '.25rem' }}>
                       <button className="ann-icon-btn ann-icon-btn-edit" onClick={e => { e.stopPropagation(); openEdit(item) }} title="Editar">
@@ -511,7 +512,7 @@ export default function AnnouncementsPage() {
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 9, flexShrink: 0 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <span style={{ fontSize: '.78rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                      {new Date(readItem.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {formatDateShort(readItem.created_at)}
                     </span>
                   </div>
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .8rem', background: tgt.bg, border: `1px solid ${tgt.border}`, borderRadius: 9, flexShrink: 0 }}>

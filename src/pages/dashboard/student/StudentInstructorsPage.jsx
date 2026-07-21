@@ -2,18 +2,9 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
-import { ModalOverlay } from '../../../components/ui'
+import { ModalOverlay, Avatar } from '../../../components/ui'
 
 const USERS_ICON = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-
-function Avatar({ name, url, size = 56 }) {
-  const initials = (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  return url
-    ? <img loading="lazy" src={url} alt={name || ''} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-    : <div style={{ width: size, height: size, borderRadius: '50%', background: 'linear-gradient(140deg,var(--jade),var(--jade-dark,#0d4a46))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <span style={{ fontSize: size * 0.32 + 'px', fontWeight: 700, color: 'white', fontFamily: 'var(--serif)' }}>{initials}</span>
-      </div>
-}
 
 const SOCIAL_ICONS = {
   linkedin: <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>,
@@ -23,7 +14,6 @@ const SOCIAL_ICONS = {
 
 function InstructorModal({ instructor, onClose }) {
   const { profile, courses } = instructor
-  const initials = (profile.full_name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 
   return (
     <ModalOverlay onClose={onClose}>
@@ -189,7 +179,7 @@ export default function StudentInstructorsPage() {
                   onClick={() => setSelected(instructor)}
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(instructor) } }}>
                   <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                    <Avatar name={profile.full_name} url={profile.avatar_url} />
+                    <Avatar name={profile.full_name} url={profile.avatar_url} size={56} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.25, marginBottom: '.2rem' }}>
                         {profile.full_name || 'Instructor'}

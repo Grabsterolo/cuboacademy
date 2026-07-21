@@ -2,17 +2,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
+import { Avatar } from '../../../components/ui'
+import { formatDateShort } from '../../../lib/formatDate'
 
 const USERS = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-
-function Avatar({ name, url, size = 38 }) {
-  const initials = (name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  return url
-    ? <img loading="lazy" src={url} alt={name || ''} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-    : <div style={{ width: size, height: size, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <span style={{ fontSize: size * 0.3 + 'px', fontWeight: 700, color: 'white', fontFamily: 'var(--serif)' }}>{initials}</span>
-      </div>
-}
 
 export default function InstructorStudentsPage() {
   const { profile } = useAuth()
@@ -151,7 +144,7 @@ export default function InstructorStudentsPage() {
                 <div style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.84rem' }}>Sin resultados para esta búsqueda.</div>
               ) : filtered.map(r => (
                 <div key={r.id} className="ist-row">
-                  <Avatar name={r.student.full_name || r.student.email} url={r.student.avatar_url} />
+                  <Avatar name={r.student.full_name || r.student.email} url={r.student.avatar_url} size={38} gradient={false} fontScale={0.3} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: '.875rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {r.student.full_name || r.student.email || 'Estudiante'}
@@ -162,7 +155,7 @@ export default function InstructorStudentsPage() {
                     {r.completed_at ? 'Completado' : 'En curso'}
                   </span>
                   <div style={{ fontSize: '.72rem', color: '#B5B2AB', flexShrink: 0 }}>
-                    {new Date(r.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {formatDateShort(r.created_at)}
                   </div>
                 </div>
               ))}

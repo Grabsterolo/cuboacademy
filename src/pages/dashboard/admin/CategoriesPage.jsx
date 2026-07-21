@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { FieldLabel as LabelField, Toast } from '../../../components/ui'
 import { slugify } from '../../../lib/slugify'
+import { formatDateShort } from '../../../lib/formatDate'
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([])
@@ -214,7 +215,7 @@ export default function CategoriesPage() {
                       /{cat.slug}
                     </span>
                     <span style={{ fontSize: '.72rem', color: '#B5B2AB' }}>
-                      {cat.created_at ? new Date(cat.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                      {cat.created_at ? formatDateShort(cat.created_at) : '—'}
                     </span>
                   </div>
                 </div>

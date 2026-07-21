@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import { STATUS_TONE } from '../../../components/ui'
+import { formatDateShort } from '../../../lib/formatDate'
 
 const STATUS_STYLE = {
-  completed: { label: 'Pagado',      bg: 'var(--jade-soft)', color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
-  pending:   { label: 'Pendiente',   bg: '#FFF9E6',           color: '#B45309',       border: '1px solid #FBBF24' },
-  failed:    { label: 'Fallido',     bg: '#FEF2F2',           color: '#B91C1C',       border: '1px solid #FECACA' },
-  refunded:  { label: 'Reembolsado', bg: '#F1F0EC',           color: 'var(--text-2)', border: '1px solid var(--border)' },
+  completed: { label: 'Pagado',      ...STATUS_TONE.success },
+  pending:   { label: 'Pendiente',   ...STATUS_TONE.warning },
+  failed:    { label: 'Fallido',     ...STATUS_TONE.danger },
+  refunded:  { label: 'Reembolsado', ...STATUS_TONE.neutral },
 }
 
 function StatusBadge({ status }) {
@@ -204,7 +206,7 @@ export default function OrdersPage() {
               const course = order.courses
               const isActing = acting === order.id
               const initials = (student?.full_name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-              const date = new Date(order.created_at).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })
+              const date = formatDateShort(order.created_at)
               const isConfirming = confirmAction?.orderId === order.id
               return (
                 <div key={order.id} className="op-row">

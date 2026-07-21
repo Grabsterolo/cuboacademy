@@ -98,7 +98,6 @@ export default function Navbar() {
         .btn-outline-nav:hover { border-color: var(--jade); color: var(--jade); }
         .btn-primary-nav { padding: .45rem 1.15rem; background: var(--jade); color: white; border: none; border-radius: 7px; font-size: .85rem; font-weight: 600; cursor: pointer; transition: background .2s; font-family: var(--sans); -webkit-tap-highlight-color: transparent; }
         .btn-primary-nav:hover { background: var(--jade-hover); }
-        .user-chip { display: flex; align-items: center; gap: .5rem; padding: .35rem .85rem .35rem .4rem; background: var(--jade-soft); border-radius: 20px; border: 1px solid var(--jade-light); cursor: pointer; background: none; border: none; }
         .btn-signout { background: none; border: none; color: var(--text-2); font-size: .8rem; font-weight: 500; cursor: pointer; padding: .3rem .5rem; border-radius: 5px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
         .btn-signout:hover { color: var(--terra); }
         .nav-hamburger { display: none; background: none; border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; cursor: pointer; color: var(--carbon); align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; min-width: 42px; min-height: 42px; }

@@ -70,8 +70,6 @@ export default function CourseWizardPage() {
         @keyframes wiz-spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .wiz-pad { padding: 1.25rem 1rem 3rem !important; }
-          .wiz-grid { grid-template-columns: 1fr !important; }
-          .wiz-step-label { display: none !important; }
         }
       `}</style>
 

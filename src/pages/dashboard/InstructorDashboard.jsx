@@ -3,13 +3,14 @@ import DashboardLayout from '../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
+import { STATUS_TONE } from '../../components/ui'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const STATUS_STYLE = {
-  published: { label: 'Publicado',  bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
-  draft:     { label: 'Borrador',   bg: '#F5F5F0',           color: '#9B9894',          border: '1px solid var(--border)' },
-  pending:   { label: 'En revisión',bg: '#FFFBEB',           color: '#A16207',          border: '1px solid #FDE68A' },
-  archived:  { label: 'Archivado',  bg: '#FEF2F2',           color: '#B91C1C',          border: '1px solid #FECACA' },
+  published: { label: 'Publicado',   ...STATUS_TONE.success },
+  draft:     { label: 'Borrador',    ...STATUS_TONE.neutral },
+  pending:   { label: 'En revisión', ...STATUS_TONE.warning },
+  archived:  { label: 'Archivado',   ...STATUS_TONE.danger },
 }
 
 function StatCard({ value, label, icon, accent }) {

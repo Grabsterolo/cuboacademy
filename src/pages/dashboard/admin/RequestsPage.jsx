@@ -1,22 +1,23 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
-import { ModalOverlay, ConfirmModal, Badge, Toast } from '../../../components/ui/index'
+import { ModalOverlay, ConfirmModal, Badge, Toast, STATUS_TONE } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
 import { useNavigation } from '../../../context/NavigationContext'
 import { slugify } from '../../../lib/slugify'
+import { formatDateShort } from '../../../lib/formatDate'
 
 const EXP_LABEL = { 2: '1-2 años', 5: '3-5 años', 10: '6-10 años', 15: '10+ años' }
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
 const STATUS_BADGE = {
-  pending:  { label: 'Pendiente', bg: '#FFF9E6', color: '#B45309', border: '1px solid #FBBF24' },
-  approved: { label: 'Aprobado',  bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
-  rejected: { label: 'Rechazado', bg: '#FEF2F2', color: '#B91C1C', border: '1px solid #FECACA' },
+  pending:  { label: 'Pendiente', ...STATUS_TONE.warning },
+  approved: { label: 'Aprobado',  ...STATUS_TONE.success },
+  rejected: { label: 'Rechazado', ...STATUS_TONE.danger },
 }
 
 function fmt(iso) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' })
+  return formatDateShort(iso)
 }
 
 function Section({ title, children }) {

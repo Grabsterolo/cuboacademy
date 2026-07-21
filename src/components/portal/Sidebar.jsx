@@ -5,6 +5,7 @@ import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { ADMIN_NAV, INSTRUCTOR_NAV, STUDENT_NAV } from '../../config/navigation'
+import { formatDateCompact } from '../../lib/formatDate'
 
 const LOGO = (
   <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
@@ -35,7 +36,7 @@ function timeAgo(iso) {
   if (hours < 24) return `hace ${hours} h`
   const days = Math.floor(hours / 24)
   if (days < 7) return `hace ${days} d`
-  return new Date(iso).toLocaleDateString('es-CR', { day: 'numeric', month: 'short' })
+  return formatDateCompact(iso)
 }
 
 function NotificationBell({ onNavigate }) {
@@ -245,7 +246,7 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
           borderRight: '1px solid rgba(255,255,255,.07)',
         }}>
           {/* Close button */}
-          <button onClick={onCloseDrawer}
+          <button onClick={onCloseDrawer} aria-label="Cerrar menú"
             style={{ position: 'absolute', top: '1rem', right: '.75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.5)', padding: 6, display: 'flex' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
