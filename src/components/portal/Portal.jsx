@@ -12,6 +12,7 @@ const GeneralPage = lazy(() => import('../../pages/dashboard/admin/GeneralPage')
 const UsersPage = lazy(() => import('../../pages/dashboard/admin/UsersPage'))
 const CategoriesPage = lazy(() => import('../../pages/dashboard/admin/CategoriesPage'))
 const CoursesPage = lazy(() => import('../../pages/dashboard/admin/CoursesPage'))
+const EventsPage = lazy(() => import('../../pages/dashboard/admin/EventsPage'))
 const CourseReviewPage = lazy(() => import('../../pages/dashboard/admin/CourseReviewPage'))
 const OrdersPage = lazy(() => import('../../pages/dashboard/admin/OrdersPage'))
 const CertificatesPage = lazy(() => import('../../pages/dashboard/admin/CertificatesPage'))
@@ -27,6 +28,7 @@ const EventAttendancePage = lazy(() => import('../../pages/dashboard/instructor/
 const InstructorDashboard = lazy(() => import('../../pages/dashboard/InstructorDashboard'))
 const InstructorProfilePage = lazy(() => import('../../pages/dashboard/instructor/InstructorProfilePage'))
 const InstructorCoursesPage = lazy(() => import('../../pages/dashboard/instructor/InstructorCoursesPage'))
+const InstructorEventsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorEventsPage'))
 const InstructorStudentsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorStudentsPage'))
 const InstructorEvaluationsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorEvaluationsPage'))
 const InstructorReportsPage = lazy(() => import('../../pages/dashboard/instructor/InstructorReportsPage'))
@@ -75,6 +77,7 @@ function renderSection(section, role, params) {
       case 'cursos':        return <CoursesPage />
       case 'curso-wizard':    return <CourseWizardPage />
       case 'curso-revision':    return <CourseReviewPage />
+      case 'eventos':           return <EventsPage />
       case 'evento-wizard':     return <EventWizardPage />
       case 'evento-asistencia': return <EventAttendancePage />
       case 'categorias':    return <CategoriesPage />
@@ -92,6 +95,7 @@ function renderSection(section, role, params) {
       case 'perfil':        return <InstructorProfilePage />
       case 'cursos':        return <InstructorCoursesPage />
       case 'curso-wizard':  return <CourseWizardPage />
+      case 'eventos':           return <InstructorEventsPage />
       case 'evento-wizard':     return <EventWizardPage />
       case 'evento-asistencia': return <EventAttendancePage />
       case 'estudiantes':   return <InstructorStudentsPage />

@@ -22,6 +22,9 @@ const SCREEN_TO_NAV = {
   'curso-wizard':      'cursos',
   'curso-detalle':     'cursos',
   'aprender':          'cursos',
+  'evento-wizard':     'eventos',
+  'evento-asistencia': 'eventos',
+  'evento-detalle':    'eventos',
 }
 const navKeyForScreen = screen => SCREEN_TO_NAV[screen] || screen
 
