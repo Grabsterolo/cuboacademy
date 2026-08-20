@@ -46,13 +46,10 @@ function CourseCard({ course, wishlistIds, onToggleWishlist, rating }) {
       </button>
 
       {/* Cover */}
-      <div style={{
-        aspectRatio: '1 / 1',
-        backgroundImage: cover ? `url(${cover}), linear-gradient(140deg,#0d3840 0%,#082830 100%)` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)',
-        backgroundSize: cover ? 'contain, cover' : 'cover',
-        backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
-        flexShrink: 0,
-      }} />
+      <div style={{ aspectRatio: '1 / 1', position: 'relative', overflow: 'hidden', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', flexShrink: 0 }}>
+        {cover && <div style={{ position: 'absolute', inset: -12, backgroundImage: `url(${cover})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(18px) brightness(.6)' }} />}
+        {cover && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${cover})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />}
+      </div>
 
       {/* Body */}
       <div style={{ padding: '.9rem 1rem 1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>

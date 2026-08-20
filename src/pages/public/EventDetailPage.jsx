@@ -104,12 +104,9 @@ export default function EventDetailPage() {
       `}</style>
 
       {/* Hero */}
-      <div style={{
-        minHeight: 340, position: 'relative', display: 'flex', alignItems: 'flex-end',
-        backgroundImage: event.cover_image_url ? `url(${event.cover_image_url}), linear-gradient(140deg,#0d3840 0%,#082830 100%)` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)',
-        backgroundSize: event.cover_image_url ? 'contain, cover' : 'cover',
-        backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
-      }}>
+      <div style={{ minHeight: 340, position: 'relative', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)' }}>
+        {event.cover_image_url && <div style={{ position: 'absolute', inset: -12, backgroundImage: `url(${event.cover_image_url})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(24px) brightness(.6)' }} />}
+        {event.cover_image_url && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${event.cover_image_url})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />}
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.88) 0%,rgba(8,24,28,.4) 60%,transparent 100%)' }} />
         <div style={{ position: 'relative', zIndex: 1, padding: '2.5rem 5%', width: '100%', boxSizing: 'border-box' }}>
           <nav style={{ fontSize: '.76rem', color: 'rgba(255,255,255,.6)', marginBottom: '1rem', display: 'flex', gap: '.4rem', alignItems: 'center' }}>

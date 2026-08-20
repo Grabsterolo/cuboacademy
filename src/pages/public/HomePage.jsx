@@ -616,7 +616,12 @@ export default function HomePage() {
                   <div key={c.id} className="reveal course-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                     <div style={{ aspectRatio: '1 / 1', position: 'relative', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', overflow: 'hidden' }}>
                       {c.cover_image_url
-                        ? <img loading="lazy" src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ? (
+                          <>
+                            <div style={{ position: 'absolute', inset: -12, backgroundImage: `url(${c.cover_image_url})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(18px) brightness(.6)' }} />
+                            <img loading="lazy" src={c.cover_image_url} alt={c.title} style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain' }} />
+                          </>
+                        )
                         : (
                           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.18)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
@@ -705,7 +710,12 @@ export default function HomePage() {
                   <div key={e.id} className="reveal course-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                     <div style={{ aspectRatio: '1 / 1', position: 'relative', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', overflow: 'hidden' }}>
                       {e.cover_image_url
-                        ? <img loading="lazy" src={e.cover_image_url} alt={e.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ? (
+                          <>
+                            <div style={{ position: 'absolute', inset: -12, backgroundImage: `url(${e.cover_image_url})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(18px) brightness(.6)' }} />
+                            <img loading="lazy" src={e.cover_image_url} alt={e.title} style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain' }} />
+                          </>
+                        )
                         : (
                           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.18)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">

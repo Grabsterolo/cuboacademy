@@ -120,12 +120,10 @@ export default function EventDetailPage() {
             {/* ── Left: event info ── */}
             <div>
               {/* Cover */}
-              <div style={{
-                width: '100%', height: 320, borderRadius: 14, marginBottom: '1.75rem',
-                backgroundImage: event.cover_image_url ? `url(${event.cover_image_url}), linear-gradient(140deg,#0d3840 0%,#082830 100%)` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)',
-                backgroundSize: event.cover_image_url ? 'contain, cover' : 'cover',
-                backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
-              }} />
+              <div style={{ width: '100%', height: 320, borderRadius: 14, marginBottom: '1.75rem', position: 'relative', overflow: 'hidden', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)' }}>
+                {event.cover_image_url && <div style={{ position: 'absolute', inset: -12, backgroundImage: `url(${event.cover_image_url})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(24px) brightness(.6)' }} />}
+                {event.cover_image_url && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${event.cover_image_url})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />}
+              </div>
 
               {/* Title + meta */}
               <div style={{ marginBottom: '1.5rem' }}>

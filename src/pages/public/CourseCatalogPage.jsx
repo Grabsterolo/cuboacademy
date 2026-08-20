@@ -24,13 +24,10 @@ function CourseCard({ course, rating }) {
   return (
     <div className="pub-card" onClick={() => navigate('course-detail', { slug: course.slug })}
       style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
-      <div style={{
-        aspectRatio: '1 / 1',
-        backgroundImage: cover ? `url(${cover}), linear-gradient(140deg,#0d3840 0%,#082830 100%)` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)',
-        backgroundSize: cover ? 'contain, cover' : 'cover',
-        backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
-        flexShrink: 0,
-      }} />
+      <div style={{ aspectRatio: '1 / 1', position: 'relative', overflow: 'hidden', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', flexShrink: 0 }}>
+        {cover && <div style={{ position: 'absolute', inset: -12, backgroundImage: `url(${cover})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(18px) brightness(.6)' }} />}
+        {cover && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${cover})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />}
+      </div>
       <div style={{ padding: '1rem 1.1rem 1.2rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.5rem' }}>
           {level && <span style={{ fontSize: '.64rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', padding: '3px 8px', borderRadius: 20 }}>{level}</span>}
