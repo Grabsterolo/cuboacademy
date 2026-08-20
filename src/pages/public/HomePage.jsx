@@ -201,6 +201,7 @@ export default function HomePage() {
     supabase
       .from('courses')
       .select('id, title, slug, cover_image_url, price, level, duration_hours, categories(name), profiles!instructor_id(full_name, avatar_url)')
+      .eq('type', 'course')
       .eq('status', 'published')
       .order('created_at', { ascending: false })
       .limit(6)
@@ -223,7 +224,7 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from('courses').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+      supabase.from('courses').select('id', { count: 'exact', head: true }).eq('type', 'course').eq('status', 'published'),
       supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
       supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'instructor').eq('is_active', true),
     ]).then(([coursesRes, studentsRes, instructorsRes]) => {

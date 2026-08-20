@@ -18,6 +18,8 @@ const ResetPasswordScreen = lazy(() => import('./pages/public/ResetPasswordScree
 const InstructorApplicationPage = lazy(() => import('./pages/public/InstructorApplicationPage'))
 const CourseCatalogPage = lazy(() => import('./pages/public/CourseCatalogPage'))
 const CourseDetailPage = lazy(() => import('./pages/public/CourseDetailPage'))
+const EventCatalogPage = lazy(() => import('./pages/public/EventCatalogPage'))
+const EventDetailPage = lazy(() => import('./pages/public/EventDetailPage'))
 
 function LoadingSection() {
   return (
@@ -75,12 +77,14 @@ function AppShell() {
     switch (screen) {
       case 'courses':          return <CourseCatalogPage />
       case 'course-detail':    return <CourseDetailPage />
+      case 'events':           return <EventCatalogPage />
+      case 'event-detail':     return <EventDetailPage />
       case 'instructor-apply': return <InstructorApplicationPage />
       default:                 return <HomePage />
     }
   })()
 
-  const hasFooter = screen === 'landing' || screen === 'courses'
+  const hasFooter = screen === 'landing' || screen === 'courses' || screen === 'events'
 
   return (
     <div style={{ paddingTop: 66 }}>

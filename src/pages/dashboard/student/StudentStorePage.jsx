@@ -93,6 +93,7 @@ function CatalogTab({ wishlistIds, onToggleWishlist }) {
     Promise.all([
       supabase.from('courses')
         .select('id, slug, title, cover_image_url, price, level, duration_hours, category_id, categories(name), profiles!instructor_id(full_name)')
+        .eq('type', 'course')
         .eq('status', 'published')
         .order('created_at', { ascending: false })
         .limit(500),

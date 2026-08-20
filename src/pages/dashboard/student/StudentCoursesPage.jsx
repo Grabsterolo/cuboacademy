@@ -40,8 +40,9 @@ export default function StudentCoursesPage() {
     async function load() {
       const { data: enrData } = await supabase
         .from('enrollments')
-        .select('id, enrolled_at, completed_at, course_id, courses(id, title, cover_image_url, level, categories(name), profiles!instructor_id(full_name))')
+        .select('id, enrolled_at, completed_at, course_id, courses!inner(id, title, cover_image_url, level, categories(name), profiles!instructor_id(full_name))')
         .eq('student_id', user.id)
+        .eq('courses.type', 'course')
         .order('enrolled_at', { ascending: false })
 
       const enrollments = enrData || []

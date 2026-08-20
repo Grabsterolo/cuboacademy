@@ -22,3 +22,8 @@ export function formatDateFull(iso) {
 export function formatDateCompact(iso) {
   return new Date(iso).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' })
 }
+
+// "5 jul, 10:00 a. m." — date + time, for event schedules.
+export function formatEventDateTime(iso) {
+  return new Date(iso).toLocaleString(LOCALE, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
+}

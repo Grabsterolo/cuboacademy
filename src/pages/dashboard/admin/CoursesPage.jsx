@@ -60,6 +60,7 @@ export default function CoursesPage() {
       supabase
         .from('courses')
         .select('id, title, cover_image_url, price, level, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
+        .eq('type', 'course')
         .order('created_at', { ascending: false })
         .limit(500),
       supabase.rpc('get_top_selling_course'),

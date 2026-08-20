@@ -140,6 +140,7 @@ export default function Navbar() {
         <div className="nav-desktop-center">
           <ul style={{ display: 'flex', alignItems: 'center', gap: '2rem', listStyle: 'none', margin: 0, padding: 0 }}>
             <li><button className="nav-link" onClick={() => navigate('courses')}>Cursos</button></li>
+            <li><button className="nav-link" onClick={() => navigate('events')}>Eventos</button></li>
             <li><button className="nav-link" onClick={() => goToSection('areas-formacion')}>Áreas de formación</button></li>
             <li><button className="nav-link" onClick={() => goToSection('equipo')}>Nuestro equipo</button></li>
           </ul>
@@ -230,6 +231,7 @@ export default function Navbar() {
       <div className={`nav-mobile-drawer${menuOpen ? ' open' : ''}`}>
         <nav>
           <button className="nav-mobile-link" onClick={() => { navigate('courses'); setMenuOpen(false) }}>Cursos</button>
+          <button className="nav-mobile-link" onClick={() => { navigate('events'); setMenuOpen(false) }}>Eventos</button>
           <button className="nav-mobile-link" onClick={() => goToSection('areas-formacion')}>Áreas de formación</button>
           <button className="nav-mobile-link" onClick={() => goToSection('equipo')}>Nuestro equipo</button>
         </nav>

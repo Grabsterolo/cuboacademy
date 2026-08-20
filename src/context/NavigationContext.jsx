@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 
 // Public screens (no auth)
-const PUBLIC_SCREENS = new Set(['landing', 'login', 'register', 'courses', 'course-detail', 'instructor-apply', 'forgot-password', 'reset-password'])
+const PUBLIC_SCREENS = new Set(['landing', 'login', 'register', 'courses', 'course-detail', 'events', 'event-detail', 'instructor-apply', 'forgot-password', 'reset-password'])
 
 const NavigationContext = createContext(null)
 

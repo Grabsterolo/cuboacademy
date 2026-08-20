@@ -94,7 +94,7 @@ export function CourseReviews({ courseId, currentUserId, canReview }) {
             {myReview ? 'Actualiza tu reseña' : 'Deja tu reseña'}
           </p>
           <RatingInput value={rating} onChange={setRating} />
-          <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="¿Qué te pareció el curso? (opcional)" maxLength={500}
+          <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="¿Qué te pareció? (opcional)" maxLength={500}
             style={{ width: '100%', minHeight: 70, marginTop: '.75rem', padding: '.65rem .85rem', borderRadius: 8, border: '1px solid var(--border)', fontSize: '.85rem', fontFamily: 'var(--sans)', color: 'var(--carbon)', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
           {error && <p style={{ fontSize: '.78rem', color: '#B91C1C', margin: '.5rem 0 0' }}>{error}</p>}
           <button type="submit" disabled={saving}
@@ -105,7 +105,7 @@ export function CourseReviews({ courseId, currentUserId, canReview }) {
       )}
 
       {reviews.length === 0 ? (
-        <p style={{ fontSize: '.85rem', color: 'var(--text-2)', margin: 0 }}>Aún no hay reseñas para este curso.</p>
+        <p style={{ fontSize: '.85rem', color: 'var(--text-2)', margin: 0 }}>Aún no hay reseñas todavía.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {myReview && canReview && (

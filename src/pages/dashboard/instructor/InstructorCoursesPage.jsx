@@ -39,6 +39,7 @@ export default function InstructorCoursesPage() {
     supabase.from('courses')
       .select('id, title, cover_image_url, level, status, admin_notes, categories(name), created_at')
       .eq('instructor_id', profile.id)
+      .eq('type', 'course')
       .order('created_at', { ascending: false })
       .then(async ({ data }) => {
         const list = data || []
