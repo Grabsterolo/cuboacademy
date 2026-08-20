@@ -22,6 +22,7 @@ const AnnouncementsPage = lazy(() => import('../../pages/dashboard/admin/Announc
 
 // Instructor
 const CourseWizardPage = lazy(() => import('../../pages/dashboard/instructor/CourseWizardPage'))
+const EventWizardPage = lazy(() => import('../../pages/dashboard/instructor/EventWizardPage'))
 const EventAttendancePage = lazy(() => import('../../pages/dashboard/instructor/EventAttendancePage'))
 const InstructorDashboard = lazy(() => import('../../pages/dashboard/InstructorDashboard'))
 const InstructorProfilePage = lazy(() => import('../../pages/dashboard/instructor/InstructorProfilePage'))
@@ -74,6 +75,7 @@ function renderSection(section, role, params) {
       case 'cursos':        return <CoursesPage />
       case 'curso-wizard':    return <CourseWizardPage />
       case 'curso-revision':    return <CourseReviewPage />
+      case 'evento-wizard':     return <EventWizardPage />
       case 'evento-asistencia': return <EventAttendancePage />
       case 'categorias':    return <CategoriesPage />
       case 'comunicados':   return <AnnouncementsPage />
@@ -90,6 +92,7 @@ function renderSection(section, role, params) {
       case 'perfil':        return <InstructorProfilePage />
       case 'cursos':        return <InstructorCoursesPage />
       case 'curso-wizard':  return <CourseWizardPage />
+      case 'evento-wizard':     return <EventWizardPage />
       case 'evento-asistencia': return <EventAttendancePage />
       case 'estudiantes':   return <InstructorStudentsPage />
       case 'evaluaciones':      return <InstructorEvaluationsPage />

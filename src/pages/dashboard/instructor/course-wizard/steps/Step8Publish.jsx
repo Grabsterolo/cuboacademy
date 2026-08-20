@@ -1,24 +1,24 @@
 import { IC } from '../components/shared'
 import { StepHeader } from '../components/StepHeader'
 
-export function Step8Publish({ status, setStatus, saving, error, onDraft, onReview, isAdmin }) {
+export function Step8Publish({ status, setStatus, saving, error, onDraft, onReview, isAdmin, noun = 'curso' }) {
   const options = isAdmin
     ? [
-        { value: 'draft',     label: 'Guardar como borrador',    sub: 'El curso queda privado. Puedes seguir editándolo.',      icon: '📝' },
+        { value: 'draft',     label: 'Guardar como borrador',    sub: `El ${noun} queda privado. Puedes seguir editándolo.`,      icon: '📝' },
         { value: 'review',    label: 'Enviar a revisión',         sub: 'Queda pendiente de revisión antes de publicarse.',       icon: '📤' },
-        { value: 'published', label: 'Publicar directamente',     sub: 'El curso queda visible para todos los estudiantes.',     icon: '🚀' },
+        { value: 'published', label: 'Publicar directamente',     sub: `El ${noun} queda visible para todos los estudiantes.`,     icon: '🚀' },
       ]
     : [
-        { value: 'draft',    label: 'Guardar como borrador', sub: 'El curso queda privado. Puedes seguir editándolo.',                       icon: '📝' },
-        { value: 'review',   label: 'Enviar a revisión',      sub: 'Un administrador revisará el curso y decidirá si lo publica.', icon: '📤' },
-        { value: 'archived', label: 'Archivar curso',         sub: 'Deja de verse en el catálogo. Conservas todo el contenido.',   icon: '📦' },
+        { value: 'draft',    label: 'Guardar como borrador', sub: `El ${noun} queda privado. Puedes seguir editándolo.`,                       icon: '📝' },
+        { value: 'review',   label: 'Enviar a revisión',      sub: `Un administrador revisará el ${noun} y decidirá si lo publica.`, icon: '📤' },
+        { value: 'archived', label: `Archivar ${noun}`,         sub: 'Deja de verse en el catálogo. Conservas todo el contenido.',   icon: '📦' },
       ]
 
   const canSubmit = status === 'review' || status === 'archived' || (isAdmin && status === 'published')
 
   return (
     <div>
-      <StepHeader n={8} title="Publicación" sub="Tu curso está listo. Elige cómo quieres lanzarlo." />
+      <StepHeader n={8} title="Publicación" sub={`Tu ${noun} está listo. Elige cómo quieres lanzarlo.`} />
       <div style={{ maxWidth: 580 }}>
         {error && (
           <div style={{ background: '#fef2f0', border: '1px solid #f5c6bb', color: '#c0392b', borderRadius: 8, padding: '.75rem 1rem', fontSize: '.84rem', marginBottom: '1.25rem' }}>{error}</div>
@@ -51,9 +51,9 @@ export function Step8Publish({ status, setStatus, saving, error, onDraft, onRevi
             {saving ? (
               <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'wiz-spin .7s linear infinite' }} /> Enviando…</>
             ) : status === 'published' ? (
-              <>{IC.send} Publicar curso</>
+              <>{IC.send} Publicar {noun}</>
             ) : status === 'archived' ? (
-              <>{IC.send} Archivar curso</>
+              <>{IC.send} Archivar {noun}</>
             ) : (
               <>{IC.send} Enviar a revisión</>
             )}
