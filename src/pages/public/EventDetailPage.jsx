@@ -6,25 +6,9 @@ import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { enrollCourse } from '../../lib/enrollCourse'
 import { CourseReviews } from '../../components/reviews/CourseReviews'
 import { formatEventDateTime } from '../../lib/formatDate'
+import { googleCalendarUrl } from '../../lib/googleCalendar'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
-
-function toGCalStamp(iso) {
-  return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-}
-
-function googleCalendarUrl(event) {
-  const start = toGCalStamp(event.event_start_at)
-  const end = event.event_end_at ? toGCalStamp(event.event_end_at) : toGCalStamp(new Date(new Date(event.event_start_at).getTime() + 60 * 60 * 1000).toISOString())
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: event.title,
-    dates: `${start}/${end}`,
-    details: event.description ? event.description.replace(/<[^>]+>/g, ' ').trim().slice(0, 400) : '',
-    location: event.location || '',
-  })
-  return `https://www.google.com/calendar/render?${params.toString()}`
-}
 
 export default function EventDetailPage() {
   const { params, navigate } = useNavigation()

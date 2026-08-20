@@ -39,6 +39,7 @@ const InstructorAnnouncementsPage = lazy(() => import('../../pages/dashboard/ins
 const StudentDashboard = lazy(() => import('../../pages/dashboard/StudentDashboard'))
 const StudentProfilePage = lazy(() => import('../../pages/dashboard/student/StudentProfilePage'))
 const StudentCoursesPage = lazy(() => import('../../pages/dashboard/student/StudentCoursesPage'))
+const StudentEventsPage = lazy(() => import('../../pages/dashboard/student/StudentEventsPage'))
 const StudentInstructorsPage = lazy(() => import('../../pages/dashboard/student/StudentInstructorsPage'))
 const StudentAchievementsPage = lazy(() => import('../../pages/dashboard/student/StudentAchievementsPage'))
 const StudentCertificatesPage = lazy(() => import('../../pages/dashboard/student/StudentCertificatesPage'))
@@ -47,6 +48,7 @@ const StudentSettingsPage = lazy(() => import('../../pages/dashboard/student/Stu
 const StudentAnnouncementsPage = lazy(() => import('../../pages/dashboard/student/StudentAnnouncementsPage'))
 const StudentLearningPage = lazy(() => import('../../pages/dashboard/student/StudentLearningPage'))
 const CourseDetailPage = lazy(() => import('../../pages/dashboard/student/CourseDetailPage'))
+const EventDetailPage = lazy(() => import('../../pages/dashboard/student/EventDetailPage'))
 
 
 function LoadingSection() {
@@ -111,6 +113,7 @@ function renderSection(section, role, params) {
     case 'panel':         return <StudentDashboard />
     case 'perfil':        return <StudentProfilePage />
     case 'cursos':        return <StudentCoursesPage />
+    case 'eventos':       return <StudentEventsPage />
     case 'instructores':  return <StudentInstructorsPage />
     case 'comunicados':   return <StudentAnnouncementsPage />
     case 'logros':        return <StudentAchievementsPage />
@@ -119,6 +122,7 @@ function renderSection(section, role, params) {
     case 'configuracion': return <StudentSettingsPage />
     case 'aprender':      return <StudentLearningPage />
     case 'curso-detalle': return <CourseDetailPage />
+    case 'evento-detalle': return <EventDetailPage />
     default:              return <Placeholder label={section} />
   }
 }

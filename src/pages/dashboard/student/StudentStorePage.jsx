@@ -5,11 +5,14 @@ import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import { useCourseRatingSummaries, RatingBadge } from '../../../components/reviews/CourseReviews'
 import { STATUS_TONE } from '../../../components/ui'
-import { formatDateLong } from '../../../lib/formatDate'
+import { formatDateLong, formatEventDateTime } from '../../../lib/formatDate'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const LEVEL_OPTS = ['', 'beginner', 'intermediate', 'advanced']
 const LEVEL_NAMES = { '': 'Todos', beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
+const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
+const MODALITY_OPTS = ['', 'presencial', 'virtual', 'hibrido']
+const MODALITY_NAMES = { '': 'Todas', presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 const ORDER_STATUS_STYLE = {
   completed: { label: 'Pagado',      hint: null, ...STATUS_TONE.success },
   pending:   { label: 'En revisión', hint: 'Esperando confirmación de pago — te notificaremos al aprobarse.', ...STATUS_TONE.warning },
@@ -18,16 +21,17 @@ const ORDER_STATUS_STYLE = {
 
 function CourseCard({ course, wishlistIds, onToggleWishlist, rating }) {
   const { navigate } = useNavigation()
+  const isEvent = course.type === 'event'
   const cover = course.cover_image_url
   const priceNum = Number(course.price)
   const price = !course.price || priceNum === 0 ? 'Gratis' : `$${priceNum.toFixed(2)}`
   const isGratis = !course.price || priceNum === 0
   const instructor = course.profiles?.full_name || '—'
   const category = course.categories?.name || ''
-  const level = LEVEL_LABEL[course.level] || ''
+  const level = isEvent ? (MODALITY_LABEL[course.modality] || '') : (LEVEL_LABEL[course.level] || '')
   const inWishlist = wishlistIds.includes(course.id)
 
-  const goToDetail = () => navigate('curso-detalle', { slug: course.slug })
+  const goToDetail = () => navigate(isEvent ? 'evento-detalle' : 'curso-detalle', { slug: course.slug })
 
   return (
     <div className="s-card" role="button" tabIndex={0} onClick={goToDetail}
@@ -46,10 +50,13 @@ function CourseCard({ course, wishlistIds, onToggleWishlist, rating }) {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.65) 0%,transparent 55%)' }} />
         {level && <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.64rem', fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,.4)', color: 'white', backdropFilter: 'blur(4px)', letterSpacing: '.04em' }}>{level}</span>}
         <span style={{ position: 'absolute', bottom: 9, left: 10, fontSize: '.72rem', fontWeight: 700, color: 'white', background: isGratis ? 'rgba(22,125,120,.9)' : 'var(--jade)', padding: '2px 8px', borderRadius: 10 }}>{price}</span>
-        {course.duration_hours && <span style={{ position: 'absolute', bottom: 9, right: 10, fontSize: '.67rem', color: 'rgba(255,255,255,.8)', display: 'flex', alignItems: 'center', gap: '.25rem' }}>
+        {isEvent ? (course.event_start_at && <span style={{ position: 'absolute', bottom: 9, right: 10, fontSize: '.67rem', color: 'rgba(255,255,255,.8)', display: 'flex', alignItems: 'center', gap: '.25rem' }}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          {formatEventDateTime(course.event_start_at)}
+        </span>) : (course.duration_hours && <span style={{ position: 'absolute', bottom: 9, right: 10, fontSize: '.67rem', color: 'rgba(255,255,255,.8)', display: 'flex', alignItems: 'center', gap: '.25rem' }}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           {course.duration_hours}h
-        </span>}
+        </span>)}
       </div>
 
       {/* Body */}
@@ -156,6 +163,83 @@ function CatalogTab({ wishlistIds, onToggleWishlist }) {
   )
 }
 
+// ─── Events tab ───────────────────────────────────────────────────────────────
+function EventsTab({ wishlistIds, onToggleWishlist }) {
+  const [events, setEvents] = useState([])
+  const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [catFilter, setCatFilter] = useState('')
+  const [modalityFilter, setModalityFilter] = useState('')
+  const ratings = useCourseRatingSummaries(events.map(e => e.id))
+
+  useEffect(() => {
+    Promise.all([
+      supabase.from('courses')
+        .select('id, slug, title, cover_image_url, price, type, modality, event_start_at, category_id, categories(name), profiles!instructor_id(full_name)')
+        .eq('type', 'event')
+        .eq('status', 'published')
+        .order('event_start_at', { ascending: true })
+        .limit(500),
+      supabase.from('categories').select('id, name').order('name'),
+    ]).then(([{ data: e }, { data: cats }]) => {
+      setEvents(e || [])
+      setCategories(cats || [])
+      setLoading(false)
+    })
+  }, [])
+
+  const filtered = events.filter(e => {
+    const q = search.toLowerCase()
+    const matchSearch = !q ||
+      e.title.toLowerCase().includes(q) ||
+      (e.profiles?.full_name || '').toLowerCase().includes(q) ||
+      (e.categories?.name || '').toLowerCase().includes(q)
+    const matchCat = !catFilter || e.category_id === catFilter
+    const matchModality = !modalityFilter || e.modality === modalityFilter
+    return matchSearch && matchCat && matchModality
+  })
+
+  return (
+    <div>
+      {/* Filters */}
+      <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', gap: '.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 180 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"
+            style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Buscar eventos…" value={search} onChange={e => setSearch(e.target.value)}
+            style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--cream)', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+            onFocus={e => e.target.style.borderColor = 'var(--jade)'}
+            onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+        </div>
+        <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
+          style={{ padding: '.55rem .85rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--cream)', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', cursor: 'pointer', outline: 'none' }}>
+          <option value="">Todas las categorías</option>
+          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <select value={modalityFilter} onChange={e => setModalityFilter(e.target.value)}
+          style={{ padding: '.55rem .85rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--cream)', color: 'var(--carbon)', fontSize: '.84rem', fontFamily: 'var(--sans)', cursor: 'pointer', outline: 'none' }}>
+          {MODALITY_OPTS.map(v => <option key={v} value={v}>{MODALITY_NAMES[v]}</option>)}
+        </select>
+      </div>
+
+      {loading ? (
+        <div className="st-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-2)', fontSize: '.9rem' }}>
+          No se encontraron eventos con esos filtros.
+        </div>
+      ) : (
+        <div className="st-grid">
+          {filtered.map(e => <CourseCard key={e.id} course={e} wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} rating={ratings[e.id]} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Wishlist tab ─────────────────────────────────────────────────────────────
 function WishlistTab({ wishlistIds, onToggleWishlist }) {
   const [courses, setCourses] = useState([])
@@ -165,7 +249,7 @@ function WishlistTab({ wishlistIds, onToggleWishlist }) {
     if (!wishlistIds.length) { setCourses([]); return }
     setLoading(true)
     supabase.from('courses')
-      .select('id, slug, title, cover_image_url, price, level, duration_hours, categories(name), profiles!instructor_id(full_name)')
+      .select('id, slug, title, cover_image_url, price, type, level, duration_hours, modality, event_start_at, categories(name), profiles!instructor_id(full_name)')
       .in('id', wishlistIds)
       .eq('status', 'published')
       .then(({ data }) => { setCourses(data || []); setLoading(false) })
@@ -199,7 +283,7 @@ function PurchasesTab({ user }) {
   useEffect(() => {
     if (!user) return
     supabase.from('orders')
-      .select('id, amount, status, created_at, payment_provider, courses(id, slug, title, cover_image_url, categories(name))')
+      .select('id, amount, status, created_at, payment_provider, courses(id, slug, title, cover_image_url, type, categories(name))')
       .eq('student_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => { setOrders(data || []); setLoading(false) })
@@ -235,7 +319,7 @@ function PurchasesTab({ user }) {
               {c?.cover_image_url && <div style={{ width: 52, height: 36, borderRadius: 6, background: `url(${c.cover_image_url}) center/cover no-repeat`, flexShrink: 0 }} />}
               <div style={{ flex: 1, minWidth: 160 }}>
                 <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', fontSize: '.9rem', marginBottom: '.2rem' }}>
-                  {c ? <span style={{ cursor: 'pointer', color: 'inherit' }} onClick={() => navigate('curso-detalle', { slug: c.slug })}>{c.title}</span> : `Orden ${order.id.slice(0,8)}`}
+                  {c ? <span style={{ cursor: 'pointer', color: 'inherit' }} onClick={() => navigate(c.type === 'event' ? 'evento-detalle' : 'curso-detalle', { slug: c.slug })}>{c.title}</span> : `Orden ${order.id.slice(0,8)}`}
                 </div>
                 <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{date} {order.payment_provider ? `· ${order.payment_provider}` : ''}</div>
               </div>
@@ -260,7 +344,8 @@ function PurchasesTab({ user }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function StudentStorePage() {
   const { user } = useAuth()
-  const [tab, setTab] = useState('catalog')
+  const { params } = useNavigation()
+  const [tab, setTab] = useState(params?.tab || 'catalog')
   const [wishlistIds, setWishlistIds] = useState([])
 
   useEffect(() => {
@@ -284,6 +369,7 @@ export default function StudentStorePage() {
 
   const TABS = [
     { id: 'catalog', label: 'Catálogo' },
+    { id: 'events', label: 'Eventos' },
     { id: 'wishlist', label: `Lista de deseos${wishlistIds.length ? ` (${wishlistIds.length})` : ''}` },
     { id: 'purchases', label: 'Mis compras' },
   ]
@@ -318,6 +404,7 @@ export default function StudentStorePage() {
 
         {/* Tab content */}
         {tab === 'catalog' && <CatalogTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} />}
+        {tab === 'events' && <EventsTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} />}
         {tab === 'wishlist' && <WishlistTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} />}
         {tab === 'purchases' && <PurchasesTab user={user} />}
       </div>

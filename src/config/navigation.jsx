@@ -50,6 +50,7 @@ export const STUDENT_NAV = [
   { key: 'panel',         label: 'Panel general', icon: ICON.grid },
   { key: 'perfil',        label: 'Mi perfil',     icon: ICON.person },
   { key: 'cursos',        label: 'Mis cursos',    icon: ICON.courses },
+  { key: 'eventos',       label: 'Mis eventos',   icon: ICON.events },
   { key: 'logros',        label: 'Mis logros',    icon: ICON.achievements },
   { key: 'instructores',  label: 'Instructores',  icon: ICON.users },
   { key: 'comunicados',   label: 'Comunicados',   icon: ICON.announcements },
