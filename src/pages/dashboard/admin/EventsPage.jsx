@@ -22,10 +22,10 @@ const CALENDAR = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" str
 function StatusSelect({ status, onChange }) {
   return (
     <select value={status} onChange={e => onChange(e.target.value)}
-      title={status === 'published' ? 'Para despublicar, elige Borrador o Archivado' : 'Publicar requiere revisar el evento'}
+      title={status === 'published' ? 'Para despublicar, elige Borrador o Archivado' : 'Cambia el estado para aprobar o rechazar el evento'}
       style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--carbon)', padding: '5px 8px', borderRadius: 7, border: '1px solid var(--border)', background: 'white', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
       {Object.entries(STATUS_LABEL).map(([value, label]) => (
-        <option key={value} value={value} disabled={value === 'published' && status !== 'published'}>
+        <option key={value} value={value}>
           {label}
         </option>
       ))}
