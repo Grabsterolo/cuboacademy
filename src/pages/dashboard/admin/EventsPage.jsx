@@ -41,6 +41,7 @@ export default function EventsPage() {
   const [search,        setSearch]        = useState('')
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [toast,         setToast]         = useState('')
+  const [topEventId,    setTopEventId]    = useState(null)
 
   useEffect(() => { load() }, [])
   useEffect(() => {
@@ -51,13 +52,19 @@ export default function EventsPage() {
 
   async function load() {
     setLoading(true)
-    const { data } = await supabase
-      .from('courses')
-      .select('id, title, cover_image_url, price, modality, event_start_at, location, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
-      .eq('type', 'event')
-      .order('created_at', { ascending: false })
-      .limit(500)
+    // Top-seller is computed server-side (get_top_selling_course RPC) instead
+    // of fetching every completed order to the browser just to count them.
+    const [{ data }, { data: topId }] = await Promise.all([
+      supabase
+        .from('courses')
+        .select('id, title, cover_image_url, price, modality, event_start_at, location, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
+        .eq('type', 'event')
+        .order('created_at', { ascending: false })
+        .limit(500),
+      supabase.rpc('get_top_selling_course', { p_type: 'event' }),
+    ])
     setEvents(data || [])
+    if (topId) setTopEventId(topId)
     setLoading(false)
   }
 
@@ -196,7 +203,15 @@ export default function EventsPage() {
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.28rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.title}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginBottom: '.28rem' }}>
+                      <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.title}</div>
+                      {e.id === topEventId && (
+                        <span title="El evento con más órdenes completadas" style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '.65rem', fontWeight: 700, color: '#B4720E', background: '#F5E9D3', border: '1px solid #EAD6A8', borderRadius: 8, padding: '2px 7px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.9L22 9.8l-5.5 4.9L18 22l-6-3.6L6 22l1.5-7.3L2 9.8l7.1-.9L12 2z"/></svg>
+                          Más vendido
+                        </span>
+                      )}
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap' }}>
                       {e.profiles?.full_name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{e.profiles.full_name}</span>}
                       {e.modality && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{MODALITY_LABEL[e.modality] || e.modality}</span></>}

@@ -40,6 +40,7 @@ export default function InstructorReportsPage() {
     supabase.from('courses')
       .select('id, title, status, level, categories(name), created_at')
       .eq('instructor_id', profile.id)
+      .eq('type', 'course')
       .order('created_at', { ascending: false })
       .then(async ({ data: cData }) => {
         const list = cData || []
