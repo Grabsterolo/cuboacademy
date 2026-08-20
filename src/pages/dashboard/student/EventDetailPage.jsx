@@ -120,19 +120,12 @@ export default function EventDetailPage() {
             {/* ── Left: event info ── */}
             <div>
               {/* Cover */}
-              <div style={{ width: '100%', height: 320, borderRadius: 14, background: event.cover_image_url ? `url(${event.cover_image_url}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', marginBottom: '1.75rem', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.7) 0%,transparent 55%)' }} />
-                {event.categories?.name && (
-                  <span style={{ position: 'absolute', top: 14, left: 14, fontSize: '.68rem', fontWeight: 700, padding: '4px 10px', borderRadius: 20, background: 'rgba(0,0,0,.45)', color: 'white', backdropFilter: 'blur(6px)', letterSpacing: '.05em', textTransform: 'uppercase' }}>
-                    {event.categories.name}
-                  </span>
-                )}
-                {modality && (
-                  <span style={{ position: 'absolute', top: 14, left: event.categories?.name ? 'auto' : 14, right: event.categories?.name ? 14 : 'auto', fontSize: '.68rem', fontWeight: 700, padding: '4px 10px', borderRadius: 20, background: 'rgba(0,0,0,.45)', color: 'white', backdropFilter: 'blur(6px)' }}>
-                    {modality}
-                  </span>
-                )}
-              </div>
+              <div style={{
+                width: '100%', height: 320, borderRadius: 14, marginBottom: '1.75rem',
+                backgroundImage: event.cover_image_url ? `url(${event.cover_image_url}), linear-gradient(140deg,#0d3840 0%,#082830 100%)` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)',
+                backgroundSize: event.cover_image_url ? 'contain, cover' : 'cover',
+                backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
+              }} />
 
               {/* Title + meta */}
               <div style={{ marginBottom: '1.5rem' }}>
@@ -140,6 +133,16 @@ export default function EventDetailPage() {
                   {event.title}
                 </h1>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1rem' }}>
+                  {event.categories?.name && (
+                    <div style={{ fontSize: '.68rem', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--jade)', background: 'var(--jade-soft)', padding: '4px 10px', borderRadius: 20 }}>
+                      {event.categories.name}
+                    </div>
+                  )}
+                  {modality && (
+                    <div style={{ fontSize: '.68rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', padding: '4px 10px', borderRadius: 20 }}>
+                      {modality}
+                    </div>
+                  )}
                   {event.event_start_at && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.82rem', color: 'var(--text-2)' }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
