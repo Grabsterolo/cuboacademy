@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, cloneElement, isValidElement } from 'react'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
-
-const COUNTRIES = ['Costa Rica','México','Colombia','Argentina','Chile','Perú','Ecuador','Guatemala','Honduras','El Salvador','Nicaragua','Panamá','Uruguay','Paraguay','Bolivia','Venezuela','República Dominicana','España','Otro']
+import { COUNTRIES } from '../../lib/countries'
 const EXP_MAP = { '1-2': 2, '3-5': 5, '6-10': 10, '10+': 15 }
 const LEVEL_MAP = { 'Básico': 'beginner', 'Intermedio': 'intermediate', 'Avanzado': 'advanced' }
 

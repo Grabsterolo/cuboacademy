@@ -5,8 +5,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { Toast, Field } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
 import { validateImageFile, resizeImage } from '../../../lib/imageProcessing'
-
-const COUNTRIES = ['Costa Rica','México','Colombia','Argentina','Chile','Perú','Ecuador','Guatemala','Honduras','El Salvador','Nicaragua','Panamá','Uruguay','Paraguay','Bolivia','Venezuela','República Dominicana','España','Otro']
+import { COUNTRIES } from '../../../lib/countries'
 
 const INP = { width: '100%', padding: '.7rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', outline: 'none', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
 

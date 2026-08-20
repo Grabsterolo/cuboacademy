@@ -41,7 +41,7 @@ export function useEventWizard() {
   const [imgErr, setImgErr]        = useState('')
 
   // Step 2 state
-  const [eventDetails, setEventDetails] = useState({ startAt: '', endAt: '', modality: 'presencial', location: '', capacity: '' })
+  const [eventDetails, setEventDetails] = useState({ startAt: '', endAt: '', modality: 'presencial', country: '', city: '', location: '', capacity: '' })
 
   // Step 3 state
   const [cert, setCert]            = useState({ hasCert: false, certName: '' })
@@ -87,6 +87,8 @@ export function useEventWizard() {
           startAt: event.event_start_at ? toDatetimeLocal(event.event_start_at) : '',
           endAt: event.event_end_at ? toDatetimeLocal(event.event_end_at) : '',
           modality: event.modality || 'presencial',
+          country: event.country || '',
+          city: event.city || '',
           location: event.location || '',
           capacity: event.capacity != null ? String(event.capacity) : '',
         })
@@ -143,7 +145,11 @@ export function useEventWizard() {
         if (!eventDetails.startAt)                return 'La fecha y hora de inicio son obligatorias.'
         if (eventDetails.endAt && eventDetails.endAt < eventDetails.startAt) return 'La hora de fin no puede ser antes de la hora de inicio.'
         if (!eventDetails.modality)                return 'Selecciona una modalidad.'
-        if (!eventDetails.location.trim())         return eventDetails.modality === 'virtual' ? 'Ingresa el enlace de acceso al evento.' : 'Ingresa la ubicación del evento.'
+        if (eventDetails.modality !== 'virtual') {
+          if (!eventDetails.country)                return 'Selecciona un país.'
+          if (!eventDetails.city.trim())            return 'Selecciona o escribe una ciudad.'
+        }
+        if (!eventDetails.location.trim())         return eventDetails.modality === 'virtual' ? 'Ingresa el enlace de acceso al evento.' : 'Ingresa la dirección específica del evento.'
         if (eventDetails.capacity && !(parseInt(eventDetails.capacity) > 0)) return 'El cupo debe ser un número mayor a 0.'
         return null
       case 3:
@@ -186,10 +192,13 @@ export function useEventWizard() {
 
   // ── save step 2 (event details) ───────────────────────────────────────────
   async function saveStep2(eId) {
+    const isVirtual = eventDetails.modality === 'virtual'
     const { error } = await supabase.from('courses').update({
       event_start_at: eventDetails.startAt ? new Date(eventDetails.startAt).toISOString() : null,
       event_end_at: eventDetails.endAt ? new Date(eventDetails.endAt).toISOString() : null,
       modality: eventDetails.modality,
+      country: isVirtual ? null : (eventDetails.country || null),
+      city: isVirtual ? null : (eventDetails.city.trim() || null),
       location: eventDetails.location.trim() || null,
       capacity: eventDetails.capacity ? parseInt(eventDetails.capacity) : null,
     }).eq('id', eId)

@@ -1,3 +1,5 @@
+import { formatEventLocation } from './eventLocation'
+
 function toGCalStamp(iso) {
   return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
 }
@@ -11,7 +13,7 @@ export function googleCalendarUrl(event) {
     text: event.title,
     dates: `${start}/${end}`,
     details: event.description ? event.description.replace(/<[^>]+>/g, ' ').trim().slice(0, 400) : '',
-    location: event.location || '',
+    location: formatEventLocation(event),
   })
   return `https://www.google.com/calendar/render?${params.toString()}`
 }

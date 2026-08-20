@@ -1,16 +1,20 @@
 import { StepHeader } from '../../course-wizard/components/StepHeader'
 import { IC, stripHtml } from '../../course-wizard/components/shared'
 import { formatEventDateTime } from '../../../../../lib/formatDate'
+import { formatEventLocation } from '../../../../../lib/eventLocation'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
 export function Step5EventPreview({ info, eventDetails, cert, pricing }) {
+  const hasLocation = eventDetails.modality === 'virtual'
+    ? Boolean(eventDetails.location.trim())
+    : Boolean(eventDetails.country && eventDetails.city.trim() && eventDetails.location.trim())
   const checks = [
     { label: 'Tiene título',                ok: Boolean(info.title.trim()) },
     { label: 'Tiene descripción',           ok: Boolean(stripHtml(info.description)) },
     { label: 'Tiene portada',               ok: Boolean(info.coverUrl) },
     { label: 'Tiene fecha y hora de inicio', ok: Boolean(eventDetails.startAt) },
-    { label: 'Tiene modalidad y ubicación', ok: Boolean(eventDetails.modality && eventDetails.location.trim()) },
+    { label: 'Tiene modalidad y ubicación', ok: Boolean(eventDetails.modality) && hasLocation },
   ]
   const ready = checks.every(c => c.ok)
 
@@ -75,7 +79,7 @@ export function Step5EventPreview({ info, eventDetails, cert, pricing }) {
             {[
               { label: 'Fecha', value: eventDetails.startAt ? formatEventDateTime(new Date(eventDetails.startAt).toISOString()) : 'Sin definir' },
               { label: 'Modalidad', value: MODALITY_LABEL[eventDetails.modality] || '—' },
-              { label: 'Ubicación', value: eventDetails.location || '—' },
+              { label: 'Ubicación', value: formatEventLocation(eventDetails) || '—' },
               { label: 'Cupo', value: eventDetails.capacity || 'Sin límite' },
               { label: 'Certificado', value: cert.hasCert ? 'Sí' : 'No' },
               { label: 'Precio', value: pricing.isFree ? 'Gratuito' : `$${pricing.price || '0'}` },

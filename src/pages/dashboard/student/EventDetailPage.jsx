@@ -6,6 +6,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 import { enrollCourse } from '../../../lib/enrollCourse'
 import { googleCalendarUrl } from '../../../lib/googleCalendar'
+import { formatEventLocation } from '../../../lib/eventLocation'
 import { CourseReviews } from '../../../components/reviews/CourseReviews'
 import { Avatar } from '../../../components/ui'
 import { formatEventDateTime } from '../../../lib/formatDate'
@@ -34,7 +35,7 @@ export default function EventDetailPage() {
   async function loadAll() {
     setLoading(true)
     const { data: eventData } = await supabase.from('courses')
-      .select('id, slug, title, description, cover_image_url, price, modality, event_start_at, event_end_at, location, capacity, has_certificate, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
+      .select('id, slug, title, description, cover_image_url, price, modality, event_start_at, event_end_at, country, city, location, capacity, has_certificate, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
       .eq('slug', slug).eq('type', 'event').eq('status', 'published').maybeSingle()
 
     if (!eventData) { setLoading(false); return }
@@ -73,6 +74,7 @@ export default function EventDetailPage() {
   const priceDisplay = isFree ? 'Gratis' : `$${Number(event?.price).toFixed(2)}`
   const isEnrolled = !!enrollment?.enrolled_at
   const modality = event ? MODALITY_LABEL[event.modality] || event.modality : ''
+  const locationText = event ? formatEventLocation(event) : ''
 
   if (!slug) return null
 
@@ -144,10 +146,10 @@ export default function EventDetailPage() {
                       {formatEventDateTime(event.event_start_at)}
                     </div>
                   )}
-                  {event.location && (
+                  {locationText && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.82rem', color: 'var(--text-2)' }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {event.location}
+                      {locationText}
                     </div>
                   )}
                 </div>

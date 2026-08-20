@@ -7,6 +7,7 @@ import { enrollCourse } from '../../lib/enrollCourse'
 import { CourseReviews } from '../../components/reviews/CourseReviews'
 import { formatEventDateTime } from '../../lib/formatDate'
 import { googleCalendarUrl } from '../../lib/googleCalendar'
+import { formatEventLocation } from '../../lib/eventLocation'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
@@ -89,6 +90,7 @@ export default function EventDetailPage() {
   const priceLabel = !event.price || priceNum === 0 ? 'Gratis' : `$${priceNum.toFixed(2)}`
   const isGratis = !event.price || priceNum === 0
   const modality = MODALITY_LABEL[event.modality] || event.modality
+  const locationText = formatEventLocation(event)
   const instructor = event.profiles
   const instructorInitials = (instructor?.full_name || '').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase()
 
@@ -119,7 +121,7 @@ export default function EventDetailPage() {
           <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '.82rem', color: 'rgba(255,255,255,.75)' }}>
             {modality && <span style={{ background: 'rgba(255,255,255,.12)', padding: '3px 10px', borderRadius: 20 }}>{modality}</span>}
             {event.event_start_at && <span style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>{formatEventDateTime(event.event_start_at)}</span>}
-            {event.location && <span style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{event.location}</span>}
+            {locationText && <span style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{locationText}</span>}
           </div>
         </div>
       </div>
@@ -213,7 +215,7 @@ export default function EventDetailPage() {
                 {[
                   event.event_start_at && formatEventDateTime(event.event_start_at),
                   modality && `Modalidad ${modality.toLowerCase()}`,
-                  event.location,
+                  formatEventLocation(event),
                   event.capacity && `Cupo limitado (${event.capacity} personas)`,
                   event.has_certificate && 'Certificado de participación',
                 ].filter(Boolean).map((item, i) => (
