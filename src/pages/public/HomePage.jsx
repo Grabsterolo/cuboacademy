@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
+import { formatEventDateTime } from '../../lib/formatDate'
 
 const TRACK_STYLES = [
   { bg: 'linear-gradient(150deg, #0B3436 0%, #167D78 130%)', icon: 'layers' },
@@ -131,6 +132,7 @@ const HOW_STEPS = [
 const INST_COLORS = ['var(--jade)', '#C96E4B', 'var(--jade-dark)', '#104447']
 
 const LEVEL_LABELS = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
+const MODALITY_LABELS = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
 function useReveal() {
   useEffect(() => {
@@ -172,6 +174,8 @@ export default function HomePage() {
   const [tracks, setTracks] = useState(null)
   const [courses, setCourses] = useState([])
   const [coursesLoading, setCoursesLoading] = useState(true)
+  const [events, setEvents] = useState([])
+  const [eventsLoading, setEventsLoading] = useState(true)
   const [instructors, setInstructors] = useState(null)
   const [saveData, setSaveData] = useState(false)
   const [stats, setStats] = useState({ courses: null, students: null, instructors: null })
@@ -208,6 +212,20 @@ export default function HomePage() {
       .then(({ data }) => {
         setCourses(data || [])
         setCoursesLoading(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    supabase
+      .from('courses')
+      .select('id, title, slug, cover_image_url, price, modality, event_start_at, categories(name), profiles!instructor_id(full_name, avatar_url)')
+      .eq('type', 'event')
+      .eq('status', 'published')
+      .order('event_start_at', { ascending: true })
+      .limit(6)
+      .then(({ data }) => {
+        setEvents(data || [])
+        setEventsLoading(false)
       })
   }, [])
 
@@ -635,6 +653,95 @@ export default function HomePage() {
                           {c.price != null && <span style={{ fontSize: '.78rem', fontWeight: 700, color: 'var(--carbon)' }}>${c.price}</span>}
                           <button onClick={() => navigate('course-detail', { slug: c.slug })} className="btn-course" style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--jade)', border: '1px solid rgba(22,125,120,.3)', background: 'transparent', padding: '5px 13px', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
                             Ver curso
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── EVENTOS ── */}
+      <section className="section-pad" style={{ padding: '7.5rem 5%', background: 'white' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div className="reveal courses-header-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3.25rem' }}>
+            <div>
+              <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.6rem' }}>Agenda</div>
+              <h2 style={{ fontSize: 'clamp(1.85rem,3vw,2.7rem)', fontWeight: 700, lineHeight: 1.1, color: 'var(--carbon)' }}>Eventos destacados</h2>
+            </div>
+            <button onClick={() => navigate('events')} className="btn-outline" style={{ padding: '.55rem 1.2rem', border: '1px solid var(--border)', background: 'white', color: 'var(--carbon)', borderRadius: 8, fontSize: '.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+              Ver todos los eventos →
+            </button>
+          </div>
+          <div className="courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.5rem' }}>
+            {eventsLoading ? (
+              [0, 1, 2].map(i => (
+                <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ height: 144, background: 'var(--border)' }} />
+                  <div style={{ padding: '1.35rem 1.4rem 1.4rem' }}>
+                    <div style={{ height: 18, background: 'var(--border)', borderRadius: 4, marginBottom: '.5rem', width: '80%' }} />
+                    <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, marginBottom: '1rem', width: '55%' }} />
+                    <div style={{ height: 1, background: 'var(--border)', marginBottom: '.9rem' }} />
+                    <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, width: '45%' }} />
+                  </div>
+                </div>
+              ))
+            ) : events.length === 0 ? (
+              <div style={{ gridColumn: '1/-1', padding: '3.5rem 2rem', textAlign: 'center', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 12 }}>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.35rem' }}>Próximamente nuevos eventos</p>
+                <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 300 }}>Estamos preparando talleres y charlas en vivo. Vuelve pronto.</p>
+              </div>
+            ) : (
+              events.map((e, i) => {
+                const initials = (e.profiles?.full_name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+                return (
+                  <div key={e.id} className="reveal course-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                    <div style={{ height: 144, position: 'relative', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', overflow: 'hidden' }}>
+                      {e.cover_image_url
+                        ? <img loading="lazy" src={e.cover_image_url} alt={e.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.18)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                          </div>
+                        )
+                      }
+                      {e.categories?.name && (
+                        <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.62rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', padding: '4px 9px', borderRadius: 4, background: 'rgba(22,125,120,.18)', color: 'var(--jade)' }}>
+                          {e.categories.name}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ padding: '1.35rem 1.4rem 1.4rem' }}>
+                      <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, marginBottom: '.65rem', lineHeight: 1.3, color: 'var(--carbon)' }}>{e.title}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                        {e.event_start_at && (
+                          <span style={{ fontSize: '.72rem', color: '#9B9894' }}>{formatEventDateTime(e.event_start_at)}</span>
+                        )}
+                        {e.modality && (
+                          <span style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', padding: '2px 7px', borderRadius: 10 }}>
+                            {MODALITY_LABELS[e.modality] || e.modality}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '.9rem', borderTop: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'var(--text-2)', minWidth: 0 }}>
+                          {e.profiles?.avatar_url ? (
+                            <img loading="lazy" src={e.profiles.avatar_url} alt={e.profiles.full_name || ''} style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: 22, height: 22, minWidth: 22, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.58rem', fontWeight: 700, color: 'white' }}>{initials}</div>
+                          )}
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.profiles?.full_name || '—'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
+                          {e.price != null && <span style={{ fontSize: '.78rem', fontWeight: 700, color: 'var(--carbon)' }}>{Number(e.price) === 0 ? 'Gratis' : `$${e.price}`}</span>}
+                          <button onClick={() => navigate('event-detail', { slug: e.slug })} className="btn-course" style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--jade)', border: '1px solid rgba(22,125,120,.3)', background: 'transparent', padding: '5px 13px', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                            Ver evento
                           </button>
                         </div>
                       </div>
