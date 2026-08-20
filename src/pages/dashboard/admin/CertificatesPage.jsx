@@ -44,7 +44,7 @@ export default function CertificatesPage() {
       .select(`
         id, status, issued_at, unique_code, admin_notes, approved_at, student_id, course_id,
         profiles!student_id(full_name, email),
-        courses!course_id(title, cover_image_url, profiles!instructor_id(full_name))
+        courses!course_id(title, cover_image_url, type, profiles!instructor_id(full_name))
       `)
       .order('issued_at', { ascending: false })
       .limit(500)
@@ -170,7 +170,7 @@ export default function CertificatesPage() {
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {course?.title || 'Curso'}
+                      {course?.title || (course?.type === 'event' ? 'Evento' : 'Curso')}
                     </div>
                     <div style={{ fontSize: '.77rem', color: 'var(--text-2)', marginBottom: '.1rem' }}>
                       Estudiante: <strong style={{ color: 'var(--carbon)' }}>{student?.full_name || student?.email}</strong>
@@ -227,7 +227,7 @@ export default function CertificatesPage() {
               Rechazar certificado
             </h3>
             <p style={{ fontSize: '.82rem', color: 'var(--text-2)', marginBottom: '1.25rem' }}>
-              Curso: <strong>{rejectModal.courses?.title}</strong><br />
+              {rejectModal.courses?.type === 'event' ? 'Evento' : 'Curso'}: <strong>{rejectModal.courses?.title}</strong><br />
               Estudiante: <strong>{rejectModal.profiles?.full_name || rejectModal.profiles?.email}</strong>
             </p>
             <label htmlFor="cert-reject-notes" style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.4rem' }}>
