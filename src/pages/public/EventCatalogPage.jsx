@@ -121,6 +121,7 @@ export default function EventCatalogPage() {
         .cat-pill:not(.active) { background: white; color: var(--carbon); }
         .cat-pill:not(.active):hover { background: var(--jade-soft); border-color: var(--jade-light); color: var(--jade); }
         .srch-inp:focus { border-color: var(--jade) !important; outline: none; }
+        @media (max-width: 1100px) { .cat-grid { grid-template-columns: repeat(3,1fr) !important; } }
         @media (max-width: 900px) { .cat-grid { grid-template-columns: repeat(2,1fr) !important; } }
         @media (max-width: 600px) { .cat-grid { grid-template-columns: 1fr !important; } .cat-pills { flex-wrap: wrap !important; } }
       `}</style>
@@ -178,7 +179,7 @@ export default function EventCatalogPage() {
         )}
 
         {loading ? (
-          <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
+          <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
             {[1,2,3,4,5,6].map(i => <SkeletonCard key={i} />)}
           </div>
         ) : filtered.length === 0 ? (
@@ -194,7 +195,7 @@ export default function EventCatalogPage() {
             </button>
           </div>
         ) : (
-          <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem' }}>
+          <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
             {filtered.map(e => <EventCard key={e.id} event={e} rating={ratings[e.id]} />)}
           </div>
         )}

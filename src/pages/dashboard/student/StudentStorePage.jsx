@@ -390,8 +390,9 @@ export default function StudentStorePage() {
     <DashboardLayout>
       <style>{`
         @media (max-width: 768px) { .st-pad { padding: 1.25rem 1rem 2rem !important; } .st-grid { grid-template-columns: 1fr !important; } }
-        @media (max-width: 1100px) { .st-grid { grid-template-columns: repeat(2,1fr) !important; } }
-        .st-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.1rem; }
+        @media (max-width: 1300px) { .st-grid { grid-template-columns: repeat(3,1fr) !important; } }
+        @media (max-width: 1000px) { .st-grid { grid-template-columns: repeat(2,1fr) !important; } }
+        .st-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.1rem; }
         .s-card { transition: transform .2s, box-shadow .2s; }
         .s-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(23,26,28,.09); }
         .st-tab { padding: .55rem 1.1rem; border: none; border-radius: 7px; cursor: pointer; font-size: .84rem; font-weight: 600; font-family: var(--sans); transition: all .15s; white-space: nowrap; }

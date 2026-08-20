@@ -321,6 +321,9 @@ export default function HomePage() {
         .metric-card { transition: background .3s, transform .3s; }
         .metric-card:hover { background: rgba(255,255,255,.1) !important; transform: translateY(-2px); }
         /* ── Responsive ── */
+        @media (max-width: 1100px) {
+          .courses-grid { grid-template-columns: repeat(3,1fr) !important; }
+        }
         @media (max-width: 900px) {
           .courses-grid { grid-template-columns: repeat(2,1fr) !important; }
           .inst-grid { grid-template-columns: repeat(2,1fr) !important; }
@@ -588,7 +591,7 @@ export default function HomePage() {
               Ver catálogo completo →
             </button>
           </div>
-          <div className="courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.5rem' }}>
+          <div className="courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.5rem' }}>
             {coursesLoading ? (
               [0, 1, 2].map(i => (
                 <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
@@ -677,7 +680,7 @@ export default function HomePage() {
               Ver todos los eventos →
             </button>
           </div>
-          <div className="courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.5rem' }}>
+          <div className="courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.5rem' }}>
             {eventsLoading ? (
               [0, 1, 2].map(i => (
                 <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
