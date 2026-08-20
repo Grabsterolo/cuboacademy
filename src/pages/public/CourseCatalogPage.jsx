@@ -24,24 +24,32 @@ function CourseCard({ course, rating }) {
   return (
     <div className="pub-card" onClick={() => navigate('course-detail', { slug: course.slug })}
       style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ height: 170, background: cover ? `url(${cover}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', flexShrink: 0 }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.65) 0%,transparent 55%)' }} />
-        {level && <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.64rem', fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,.4)', color: 'white', backdropFilter: 'blur(4px)', letterSpacing: '.04em' }}>{level}</span>}
-        <span style={{ position: 'absolute', top: 10, right: 10, fontSize: '.72rem', fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: isGratis ? 'rgba(22,125,120,.9)' : 'var(--jade)', color: 'white' }}>{price}</span>
-        {course.duration_hours && (
-          <span style={{ position: 'absolute', bottom: 9, left: 10, fontSize: '.68rem', color: 'rgba(255,255,255,.8)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            {course.duration_hours}h
-          </span>
-        )}
-      </div>
+      <div style={{
+        aspectRatio: '1 / 1',
+        backgroundImage: cover ? `url(${cover}), linear-gradient(140deg,#0d3840 0%,#082830 100%)` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)',
+        backgroundSize: cover ? 'contain, cover' : 'cover',
+        backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
+        flexShrink: 0,
+      }} />
       <div style={{ padding: '1rem 1.1rem 1.2rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.5rem' }}>
+          {level && <span style={{ fontSize: '.64rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', padding: '3px 8px', borderRadius: 20 }}>{level}</span>}
+          {course.duration_hours && (
+            <span style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {course.duration_hours}h
+            </span>
+          )}
+        </div>
         {category && <div style={{ fontSize: '.66rem', fontWeight: 700, color: 'var(--jade)', marginBottom: '.3rem', letterSpacing: '.06em', textTransform: 'uppercase' }}>{category}</div>}
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.35, flex: 1, marginBottom: '.6rem' }}>{course.title}</h3>
         {rating?.count > 0 && <div style={{ marginBottom: '.4rem' }}><RatingBadge avg={rating.avg} count={rating.count} /></div>}
-        <div style={{ fontSize: '.75rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          {instructor}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.5rem' }}>
+          <div style={{ fontSize: '.75rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem', minWidth: 0 }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{instructor}</span>
+          </div>
+          <span style={{ fontSize: '.78rem', fontWeight: 700, color: isGratis ? 'var(--jade)' : 'var(--carbon)', flexShrink: 0 }}>{price}</span>
         </div>
       </div>
     </div>
@@ -51,7 +59,7 @@ function CourseCard({ course, rating }) {
 function SkeletonCard() {
   return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-      <div style={{ height: 170, background: 'var(--border)' }} />
+      <div style={{ aspectRatio: '1 / 1', background: 'var(--border)' }} />
       <div style={{ padding: '1rem 1.1rem 1.2rem' }}>
         <div style={{ height: 10, width: '40%', background: 'var(--border)', borderRadius: 4, marginBottom: '.6rem' }} />
         <div style={{ height: 14, width: '90%', background: 'var(--border)', borderRadius: 4, marginBottom: '.35rem' }} />

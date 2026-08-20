@@ -26,7 +26,7 @@ function EventCard({ event, rating }) {
     <div className="pub-card" onClick={() => navigate('event-detail', { slug: event.slug })}
       style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
       <div style={{
-        height: 180,
+        aspectRatio: '1 / 1',
         backgroundImage: cover ? `url(${cover}), linear-gradient(140deg,#0d3840 0%,#082830 100%)` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)',
         backgroundSize: cover ? 'contain, cover' : 'cover',
         backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
@@ -60,7 +60,7 @@ function EventCard({ event, rating }) {
 function SkeletonCard() {
   return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-      <div style={{ height: 170, background: 'var(--border)' }} />
+      <div style={{ aspectRatio: '1 / 1', background: 'var(--border)' }} />
       <div style={{ padding: '1rem 1.1rem 1.2rem' }}>
         <div style={{ height: 10, width: '40%', background: 'var(--border)', borderRadius: 4, marginBottom: '.6rem' }} />
         <div style={{ height: 14, width: '90%', background: 'var(--border)', borderRadius: 4, marginBottom: '.35rem' }} />
