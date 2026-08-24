@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { STATUS_TONE } from '../../../components/ui'
 import { formatDateShort } from '../../../lib/formatDate'
+import { orderReference } from '../../../lib/paymentInfo'
 
 const STATUS_STYLE = {
   completed: { label: 'Pagado',      ...STATUS_TONE.success },
@@ -223,6 +224,10 @@ export default function OrdersPage() {
                     </div>
                     <div style={{ fontSize: '.76rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {course?.title || `Curso ${order.course_id?.slice(0,8)}`}
+                      {/* Misma referencia que el estudiante escribe en la
+                          transferencia — sin esto no hay forma de casar un
+                          comprobante con su orden. */}
+                      <span style={{ color: '#B5B2AB' }}> · Ref. {orderReference(order.id)}</span>
                     </div>
                   </div>
 

@@ -5,6 +5,7 @@ import { useNavigation } from '../../context/NavigationContext'
 import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { enrollCourse } from '../../lib/enrollCourse'
 import { CourseReviews } from '../../components/reviews/CourseReviews'
+import { PaymentInstructions, PaymentInstructionsModal } from '../../components/payment/PaymentInstructions'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
@@ -18,7 +19,10 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [enrolled, setEnrolled] = useState(false)
-  const [pendingOrder, setPendingOrder] = useState(false)
+  // Guarda la orden completa, no un booleano: el panel necesita referencia,
+  // monto y moneda para decirle al estudiante cómo pagar.
+  const [pendingOrder, setPendingOrder] = useState(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [expanded, setExpanded] = useState(new Set())
   const [enrolling, setEnrolling] = useState(false)
   const [enrollError, setEnrollError] = useState('')
@@ -75,12 +79,12 @@ export default function CourseDetailPage() {
         if (!enr) {
           const { data: order } = await supabase
             .from('orders')
-            .select('id')
+            .select('id, amount, currency')
             .eq('student_id', user.id)
             .eq('course_id', c.id)
             .eq('status', 'pending')
             .maybeSingle()
-          setPendingOrder(!!order)
+          setPendingOrder(order || null)
         }
       }
 
@@ -104,7 +108,7 @@ export default function CourseDetailPage() {
     const result = await enrollCourse({ userId: user.id, course })
     if (result.error) { setEnrollError(result.error); setEnrolling(false); return }
     if (result.enrolled) { setEnrolled(true); navigate('aprender', { courseId: course.id }); return }
-    if (result.pendingOrder) setPendingOrder(true)
+    if (result.pendingOrder) { setPendingOrder(result.order); setShowPaymentModal(true) }
     setEnrolling(false)
   }
 
@@ -260,13 +264,7 @@ export default function CourseDetailPage() {
                     Ir al curso →
                   </button>
                 ) : pendingOrder ? (
-                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 10, padding: '1rem 1.1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.4rem' }}>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      <span style={{ fontSize: '.84rem', fontWeight: 700, color: '#92400E' }}>Inscripción solicitada</span>
-                    </div>
-                    <p style={{ fontSize: '.76rem', color: '#B45309', lineHeight: 1.55, margin: 0 }}>Tu solicitud fue registrada. El equipo de Cubo Campus verificará el pago y activará tu acceso. Te notificaremos cuando esté listo.</p>
-                  </div>
+                  <PaymentInstructions order={pendingOrder} compact />
                 ) : !user ? (
                   <button className="buy-btn" onClick={() => navigate('login')}
                     style={{ background: 'var(--jade)', color: 'white' }}>
@@ -319,6 +317,9 @@ export default function CourseDetailPage() {
         </div>
       </div>
 
+      {showPaymentModal && pendingOrder && (
+        <PaymentInstructionsModal order={pendingOrder} courseTitle={course.title} onClose={() => setShowPaymentModal(false)} />
+      )}
     </>
   )
 }

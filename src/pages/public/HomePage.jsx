@@ -125,7 +125,7 @@ const COURSES = [
 const HOW_STEPS = [
   { num: '1', title: 'Crea tu cuenta', desc: 'Regístrate como estudiante o instructor. En 2 minutos ya estás adentro.' },
   { num: '2', title: 'Elige tu curso', desc: 'Filtra por área, nivel o duración, y revisa el temario de cada curso.' },
-  { num: '3', title: 'Inscríbete', desc: 'Realiza el pago y tu inscripción se confirma manualmente en menos de 48 horas.' },
+  { num: '3', title: 'Solicita tu inscripción', desc: 'Te enviamos los datos de pago (SINPE o transferencia) y tu referencia. Envías el comprobante y activamos tu acceso.' },
   { num: '4', title: 'Aprende y certifícate', desc: 'Video, recursos y ejercicios a tu ritmo. Certificado digital al terminar.' },
 ]
 

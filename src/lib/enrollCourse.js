@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { fetchPaymentSettings, buildPaymentEmail } from './paymentInfo'
 
 /**
  * Enrola a un estudiante en un curso.
@@ -6,7 +7,7 @@ import { supabase } from './supabase'
  * - Curso gratuito: crea la matrícula directamente.
  * - Curso de pago: crea una orden `pending` para revisión manual del admin.
  *
- * Returns { enrolled, enrollment } | { pendingOrder: true } | { error: string }
+ * Returns { enrolled, enrollment } | { pendingOrder: true, order } | { error: string }
  */
 export async function enrollCourse({ userId, course }) {
   const isFree = !course.price || Number(course.price) === 0
@@ -21,9 +22,42 @@ export async function enrollCourse({ userId, course }) {
     return { enrolled: true, enrollment: data }
   }
 
-  const { error } = await supabase
+  // La orden se devuelve completa porque quien llama necesita mostrarle al
+  // estudiante la referencia y el monto: sin eso, «solicitud enviada» no le
+  // dice cómo pagar.
+  const { data: order, error } = await supabase
     .from('orders')
     .insert({ student_id: userId, course_id: course.id, amount: Number(course.price), status: 'pending' })
+    .select('id, amount, currency, status, created_at')
+    .single()
   if (error) return { error: 'No se pudo enviar la solicitud. Intenta de nuevo.' }
-  return { pendingOrder: true }
+
+  sendPaymentInstructionsEmail({ userId, course, order })
+
+  return { pendingOrder: true, order }
+}
+
+/**
+ * Correo con las instrucciones de pago. Best-effort deliberado, igual que el
+ * resto de correos de la plataforma: si falla, el estudiante ya tiene las
+ * mismas instrucciones en el modal y en «Mis compras», así que no tiene
+ * sentido bloquear ni hacer fallar la inscripción por esto.
+ */
+function sendPaymentInstructionsEmail({ userId, course, order }) {
+  fetchPaymentSettings()
+    .then(settings => supabase.functions.invoke('send-notification-email', {
+      body: {
+        recipientId: userId,
+        type: 'purchase',
+        subject: `Cómo completar tu pago · ${course.title}`,
+        message: buildPaymentEmail({
+          courseTitle: course.title,
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          settings,
+        }),
+      },
+    }))
+    .catch(() => {})
 }

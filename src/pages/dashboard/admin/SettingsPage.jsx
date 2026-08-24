@@ -18,6 +18,10 @@ const DEFAULTS = {
   social_instagram: '',
   social_linkedin: '',
   social_youtube: '',
+  payment_instructions: '',
+  sinpe_number: '',
+  bank_account: '',
+  payment_note: '',
 }
 
 const CHECK = (
@@ -97,6 +101,7 @@ export default function SettingsPage() {
   const [s1, setS1] = useState({ saving: false, ok: false, err: '' })
   const [s2, setS2] = useState({ saving: false, ok: false, err: '' })
   const [s3, setS3] = useState({ saving: false, ok: false, err: '' })
+  const [s4, setS4] = useState({ saving: false, ok: false, err: '' })
 
   const [heroVideoUploading, setHeroVideoUploading] = useState(false)
   const [heroVideoErr, setHeroVideoErr] = useState('')
@@ -182,6 +187,11 @@ export default function SettingsPage() {
   async function handleSaveSocial(e) {
     e.preventDefault()
     await saveKeys(['social_instagram', 'social_linkedin', 'social_youtube'], setS3)
+  }
+
+  async function handleSavePayment(e) {
+    e.preventDefault()
+    await saveKeys(['sinpe_number', 'bank_account', 'payment_instructions', 'payment_note'], setS4)
   }
 
   async function handleToggle(key, checked) {
@@ -357,6 +367,42 @@ export default function SettingsPage() {
                     onChange={e => set('social_youtube', e.target.value)} placeholder="https://youtube.com/@..." />
                 </Field>
                 <SaveRow loading={s3.saving} success={s3.ok} error={s3.err} />
+              </form>
+            )}
+          </Card>
+
+          {/* ── 5. Datos de pago ── */}
+          <Card title="Datos de pago" desc="Lo que ve el estudiante al solicitar una inscripción de pago, y lo que recibe por correo. No hay pasarela: el pago es manual.">
+            {loadingInit ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                {skel(180)} {skel(200)} {skel(220, 70)}
+              </div>
+            ) : (
+              <form onSubmit={handleSavePayment} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                <Field label="SINPE Móvil" hint="número al que transferir" id="setting-sinpe">
+                  <input className="sett-inp" style={inp} type="text" value={settings.sinpe_number}
+                    onChange={e => set('sinpe_number', e.target.value)} placeholder="8888 8888" />
+                </Field>
+                <Field label="Cuenta bancaria" hint="IBAN o número de cuenta" id="setting-bank">
+                  <input className="sett-inp" style={inp} type="text" value={settings.bank_account}
+                    onChange={e => set('bank_account', e.target.value)} placeholder="CR00 0000 0000 0000 0000 00 · Banco · Titular" />
+                </Field>
+                <Field label="Instrucciones adicionales" hint="opcional" id="setting-pay-instructions">
+                  <textarea className="sett-inp" style={{ ...inp, minHeight: 80, resize: 'vertical' }} value={settings.payment_instructions}
+                    onChange={e => set('payment_instructions', e.target.value)}
+                    placeholder="Ej: El pago debe hacerse a nombre de Cubo Academy S.A." />
+                </Field>
+                <Field label="Plazo de activación" hint="se muestra tal cual al estudiante" id="setting-pay-note">
+                  <textarea className="sett-inp" style={{ ...inp, minHeight: 60, resize: 'vertical' }} value={settings.payment_note}
+                    onChange={e => set('payment_note', e.target.value)}
+                    placeholder="Ej: Activamos tu acceso en un plazo de 1 a 2 días hábiles." />
+                </Field>
+                <p style={{ fontSize: '.74rem', color: 'var(--text-2)', margin: 0, lineHeight: 1.55 }}>
+                  El comprobante se pide al correo de contacto configurado en <strong>Página de inicio</strong>
+                  {settings.contact_email ? <> (<strong>{settings.contact_email}</strong>)</> : <span style={{ color: '#B45309' }}> — aún sin definir</span>}.
+                  Si dejas SINPE y cuenta en blanco, al estudiante se le pedirá escribir a ese correo para coordinar el pago.
+                </p>
+                <SaveRow loading={s4.saving} success={s4.ok} error={s4.err} />
               </form>
             )}
           </Card>

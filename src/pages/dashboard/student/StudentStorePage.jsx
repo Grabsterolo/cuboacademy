@@ -6,6 +6,8 @@ import { supabase } from '../../../lib/supabase'
 import { useCourseRatingSummaries, RatingBadge } from '../../../components/reviews/CourseReviews'
 import { STATUS_TONE } from '../../../components/ui'
 import { formatDateLong, formatEventDateTime } from '../../../lib/formatDate'
+import { PaymentInstructions } from '../../../components/payment/PaymentInstructions'
+import { orderReference } from '../../../lib/paymentInfo'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const LEVEL_OPTS = ['', 'beginner', 'intermediate', 'advanced']
@@ -13,9 +15,12 @@ const LEVEL_NAMES = { '': 'Todos', beginner: 'Básico', intermediate: 'Intermedi
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 const MODALITY_OPTS = ['', 'presencial', 'virtual', 'hibrido']
 const MODALITY_NAMES = { '': 'Todas', presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
+// Las órdenes pendientes no llevan `hint`: en su lugar se muestra el panel
+// completo de instrucciones de pago, que es lo que el estudiante necesita para
+// poder avanzar. Un aviso de "esperando confirmación" no le decía cómo pagar.
 const ORDER_STATUS_STYLE = {
   completed: { label: 'Pagado',      hint: null, ...STATUS_TONE.success },
-  pending:   { label: 'En revisión', hint: 'Esperando confirmación de pago — te notificaremos al aprobarse.', ...STATUS_TONE.warning },
+  pending:   { label: 'En revisión', hint: null, ...STATUS_TONE.warning },
   failed:    { label: 'Rechazada',   hint: null, ...STATUS_TONE.danger },
 }
 
@@ -292,7 +297,7 @@ function PurchasesTab({ user }) {
   useEffect(() => {
     if (!user) return
     supabase.from('orders')
-      .select('id, amount, status, created_at, payment_provider, courses(id, slug, title, cover_image_url, type, categories(name))')
+      .select('id, amount, currency, status, created_at, payment_provider, courses(id, slug, title, cover_image_url, type, categories(name))')
       .eq('student_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => { setOrders(data || []); setLoading(false) })
@@ -330,7 +335,10 @@ function PurchasesTab({ user }) {
                 <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', fontSize: '.9rem', marginBottom: '.2rem' }}>
                   {c ? <span style={{ cursor: 'pointer', color: 'inherit' }} onClick={() => navigate(c.type === 'event' ? 'evento-detalle' : 'curso-detalle', { slug: c.slug })}>{c.title}</span> : `Orden ${order.id.slice(0,8)}`}
                 </div>
-                <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{date} {order.payment_provider ? `· ${order.payment_provider}` : ''}</div>
+                {/* La referencia es lo que el estudiante escribe en la transferencia
+                    y lo que el admin busca al conciliar; el proveedor interno
+                    ("manual", "paypal") no le dice nada a nadie. */}
+                <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{date} · Ref. {orderReference(order.id)}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {order.amount && <span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.95rem', color: 'var(--carbon)' }}>${Number(order.amount).toFixed(2)}</span>}
@@ -341,6 +349,11 @@ function PurchasesTab({ user }) {
               <div style={{ marginTop: '.6rem', paddingTop: '.6rem', borderTop: '1px solid #FDE68A', display: 'flex', alignItems: 'center', gap: '.4rem' }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <span style={{ fontSize: '.73rem', color: '#B45309' }}>{st.hint}</span>
+              </div>
+            )}
+            {order.status === 'pending' && (
+              <div style={{ marginTop: '.75rem' }}>
+                <PaymentInstructions order={order} compact />
               </div>
             )}
           </div>

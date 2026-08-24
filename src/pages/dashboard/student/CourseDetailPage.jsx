@@ -6,6 +6,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 import { enrollCourse } from '../../../lib/enrollCourse'
 import { CourseReviews } from '../../../components/reviews/CourseReviews'
+import { PaymentInstructions, PaymentInstructionsModal } from '../../../components/payment/PaymentInstructions'
 import { Avatar } from '../../../components/ui'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
@@ -18,7 +19,10 @@ export default function CourseDetailPage() {
   const [course, setCourse] = useState(null)
   const [modules, setModules] = useState([])
   const [enrollment, setEnrollment] = useState(null)
-  const [pendingOrder, setPendingOrder] = useState(false)
+  // Guarda la orden completa, no un booleano: el panel necesita referencia,
+  // monto y moneda para decirle al estudiante cómo pagar.
+  const [pendingOrder, setPendingOrder] = useState(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState(false)
   const [enrollError, setEnrollError] = useState('')
@@ -76,12 +80,12 @@ export default function CourseDetailPage() {
     // If not enrolled, check for a pending order
     if (!enrData) {
       const { data: orderData } = await supabase.from('orders')
-        .select('id')
+        .select('id, amount, currency')
         .eq('student_id', user.id)
         .eq('course_id', courseData.id)
         .eq('status', 'pending')
         .maybeSingle()
-      setPendingOrder(!!orderData)
+      setPendingOrder(orderData || null)
     }
 
     setLoading(false)
@@ -94,7 +98,7 @@ export default function CourseDetailPage() {
     const result = await enrollCourse({ userId: user.id, course })
     if (result.error) { setEnrollError(result.error); setEnrolling(false); return }
     if (result.enrolled) { navigate('aprender', { courseId: course.id }); return }
-    if (result.pendingOrder) setPendingOrder(true)
+    if (result.pendingOrder) { setPendingOrder(result.order); setShowPaymentModal(true) }
     setEnrolling(false)
   }
 
@@ -302,12 +306,8 @@ export default function CourseDetailPage() {
                     </div>
                   ) : pendingOrder ? (
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '.55rem', padding: '.9rem 1rem', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 9, marginBottom: '1rem' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <div>
-                          <div style={{ fontSize: '.84rem', fontWeight: 700, color: '#92400E', marginBottom: '.3rem' }}>Inscripción solicitada</div>
-                          <div style={{ fontSize: '.77rem', color: '#B45309', lineHeight: 1.55 }}>Tu solicitud fue registrada. El equipo de Cubo Campus verificará el pago y activará tu acceso. Te notificaremos cuando esté listo.</div>
-                        </div>
+                      <div style={{ marginBottom: '1rem' }}>
+                        <PaymentInstructions order={pendingOrder} compact />
                       </div>
                       <button onClick={() => navigate('tienda')}
                         style={{ width: '100%', padding: '.75rem', background: 'var(--cream)', color: 'var(--carbon)', border: '1px solid var(--border)', borderRadius: 10, fontSize: '.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
@@ -351,6 +351,10 @@ export default function CourseDetailPage() {
           </div>
         )}
       </div>
+
+      {showPaymentModal && pendingOrder && (
+        <PaymentInstructionsModal order={pendingOrder} courseTitle={course?.title} onClose={() => setShowPaymentModal(false)} />
+      )}
     </DashboardLayout>
   )
 }
