@@ -28,9 +28,9 @@ export default function InstructorStudentsPage() {
         // enrollments
         const { data: enr } = await supabase
           .from('enrollments')
-          .select('id, created_at, completed_at, course_id, student_id')
+          .select('id, enrolled_at, completed_at, course_id, student_id')
           .in('course_id', ids)
-          .order('created_at', { ascending: false })
+          .order('enrolled_at', { ascending: false })
           .limit(1000)
 
         if (!enr?.length) { setLoading(false); return }
@@ -47,7 +47,7 @@ export default function InstructorStudentsPage() {
 
         setRows(enr.map(e => ({
           id:          e.id,
-          created_at:  e.created_at,
+          enrolled_at: e.enrolled_at,
           completed_at: e.completed_at,
           course_id:   e.course_id,
           courseTitle: courseMap[e.course_id] || '—',
@@ -155,7 +155,7 @@ export default function InstructorStudentsPage() {
                     {r.completed_at ? 'Completado' : 'En curso'}
                   </span>
                   <div style={{ fontSize: '.72rem', color: '#B5B2AB', flexShrink: 0 }}>
-                    {formatDateShort(r.created_at)}
+                    {formatDateShort(r.enrolled_at)}
                   </div>
                 </div>
               ))}

@@ -49,7 +49,7 @@ export default function InstructorReportsPage() {
 
         const ids = list.map(c => c.id)
         const [{ data: enr }, { data: orders }] = await Promise.all([
-          supabase.from('enrollments').select('course_id, student_id, created_at').in('course_id', ids),
+          supabase.from('enrollments').select('course_id, student_id, enrolled_at').in('course_id', ids),
           supabase.from('orders').select('course_id, amount').eq('status', 'completed').in('course_id', ids),
         ])
 
@@ -59,7 +59,7 @@ export default function InstructorReportsPage() {
         ;(enr || []).forEach(r => {
           map[r.course_id] = (map[r.course_id] || 0) + 1
           students.add(r.student_id)
-          const d = new Date(r.created_at)
+          const d = new Date(r.enrolled_at)
           const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
           monthly[key] = (monthly[key] || 0) + 1
         })
