@@ -47,11 +47,11 @@ export function CourseReviews({ courseId, currentUserId, canReview }) {
 
   async function load() {
     setLoading(true)
-    const { data } = await supabase
-      .from('course_reviews')
-      .select('id, rating, comment, created_at, student_id, profiles!student_id(full_name, avatar_url)')
-      .eq('course_id', courseId)
-      .order('created_at', { ascending: false })
+    // Joining profiles here yields null for everyone but the viewer — RLS hides
+    // other students' rows, so every review rendered as "Estudiante". This RPC
+    // returns the same reviews the table's SELECT policy already allows, with
+    // just the author's full_name and avatar_url attached.
+    const { data } = await supabase.rpc('public_course_reviews', { p_course_id: courseId })
     setReviews(data || [])
     const mine = (data || []).find(r => r.student_id === currentUserId)
     if (mine) { setRating(mine.rating); setComment(mine.comment || '') }
@@ -119,13 +119,13 @@ export function CourseReviews({ courseId, currentUserId, canReview }) {
 }
 
 function ReviewRow({ review, mine }) {
-  const name = review.profiles?.full_name || 'Estudiante'
+  const name = review.full_name || 'Estudiante'
   const date = formatDateShort(review.created_at)
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   return (
     <div style={{ display: 'flex', gap: '.75rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-      {review.profiles?.avatar_url
-        ? <img loading="lazy" src={review.profiles.avatar_url} alt={name} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+      {review.avatar_url
+        ? <img loading="lazy" src={review.avatar_url} alt={name} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
         : <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.72rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>{initials}</div>
       }
       <div style={{ flex: 1, minWidth: 0 }}>

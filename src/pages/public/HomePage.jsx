@@ -247,13 +247,13 @@ export default function HomePage() {
       .then(({ data }) => setInstructors(data || []))
   }, [])
 
+  // Counting profiles directly returns 0 students for signed-out visitors —
+  // RLS deliberately hides student rows from anon. public_platform_stats() is a
+  // SECURITY DEFINER function that returns only aggregates, no personal data.
   useEffect(() => {
-    Promise.all([
-      supabase.from('courses').select('id', { count: 'exact', head: true }).eq('type', 'course').eq('status', 'published'),
-      supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
-      supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'instructor').eq('is_active', true),
-    ]).then(([coursesRes, studentsRes, instructorsRes]) => {
-      setStats({ courses: coursesRes.count ?? 0, students: studentsRes.count ?? 0, instructors: instructorsRes.count ?? 0 })
+    supabase.rpc('public_platform_stats').then(({ data }) => {
+      const s = data?.[0]
+      setStats({ courses: s?.courses ?? 0, students: s?.students ?? 0, instructors: s?.instructors ?? 0 })
     })
   }, [])
 

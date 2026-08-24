@@ -136,7 +136,10 @@ export default function EventAttendancePage() {
                     <div style={{ fontSize: '.875rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {r.profiles?.full_name || r.profiles?.email || 'Estudiante'}
                     </div>
-                    <div style={{ fontSize: '.75rem', color: 'var(--text-2)' }}>Inscrito el {formatDateShort(r.enrolled_at)}</div>
+                    <div style={{ fontSize: '.75rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {r.profiles?.email && r.profiles?.full_name && <>{r.profiles.email} · </>}
+                      Inscrito el {formatDateShort(r.enrolled_at)}
+                    </div>
                   </div>
                   <button onClick={() => toggleAttendance(r)} disabled={isProc}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1, flexShrink: 0, border: r.completed_at ? '1.5px solid rgba(22,125,120,.4)' : '1.5px solid var(--border)', background: r.completed_at ? 'var(--jade-soft)' : 'white', color: r.completed_at ? 'var(--jade)' : 'var(--text-2)' }}>
