@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
+import { runQuery } from '../../lib/db'
 
 export default function Navbar() {
   const { user, profile, signOut } = useAuth()
@@ -43,7 +44,7 @@ export default function Navbar() {
   }, [menuOpen])
 
   useEffect(() => {
-    supabase.from('categories').select('*').order('name').then(({ data }) => {
+    runQuery(supabase.from('categories').select('*').order('name'), 'Navbar: categorías').then(({ data }) => {
       if (data) setCategories(data)
     })
   }, [])

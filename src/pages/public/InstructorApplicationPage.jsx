@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, cloneElement, isValidElement } from 'react
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 import { COUNTRIES } from '../../lib/countries'
+import { runQuery } from '../../lib/db'
 const EXP_MAP = { '1-2': 2, '3-5': 5, '6-10': 10, '10+': 15 }
 const LEVEL_MAP = { 'Básico': 'beginner', 'Intermedio': 'intermediate', 'Avanzado': 'advanced' }
 
@@ -79,7 +80,7 @@ export default function InstructorApplicationPage() {
   const [chkReview, setChkReview] = useState(false)
 
   useEffect(() => {
-    supabase.from('categories').select('id, name').order('name').then(({ data }) => {
+    runQuery(supabase.from('categories').select('id, name').order('name'), 'InstructorApplicationPage: categorías').then(({ data }) => {
       if (data) setCategories(data)
     })
   }, [])

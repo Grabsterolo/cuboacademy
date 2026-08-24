@@ -6,6 +6,7 @@ import { slugify } from '../../../../lib/slugify'
 import { validateImageFile, resizeImage } from '../../../../lib/imageProcessing'
 import { withUniqueSlug } from '../../../../lib/withUniqueSlug'
 import { uid, stripHtml, isLessonContentComplete, isQuestionComplete } from './components/shared'
+import { runQuery } from '../../../../lib/db'
 
 // content-only snapshot of modules/lessons (excludes UI state like `expanded`
 // and client-local ids), used to detect no-op saves of step 2/3
@@ -68,9 +69,9 @@ export function useCourseWizard() {
   // the instructor re-saves without touching structure/content
   const lastSavedModulesRef = useRef(null)
   useEffect(() => {
-    supabase.from('categories').select('id, name').order('name').then(({ data }) => setCategories(data || []))
+    runQuery(supabase.from('categories').select('id, name').order('name'), 'CourseWizard: categorías').then(({ data }) => setCategories(data || []))
     if (profile?.role === 'admin') {
-      supabase.from('users_view').select('id, full_name').in('role', ['instructor', 'admin']).order('full_name').then(({ data }) => setInstructors(data || []))
+      runQuery(supabase.from('users_view').select('id, full_name').in('role', ['instructor', 'admin']).order('full_name'), 'CourseWizard: instructores').then(({ data }) => setInstructors(data || []))
     }
     if (isEdit && !loadedRef.current) {
       loadedRef.current = true

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { runQuery } from './db'
 
 /**
  * Datos e instrucciones del pago manual.
@@ -36,10 +37,13 @@ export function formatAmount(amount, currency = 'USD') {
  * y luego inició sesión tendría el contexto sin los datos de pago.
  */
 export async function fetchPaymentSettings() {
-  const { data } = await supabase
-    .from('platform_settings')
-    .select('key, value')
-    .in('key', [...PAYMENT_SETTING_KEYS, 'contact_email'])
+  const { data } = await runQuery(
+    supabase
+      .from('platform_settings')
+      .select('key, value')
+      .in('key', [...PAYMENT_SETTING_KEYS, 'contact_email']),
+    'paymentInfo: datos de pago',
+  )
   const map = {}
   for (const row of data || []) map[row.key] = row.value
   return map

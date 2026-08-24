@@ -4,10 +4,13 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { FieldLabel as LabelField, Toast } from '../../../components/ui'
 import { slugify } from '../../../lib/slugify'
 import { formatDateShort } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadErr, setLoadErr] = useState(null)
 
   // Create / edit modal
   const [showModal, setShowModal] = useState(false)
@@ -40,10 +43,14 @@ export default function CategoriesPage() {
 
   async function loadCategories() {
     setLoading(true)
-    const { data } = await supabase
-      .from('categories')
-      .select('id, name, description, slug, created_at')
-      .order('name', { ascending: true })
+    const { data, error } = await runQuery(
+      supabase
+        .from('categories')
+        .select('id, name, description, slug, created_at')
+        .order('name', { ascending: true }),
+      'CategoriesPage: listar categorías',
+    )
+    setLoadErr(error)
     if (data) setCategories(data)
     setLoading(false)
   }
@@ -168,6 +175,13 @@ export default function CategoriesPage() {
         {/* Cards */}
         {loading ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>Cargando categorías…</div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar las categorías"
+            description="Falló la consulta. Crear una categoría ahora podría duplicar una que ya existe pero no se pudo leer."
+            error={loadErr}
+            onRetry={loadCategories}
+          />
         ) : categories.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center', maxWidth: 440 }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>

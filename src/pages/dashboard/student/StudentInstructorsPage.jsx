@@ -4,6 +4,8 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { ModalOverlay, Avatar } from '../../../components/ui'
 import { isEvent } from '../../../lib/eventStatus'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 // Cursos y eventos se listan por separado: llamar «curso» a un evento
 // presencial al que el estudiante asistió es simplemente incorrecto.
@@ -111,16 +113,20 @@ export default function StudentInstructorsPage() {
   const { user } = useAuth()
   const [instructors, setInstructors] = useState([]) // { profile, courses[], events[] }
   const [loading, setLoading] = useState(true)
+  const [loadErr, setLoadErr] = useState(null)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
 
   useEffect(() => {
     if (!user) return
 
-    supabase.from('enrollments')
-      .select('course_id, courses(id, type, title, instructor_id, profiles!instructor_id(id, full_name, bio, avatar_url, profession, country, specialty, years_experience, current_company, linkedin_url, website_url, twitter_url))')
-      .eq('student_id', user.id)
-      .then(({ data }) => {
+    runQuery(
+      supabase.from('enrollments')
+        .select('course_id, courses(id, type, title, instructor_id, profiles!instructor_id(id, full_name, bio, avatar_url, profession, country, specialty, years_experience, current_company, linkedin_url, website_url, twitter_url))')
+        .eq('student_id', user.id),
+      'StudentInstructorsPage: instructores de mis cursos',
+    ).then(({ data, error }) => {
+        setLoadErr(error)
         const rows = data || []
         const map = {}
 
@@ -185,6 +191,13 @@ export default function StudentInstructorsPage() {
           <div className="sinst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
             {[1,2,3,4].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, height: 180, opacity: 1 - i * 0.18 }} />)}
           </div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar tus instructores"
+            description="Falló la consulta. Si estás inscrito en algún curso, sus instructores siguen ahí."
+            error={loadErr}
+            onRetry={() => window.location.reload()}
+          />
         ) : instructors.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{USERS_ICON}</div>

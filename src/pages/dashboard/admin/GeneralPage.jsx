@@ -5,6 +5,8 @@ import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
 import { Skeleton } from '../../../components/ui'
 import { formatDateShort } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const Skel = Skeleton
 
@@ -20,9 +22,11 @@ export default function GeneralPage() {
   const firstName = (profile?.full_name || user?.email?.split('@')[0] || 'admin').split(' ')[0]
 
   const [{ stats, loading }, setData] = useState({ stats: null, loading: true })
+  const [loadErr, setLoadErr] = useState(null)
 
   useEffect(() => {
-    supabase.rpc('get_admin_stats').then(({ data }) => {
+    runQuery(supabase.rpc('get_admin_stats'), 'GeneralPage: métricas del panel').then(({ data, error }) => {
+      setLoadErr(error)
       setData({ stats: data ?? null, loading: false })
     })
   }, [])
@@ -70,6 +74,21 @@ export default function GeneralPage() {
         </div>
 
         {/* Metric cards */}
+        {/* Aviso antes de las métricas: unos números a cero por un fallo de
+            consulta se leen como «no hay actividad», que es una lectura muy
+            distinta y llevaría a decisiones equivocadas. */}
+        {loadErr && (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <ErrorState
+              title="No pudimos cargar las métricas"
+              description="Falló la consulta de estadísticas. Los números de abajo pueden estar incompletos o en cero: no los tomes como reales."
+              error={loadErr}
+              onRetry={() => window.location.reload()}
+              compact
+            />
+          </div>
+        )}
+
         <div className="gp-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
           {METRIC_CARDS ? METRIC_CARDS.map(m => (
             <button key={m.label} onClick={() => navigate(m.section)} className="gp-metric-card"

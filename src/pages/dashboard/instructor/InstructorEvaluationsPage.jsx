@@ -4,6 +4,8 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { Toast } from '../../../components/ui'
 import { formatDateShort } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const CHECK_ICON = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
 const X_ICON    = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -22,6 +24,7 @@ export default function InstructorEvaluationsPage() {
   const { user } = useAuth()
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading]         = useState(true)
+  const [loadErr, setLoadErr]         = useState(null)
   const [tab, setTab]                 = useState('pending')
   const [processing, setProcessing]   = useState(null)
   const [rejectModal, setRejectModal] = useState(null)
@@ -50,17 +53,20 @@ export default function InstructorEvaluationsPage() {
     const courseIds = (courses || []).map(c => c.id)
     if (courseIds.length === 0) { setSubmissions([]); setLoading(false); return }
 
-    const { data } = await supabase
-      .from('exam_submissions')
-      .select(`
-        id, status, submitted_at, reviewed_at, notes, enrollment_id, student_id, course_id,
-        profiles!student_id(full_name, email),
-        courses!course_id(id, title, cover_image_url, has_certificate)
-      `)
-      .in('course_id', courseIds)
-      .order('submitted_at', { ascending: false })
-      .limit(500)
-
+    const { data, error } = await runQuery(
+      supabase
+        .from('exam_submissions')
+        .select(`
+          id, status, submitted_at, reviewed_at, notes, enrollment_id, student_id, course_id,
+          profiles!student_id(full_name, email),
+          courses!course_id(id, title, cover_image_url, has_certificate)
+        `)
+        .in('course_id', courseIds)
+        .order('submitted_at', { ascending: false })
+        .limit(500),
+      'InstructorEvaluationsPage: entregas de examen',
+    )
+    setLoadErr(error)
     setSubmissions(data || [])
     setLoading(false)
   }
@@ -378,6 +384,13 @@ export default function InstructorEvaluationsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
             {[1,2,3].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 90, opacity: 1 - i * 0.2 }} />)}
           </div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar las evaluaciones"
+            description="Falló la consulta. Puede haber entregas esperando revisión que esta lista no está mostrando."
+            error={loadErr}
+            onRetry={loadSubmissions}
+          />
         ) : shown.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade)' }}>

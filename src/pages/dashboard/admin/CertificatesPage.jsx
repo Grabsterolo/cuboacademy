@@ -4,6 +4,8 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { Toast } from '../../../components/ui'
 import { formatDateShort } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const CERT_ICON = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
 
@@ -21,6 +23,7 @@ export default function CertificatesPage() {
   const { user } = useAuth()
   const [certs, setCerts]         = useState([])
   const [loading, setLoading]     = useState(true)
+  const [loadErr, setLoadErr] = useState(null)
   const [tab, setTab]             = useState('pending')
   const [processing, setProcessing] = useState(null)
   const [rejectModal, setRejectModal] = useState(null)
@@ -40,16 +43,19 @@ export default function CertificatesPage() {
 
   async function loadCerts() {
     setLoading(true)
-    const { data } = await supabase
-      .from('certificates')
-      .select(`
-        id, status, issued_at, unique_code, admin_notes, approved_at, pdf_url, student_id, course_id,
-        profiles!student_id(full_name, email),
-        courses!course_id(title, cover_image_url, type, profiles!instructor_id(full_name))
-      `)
-      .order('issued_at', { ascending: false })
-      .limit(500)
-
+    const { data, error } = await runQuery(
+      supabase
+        .from('certificates')
+        .select(`
+          id, status, issued_at, unique_code, admin_notes, approved_at, pdf_url, student_id, course_id,
+          profiles!student_id(full_name, email),
+          courses!course_id(title, cover_image_url, type, profiles!instructor_id(full_name))
+        `)
+        .order('issued_at', { ascending: false })
+        .limit(500),
+      'CertificatesPage: listar certificados',
+    )
+    setLoadErr(error)
     setCerts(data || [])
     setLoading(false)
   }
@@ -166,6 +172,13 @@ export default function CertificatesPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
             {[1,2,3].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 90, opacity: 1 - i * 0.2 }} />)}
           </div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar los certificados"
+            description="Falló la consulta. No asumas que no hay certificados pendientes: vuelve a intentarlo."
+            error={loadErr}
+            onRetry={loadCerts}
+          />
         ) : shown.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade)' }}>

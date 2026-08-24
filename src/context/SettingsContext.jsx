@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { runQuery } from '../lib/db'
 
 const SettingsContext = createContext({})
 
@@ -9,7 +10,7 @@ export function SettingsProvider({ children }) {
 
   useEffect(() => {
     async function loadSettings() {
-      const { data } = await supabase.from('platform_settings').select('key, value')
+      const { data } = await runQuery(supabase.from('platform_settings').select('key, value'), 'SettingsContext: ajustes de plataforma')
       if (data) {
         const map = {}
         data.forEach(s => { map[s.key] = s.value })

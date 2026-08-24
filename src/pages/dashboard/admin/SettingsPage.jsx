@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, cloneElement, isValidElement } from 'react
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useSettings } from '../../../context/SettingsContext'
+import { runQuery } from '../../../lib/db'
 
 const DEFAULTS = {
   platform_name: 'Cubo Campus',
@@ -110,7 +111,7 @@ export default function SettingsPage() {
   const heroVideoInputRef = useRef()
 
   useEffect(() => {
-    supabase.from('platform_settings').select('*').then(({ data }) => {
+    runQuery(supabase.from('platform_settings').select('*'), 'SettingsPage: ajustes').then(({ data }) => {
       if (data?.length) {
         const map = {}
         data.forEach(r => { map[r.key] = r.value })

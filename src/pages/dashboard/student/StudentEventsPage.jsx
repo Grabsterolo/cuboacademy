@@ -4,6 +4,8 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import { formatEventDateTime } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 const TABS = [
@@ -18,17 +20,20 @@ export default function StudentEventsPage() {
   const { user } = useAuth()
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading]         = useState(true)
+  const [loadErr, setLoadErr] = useState(null)
   const [tab, setTab]                 = useState('upcoming')
   const [search, setSearch]           = useState('')
 
   useEffect(() => {
     if (!user) return
-    supabase.from('enrollments')
-      .select('id, enrolled_at, completed_at, course_id, courses!inner(id, slug, title, cover_image_url, modality, event_start_at, location, categories(name), profiles!instructor_id(full_name))')
-      .eq('student_id', user.id)
-      .eq('courses.type', 'event')
-      .order('enrolled_at', { ascending: false })
-      .then(({ data }) => { setEnrollments(data || []); setLoading(false) })
+    runQuery(
+      supabase.from('enrollments')
+        .select('id, enrolled_at, completed_at, course_id, courses!inner(id, slug, title, cover_image_url, modality, event_start_at, location, categories(name), profiles!instructor_id(full_name))')
+        .eq('student_id', user.id)
+        .eq('courses.type', 'event')
+        .order('enrolled_at', { ascending: false }),
+      'StudentEventsPage: mis eventos',
+    ).then(({ data, error }) => { setLoadErr(error); setEnrollments(data || []); setLoading(false) })
   }, [user])
 
   const now = Date.now()
@@ -111,6 +116,13 @@ export default function StudentEventsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
             {[1,2,3].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 90, opacity: 1 - i * 0.2 }} />)}
           </div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar tus eventos"
+            description="Falló la consulta. Si tienes eventos inscritos, siguen ahí — es la lista la que no cargó."
+            error={loadErr}
+            onRetry={() => window.location.reload()}
+          />
         ) : shown.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{CALENDAR}</div>

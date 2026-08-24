@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { formatEventDateTime } from '../../lib/formatDate'
+import { runQuery } from '../../lib/db'
 
 const TRACK_STYLES = [
   { bg: 'linear-gradient(150deg, #0B3436 0%, #167D78 130%)', icon: 'layers' },
@@ -202,7 +203,7 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    supabase.from('categories').select('*').order('name').then(({ data }) => {
+    runQuery(supabase.from('categories').select('*').order('name'), 'HomePage: áreas de formación').then(({ data }) => {
       setTracks(data || [])
     })
   }, [])

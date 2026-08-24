@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { formatDateShort, formatDateFull } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const TYPES = {
   general: {
@@ -54,11 +56,14 @@ export default function StudentAnnouncementsPage() {
   const [readItem, setReadItem] = useState(null)
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState(null)
+  const [loadErr, setLoadErr] = useState(null)
 
   useEffect(() => {
-    supabase.from('announcements').select('id, title, content, type, created_at')
-      .order('created_at', { ascending: false })
-      .then(({ data }) => { if (data) setItems(data); setLoading(false) })
+    runQuery(
+      supabase.from('announcements').select('id, title, content, type, created_at')
+        .order('created_at', { ascending: false }),
+      'StudentAnnouncementsPage: comunicados',
+    ).then(({ data, error }) => { setLoadErr(error); if (data) setItems(data); setLoading(false) })
   }, [])
 
   useEffect(() => {
@@ -121,6 +126,13 @@ export default function StudentAnnouncementsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
             {[...Array(3)].map((_, i) => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 100, opacity: 1 - i * 0.2 }} />)}
           </div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar los comunicados"
+            description="Falló la consulta, así que puede haber comunicados que no estás viendo."
+            error={loadErr}
+            onRetry={() => window.location.reload()}
+          />
         ) : filtered.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{BELL}</div>

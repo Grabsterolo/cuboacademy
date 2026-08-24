@@ -4,6 +4,8 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { FieldLabel as LabelField } from '../../../components/ui'
 import { useNavigation } from '../../../context/NavigationContext'
 import { formatDateShort } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const ROLE_LABELS = { admin: 'Admin', instructor: 'Instructor', student: 'Estudiante' }
 const ROLE_STYLE = {
@@ -22,6 +24,7 @@ export default function UsersPage() {
   const { params } = useNavigation()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadErr, setLoadErr] = useState(null)
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState(null)
   const [toast, setToast] = useState('')
@@ -104,11 +107,15 @@ export default function UsersPage() {
 
   async function loadUsers() {
     setLoading(true)
-    const { data } = await supabase
-      .from('users_view')
-      .select('id, full_name, email, role, created_at, is_active')
-      .order('created_at', { ascending: false })
-      .limit(500)
+    const { data, error } = await runQuery(
+      supabase
+        .from('users_view')
+        .select('id, full_name, email, role, created_at, is_active')
+        .order('created_at', { ascending: false })
+        .limit(500),
+      'UsersPage: listar usuarios',
+    )
+    setLoadErr(error)
     if (data) setUsers(data)
     setLoading(false)
   }
@@ -339,6 +346,13 @@ export default function UsersPage() {
               <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.25rem', height: 68, opacity: 1 - i * 0.15 }} />
             ))}
           </div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar los usuarios"
+            description="Falló la consulta, así que esta lista puede estar vacía o incompleta sin que eso refleje los usuarios reales."
+            error={loadErr}
+            onRetry={loadUsers}
+          />
         ) : filtered.length === 0 ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.9rem', fontFamily: 'var(--sans)' }}>No se encontraron usuarios.</div>
         ) : (

@@ -4,6 +4,8 @@ import { ModalOverlay, ConfirmModal, Badge, Toast, STATUS_TONE } from '../../../
 import { supabase } from '../../../lib/supabase'
 import { slugify } from '../../../lib/slugify'
 import { formatDateShort } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const EXP_LABEL = { 2: '1-2 años', 5: '3-5 años', 10: '6-10 años', 15: '10+ años' }
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
@@ -77,20 +79,25 @@ export default function RequestsPage() {
   const [profileByEmail, setProfileByEmail] = useState({})
   const [provisioning, setProvisioning] = useState(null) // id de la solicitud en curso
   const [actionLink, setActionLink] = useState(null)     // { email, link } si el correo falló
+  const [loadErr, setLoadErr] = useState(null)
 
   useEffect(() => {
     loadData()
-    supabase.from('categories').select('id, name').then(({ data }) => {
+    runQuery(supabase.from('categories').select('id, name'), 'RequestsPage: categorías').then(({ data }) => {
       if (data) setCategories(Object.fromEntries(data.map(c => [c.id, c.name])))
     })
   }, [])
 
   async function loadData() {
     setLoading(true)
-    const { data } = await supabase
-      .from('instructor_applications')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data, error } = await runQuery(
+      supabase
+        .from('instructor_applications')
+        .select('*')
+        .order('created_at', { ascending: false }),
+      'RequestsPage: listar solicitudes',
+    )
+    setLoadErr(error)
     const rows = data || []
     setApps(rows)
 
@@ -344,7 +351,18 @@ export default function RequestsPage() {
           {loading && (
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.875rem', fontFamily: 'var(--sans)' }}>Cargando…</div>
           )}
-          {!loading && filtered.length === 0 && (
+          {!loading && loadErr && (
+            <div style={{ padding: '1rem' }}>
+              <ErrorState
+                title="No pudimos cargar las solicitudes"
+                description="Falló la consulta. Puede haber solicitudes pendientes que esta lista no está mostrando."
+                error={loadErr}
+                onRetry={loadData}
+                compact
+              />
+            </div>
+          )}
+          {!loading && !loadErr && filtered.length === 0 && (
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-2)', fontSize: '.875rem', fontFamily: 'var(--sans)' }}>No hay solicitudes en esta categoría.</div>
           )}
 

@@ -6,6 +6,7 @@ import { slugify } from '../../../../lib/slugify'
 import { validateImageFile, resizeImage } from '../../../../lib/imageProcessing'
 import { withUniqueSlug } from '../../../../lib/withUniqueSlug'
 import { stripHtml } from '../course-wizard/components/shared'
+import { runQuery } from '../../../../lib/db'
 
 const TOTAL_STEPS = 6
 
@@ -61,9 +62,9 @@ export function useEventWizard() {
 
   const loadedRef = useRef(false)
   useEffect(() => {
-    supabase.from('categories').select('id, name').order('name').then(({ data }) => setCategories(data || []))
+    runQuery(supabase.from('categories').select('id, name').order('name'), 'EventWizard: categorías').then(({ data }) => setCategories(data || []))
     if (profile?.role === 'admin') {
-      supabase.from('users_view').select('id, full_name').in('role', ['instructor', 'admin']).order('full_name').then(({ data }) => setInstructors(data || []))
+      runQuery(supabase.from('users_view').select('id, full_name').in('role', ['instructor', 'admin']).order('full_name'), 'EventWizard: instructores').then(({ data }) => setInstructors(data || []))
     }
     if (isEdit && !loadedRef.current) {
       loadedRef.current = true

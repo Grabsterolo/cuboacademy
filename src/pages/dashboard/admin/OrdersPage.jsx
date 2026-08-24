@@ -4,6 +4,8 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { STATUS_TONE } from '../../../components/ui'
 import { formatDateShort } from '../../../lib/formatDate'
 import { orderReference } from '../../../lib/paymentInfo'
+import { runQuery, runMutation, runFunction, errorMessage } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const STATUS_STYLE = {
   completed: { label: 'Pagado',      ...STATUS_TONE.success },
@@ -31,16 +33,22 @@ export default function OrdersPage() {
   const [acting, setActing] = useState(null) // order id being processed
   const [confirmAction, setConfirmAction] = useState(null) // { orderId, action }
   const [actionErr, setActionErr] = useState('')
+  const [loadErr, setLoadErr] = useState(null)
 
   useEffect(() => { loadOrders() }, [])
 
   async function loadOrders() {
     setLoading(true)
-    const { data } = await supabase
-      .from('orders')
-      .select('id, amount, status, created_at, payment_provider, student_id, course_id, profiles!student_id(full_name, avatar_url), courses(id, title, cover_image_url)')
-      .order('created_at', { ascending: false })
-      .limit(500)
+    setLoadErr(null)
+    const { data, error } = await runQuery(
+      supabase
+        .from('orders')
+        .select('id, amount, status, created_at, payment_provider, student_id, course_id, profiles!student_id(full_name, avatar_url), courses(id, title, cover_image_url)')
+        .order('created_at', { ascending: false })
+        .limit(500),
+      'OrdersPage: listar órdenes',
+    )
+    setLoadErr(error)
     setOrders(data || [])
     setLoading(false)
   }
@@ -48,32 +56,47 @@ export default function OrdersPage() {
   async function handleConfirm(order) {
     setConfirmAction(null)
     setActing(order.id)
+    setActionErr('')
 
     // 1. Mark order as completed
-    const { error: orderErr } = await supabase
-      .from('orders')
-      .update({ status: 'completed' })
-      .eq('id', order.id)
-
-    if (orderErr) { setActing(null); return }
+    const { ok, error: orderErr } = await runMutation(
+      supabase.from('orders').update({ status: 'completed' }).eq('id', order.id),
+      'OrdersPage: confirmar orden',
+    )
+    // Antes esto hacía `return` en silencio: el admin pulsaba «Confirmar», no
+    // pasaba nada visible, y la orden seguía pendiente sin explicación.
+    if (!ok) {
+      setActing(null)
+      setActionErr('No se pudo confirmar la orden: ' + errorMessage(orderErr))
+      return
+    }
 
     // 2. Create enrollment if not exists (belt-and-suspenders alongside DB trigger)
-    const { data: existing } = await supabase.from('enrollments')
-      .select('id').eq('student_id', order.student_id).eq('course_id', order.course_id).maybeSingle()
+    const { data: existing } = await runQuery(
+      supabase.from('enrollments')
+        .select('id').eq('student_id', order.student_id).eq('course_id', order.course_id).maybeSingle(),
+      'OrdersPage: buscar matrícula existente',
+    )
     if (!existing) {
-      await supabase.from('enrollments')
-        .insert({ student_id: order.student_id, course_id: order.course_id, enrolled_at: new Date().toISOString() })
+      const { ok: enrOk, error: enrErr } = await runMutation(
+        supabase.from('enrollments')
+          .insert({ student_id: order.student_id, course_id: order.course_id, enrolled_at: new Date().toISOString() }),
+        'OrdersPage: crear matrícula al confirmar',
+      )
+      // La orden ya quedó pagada: se avisa del hueco en vez de dejar al
+      // estudiante pagando sin acceso y sin que nadie se entere.
+      if (!enrOk) {
+        setActionErr('La orden se marcó como pagada, pero no se pudo crear la matrícula: ' + errorMessage(enrErr))
+      }
     }
 
     // 3. Best-effort transactional email — never blocks the UI on failure.
-    supabase.functions.invoke('send-notification-email', {
-      body: {
-        recipientId: order.student_id,
-        type: 'purchase',
-        subject: 'Tu pago fue confirmado',
-        message: `Tu pago para "${order.courses?.title || 'tu curso'}" fue confirmado. Ya tienes acceso al curso en Cubo Campus.`,
-      },
-    }).catch(() => {})
+    runFunction(supabase, 'send-notification-email', {
+      recipientId: order.student_id,
+      type: 'purchase',
+      subject: 'Tu pago fue confirmado',
+      message: `Tu pago para "${order.courses?.title || 'tu curso'}" fue confirmado. Ya tienes acceso al curso en Cubo Campus.`,
+    }, 'OrdersPage: correo de pago confirmado')
 
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'completed' } : o))
     setActing(null)
@@ -82,7 +105,20 @@ export default function OrdersPage() {
   async function handleReject(order) {
     setConfirmAction(null)
     setActing(order.id)
-    await supabase.from('orders').update({ status: 'failed' }).eq('id', order.id)
+    setActionErr('')
+
+    const { ok, error } = await runMutation(
+      supabase.from('orders').update({ status: 'failed' }).eq('id', order.id),
+      'OrdersPage: rechazar orden',
+    )
+    // Antes la fila se pintaba como «Fallido» sin mirar el resultado: si la
+    // escritura fallaba, la pantalla mentía hasta la siguiente recarga.
+    if (!ok) {
+      setActing(null)
+      setActionErr('No se pudo rechazar la orden: ' + errorMessage(error))
+      return
+    }
+
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'failed' } : o))
     setActing(null)
   }
@@ -95,13 +131,19 @@ export default function OrdersPage() {
     setActing(order.id)
     setActionErr('')
 
-    const { error: orderErr } = await supabase.from('orders').update({ status: 'refunded' }).eq('id', order.id)
-    if (orderErr) { setActing(null); setActionErr('No se pudo marcar la orden como reembolsada: ' + orderErr.message); return }
+    const { ok, error: orderErr } = await runMutation(
+      supabase.from('orders').update({ status: 'refunded' }).eq('id', order.id),
+      'OrdersPage: reembolsar orden',
+    )
+    if (!ok) { setActing(null); setActionErr('No se pudo marcar la orden como reembolsada: ' + errorMessage(orderErr)); return }
 
-    const { error: enrErr } = await supabase.from('enrollments')
-      .delete().eq('student_id', order.student_id).eq('course_id', order.course_id)
-    if (enrErr) {
-      setActionErr('La orden se marcó como reembolsada, pero no se pudo quitar la matrícula: ' + enrErr.message)
+    const { ok: enrOk, error: enrErr } = await runMutation(
+      supabase.from('enrollments')
+        .delete().eq('student_id', order.student_id).eq('course_id', order.course_id),
+      'OrdersPage: revocar matrícula al reembolsar',
+    )
+    if (!enrOk) {
+      setActionErr('La orden se marcó como reembolsada, pero no se pudo quitar la matrícula: ' + errorMessage(enrErr))
     }
 
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'refunded' } : o))
@@ -190,6 +232,15 @@ export default function OrdersPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
             {[1,2,3,4].map(i => <div key={i} style={{ height: 72, background: 'white', border: '1px solid var(--border)', borderRadius: 10, opacity: 1 - i * 0.18 }} />)}
           </div>
+        ) : loadErr ? (
+          /* Antes que el estado vacío: si la consulta falló, «Sin órdenes aún»
+             sería mentira — y esa mentira es justo el fallo que perseguimos. */
+          <ErrorState
+            title="No pudimos cargar las órdenes"
+            description="Falló la consulta al servidor, así que esta lista puede estar incompleta o vacía sin que eso signifique que no hay órdenes."
+            error={loadErr}
+            onRetry={loadOrders}
+          />
         ) : filtered.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{ORDER_ICON}</div>

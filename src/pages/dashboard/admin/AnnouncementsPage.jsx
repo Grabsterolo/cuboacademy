@@ -3,6 +3,8 @@ import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../context/AuthContext'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { formatDateShort } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 // ── Tipos de comunicado ─────────────────────────────────────────────────────
 const TYPES = [
@@ -121,6 +123,7 @@ export default function AnnouncementsPage() {
   const { profile } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadErr, setLoadErr] = useState(null)
   const [toast, setToast] = useState('')
 
   // Create/edit modal
@@ -155,10 +158,14 @@ export default function AnnouncementsPage() {
 
   async function load() {
     setLoading(true)
-    const { data } = await supabase
-      .from('announcements')
-      .select('id, title, content, type, target_role, created_at')
-      .order('created_at', { ascending: false })
+    const { data, error } = await runQuery(
+      supabase
+        .from('announcements')
+        .select('id, title, content, type, target_role, created_at')
+        .order('created_at', { ascending: false }),
+      'AnnouncementsPage: listar comunicados',
+    )
+    setLoadErr(error)
     if (data) setItems(data)
     setLoading(false)
   }
@@ -324,6 +331,13 @@ export default function AnnouncementsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
             {[...Array(4)].map((_, i) => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, height: 90, opacity: 1 - i * 0.18 }} />)}
           </div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar los comunicados"
+            description="Falló la consulta. Antes de crear uno nuevo, recarga: puede que ya exista y no se haya podido leer."
+            error={loadErr}
+            onRetry={load}
+          />
         ) : filtered.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center', maxWidth: 420 }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade)' }}>
