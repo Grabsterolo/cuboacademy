@@ -22,7 +22,7 @@ function alreadyRegistered(msg: string) {
  * Approving an application used to only flip its status and notify — the
  * account was never created, so an approved instructor could not sign in at
  * all. This does the privileged half: Auth user, profiles row with
- * role = 'instructor', and the invitation email carrying a set-password link.
+ * role = 'instructor', and the email carrying a set-password link.
  *
  * The admin check runs here with the service key rather than in the browser,
  * because the browser half of an admin UI is not a trust boundary.
@@ -75,33 +75,26 @@ Deno.serve(async (req) => {
   const fullName = `${app.full_name || ''} ${app.last_name || ''}`.trim();
 
   // ── Modo «solo enlace» ──────────────────────────────────────────────────
-  // Una cuenta creada por invitación no tiene contraseña hasta que la persona
-  // abre el correo. Si ese correo no llegó, el instructor se queda sin acceso
-  // y el admin sin recurso: esto le da un enlace que pueda entregar a mano.
+  // Una cuenta recién creada no tiene contraseña hasta que la persona abre el
+  // correo. Si ese correo no llegó, el instructor se queda sin acceso y el
+  // admin sin recurso: esto le da un enlace que pueda entregar a mano.
   if (mode === 'access-link') {
     const { data: prof } = await adminClient
       .from('profiles').select('id').ilike('email', email).maybeSingle();
     if (!prof) return json({ error: 'Esta solicitud todavía no tiene cuenta. Créala primero.' }, 400);
 
-    // 'recovery' sirve tanto a quien nunca puso contraseña como a quien la
-    // olvidó; 'invite' solo funciona si la cuenta jamás fue invitada.
-    let link: string | null = null;
+    // 'recovery' es el único tipo que esta app sabe interpretar: dispara
+    // PASSWORD_RECOVERY y lleva a ResetPasswordScreen.
     const rec = await adminClient.auth.admin.generateLink({ type: 'recovery', email });
-    link = rec.data?.properties?.action_link || null;
-    if (!link) {
-      const inv = await adminClient.auth.admin.generateLink({ type: 'invite', email });
-      link = inv.data?.properties?.action_link || null;
-      if (!link) {
-        return json({ error: rec.error?.message || 'No se pudo generar el enlace.' }, 400);
-      }
-    }
+    const link = rec.data?.properties?.action_link || null;
+    if (!link) return json({ error: rec.error?.message || 'No se pudo generar el enlace.' }, 400);
     return json({ profileId: prof.id, actionLink: link, linkOnly: true }, 200);
   }
 
   // ── Resolve or create the Auth user ─────────────────────────────────────
   let userId: string | null = null;
   let invited = false;       // se creó la cuenta ahora
-  let emailSent = false;     // Auth aceptó enviar el correo de invitación
+  let emailSent = false;     // Auth aceptó enviar el correo para poner contraseña
   let actionLink: string | null = null;
 
   // Una cuenta puede existir ya sin que la solicitud la tenga vinculada (pasa
@@ -111,32 +104,39 @@ Deno.serve(async (req) => {
   if (existingProfile) userId = existingProfile.id;
 
   if (!userId) {
-    const { data: invitedUser, error: inviteErr } = await adminClient.auth.admin
-      .inviteUserByEmail(email, { data: { full_name: fullName } });
+    // Deliberadamente NO se usa inviteUserByEmail: su enlace es `type=invite`,
+    // que esta app no sabe interpretar. El usuario aterrizaría con sesión
+    // iniciada pero sin contraseña, y no podría volver a entrar nunca. La app
+    // sí escucha PASSWORD_RECOVERY (AuthContext -> ResetPasswordScreen), así
+    // que se crea la cuenta y se manda un correo de recuperación, que lleva
+    // directo a la pantalla de establecer contraseña.
+    const { data: created, error: createErr } = await adminClient.auth.admin
+      .createUser({ email, email_confirm: true, user_metadata: { full_name: fullName } });
 
-    if (!inviteErr && invitedUser?.user) {
-      userId = invitedUser.user.id;
+    if (created?.user) {
+      userId = created.user.id;
       invited = true;
-      emailSent = true;
-    } else if (inviteErr && alreadyRegistered(inviteErr.message || '')) {
+    } else if (alreadyRegistered(createErr?.message || '')) {
       // Existe en Auth pero sin perfil: recuperarlo en vez de fallar.
       const { data: list } = await adminClient.auth.admin.listUsers();
       const match = list?.users?.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
       if (!match) return json({ error: `El correo ${email} ya está registrado pero no se pudo recuperar la cuenta.` }, 400);
       userId = match.id;
     } else {
-      // La invitación suele fallar por SMTP de Auth sin configurar. La cuenta
-      // es lo importante: se crea igual y se devuelve un enlace para
-      // establecer contraseña que el admin pueda hacer llegar a mano, en vez
-      // de dejar al instructor sin cuenta por un problema de correo.
-      const { data: created, error: createErr } = await adminClient.auth.admin
-        .createUser({ email, email_confirm: true, user_metadata: { full_name: fullName } });
-      if (createErr || !created?.user) {
-        return json({ error: createErr?.message || inviteErr?.message || 'No se pudo crear la cuenta.' }, 400);
-      }
-      userId = created.user.id;
-      invited = true;
+      return json({ error: createErr?.message || 'No se pudo crear la cuenta.' }, 400);
+    }
+  }
 
+  if (invited) {
+    // Sin redirectTo: así el destino lo manda el Site URL del proyecto y no
+    // queda un dominio incrustado aquí que se quede obsoleto.
+    const { error: mailErr } = await adminClient.auth.resetPasswordForEmail(email);
+    if (!mailErr) {
+      emailSent = true;
+    } else {
+      // El correo suele fallar por SMTP de Auth sin configurar. La cuenta ya
+      // existe, así que se devuelve el enlace para que el admin lo entregue a
+      // mano en vez de dejar al instructor sin forma de entrar.
       const { data: link } = await adminClient.auth.admin
         .generateLink({ type: 'recovery', email });
       actionLink = link?.properties?.action_link || null;
