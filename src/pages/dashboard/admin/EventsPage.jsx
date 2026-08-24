@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { IconBtn, Toast } from '../../../components/ui'
 import { formatEventDateTime } from '../../../lib/formatDate'
+import { VisibilityBadge } from '../../../components/dashboard/VisibilityBadge'
 
 const STATUS_LABEL = {
   draft: 'Borrador', pending: 'En revisión', published: 'Publicado', archived: 'Archivado',
@@ -57,7 +58,7 @@ export default function EventsPage() {
     const [{ data }, { data: topId }] = await Promise.all([
       supabase
         .from('courses')
-        .select('id, title, cover_image_url, price, modality, event_start_at, location, status, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
+        .select('id, title, cover_image_url, price, modality, event_start_at, location, status, visibility, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
         .eq('type', 'event')
         .order('created_at', { ascending: false })
         .limit(500),
@@ -205,6 +206,7 @@ export default function EventsPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', marginBottom: '.28rem' }}>
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.title}</div>
+                      <VisibilityBadge visibility={e.visibility} />
                       {e.id === topEventId && (
                         <span title="El evento con más órdenes completadas" style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '.65rem', fontWeight: 700, color: '#B4720E', background: '#F5E9D3', border: '1px solid #EAD6A8', borderRadius: 8, padding: '2px 7px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                           <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.9L22 9.8l-5.5 4.9L18 22l-6-3.6L6 22l1.5-7.3L2 9.8l7.1-.9L12 2z"/></svg>
