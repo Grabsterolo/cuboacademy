@@ -28,6 +28,7 @@ export default function CourseWizardPage() {
   const {
     step, setStep, completed, isEdit, loading, saving, error, setError, courseId,
     info, setInfo, imgUploading, imgErr, handleImgUpload,
+    profile,
     categories, instructors, isAdmin, enrolledCount,
     modules, setModules,
     evalData, setEvalData,
@@ -37,6 +38,13 @@ export default function CourseWizardPage() {
     handleNext, handleBack, handleSaveStep, handleDraft, handleReview,
   } = useCourseWizard()
 
+  // El PDF imprime el nombre del instructor del curso. Un admin puede estar
+  // creando el curso a nombre de otra persona, así que se resuelve por el
+  // instructor elegido y no por quien tiene la sesión abierta.
+  const certInstructorName = isAdmin
+    ? instructors?.find(i => i.id === info.instructorId)?.full_name
+    : profile?.full_name
+
   // ── render ────────────────────────────────────────────────────────────────
   function renderStep() {
     switch (step) {
@@ -44,7 +52,7 @@ export default function CourseWizardPage() {
       case 2: return <Step2Structure modules={modules} setModules={setModules} enrolledCount={enrolledCount} />
       case 3: return <Step3Content modules={modules} setModules={setModules} />
       case 4: return <Step4Evaluation eval={evalData} setEval={setEvalData} />
-      case 5: return <Step5Certificate cert={cert} setCert={setCert} />
+      case 5: return <Step5Certificate cert={cert} setCert={setCert} instructorName={certInstructorName} />
       case 6: return <Step6Pricing pricing={pricing} setPricing={setPricing} />
       case 7: return <Step7Preview info={info} modules={modules} eval={evalData} cert={cert} pricing={pricing} />
       case 8: return <Step8Publish status={pubStatus} setStatus={setPubStatus} saving={saving} error={pubError} onDraft={handleDraft} onReview={handleReview} isAdmin={isAdmin} />

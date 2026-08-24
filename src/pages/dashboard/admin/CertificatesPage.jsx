@@ -26,6 +26,7 @@ export default function CertificatesPage() {
   const [rejectModal, setRejectModal] = useState(null)
   const [rejectNotes, setRejectNotes] = useState('')
   const [toast, setToast] = useState('')
+  const [confirmRegen, setConfirmRegen] = useState(null)
 
   function showToast(msg) {
     setToast(msg)
@@ -42,7 +43,7 @@ export default function CertificatesPage() {
     const { data } = await supabase
       .from('certificates')
       .select(`
-        id, status, issued_at, unique_code, admin_notes, approved_at, student_id, course_id,
+        id, status, issued_at, unique_code, admin_notes, approved_at, pdf_url, student_id, course_id,
         profiles!student_id(full_name, email),
         courses!course_id(title, cover_image_url, type, profiles!instructor_id(full_name))
       `)
@@ -71,6 +72,31 @@ export default function CertificatesPage() {
       ))
     }
     setProcessing(null)
+  }
+
+  /**
+   * Vuelve a generar el PDF de un certificado ya aprobado con los datos
+   * actuales de curso y perfil. El PDF se congela al aprobarlo, así que
+   * corregir una errata en certificate_name o un nombre de perfil no cambiaba
+   * nada del documento ya emitido; esta es la única vía para reemplazarlo.
+   */
+  async function handleRegenerate(cert) {
+    if (processing) return
+    setProcessing(cert.id)
+    const { data, error } = await supabase.functions.invoke('approve-certificate', {
+      body: { certificateId: cert.id },
+    })
+    if (error || data?.error) {
+      showToast(data?.error || error?.message || 'No se pudo regenerar el certificado.')
+      setProcessing(null)
+      return
+    }
+    setProcessing(null)
+    setConfirmRegen(null)
+    showToast('Certificado regenerado con los datos actuales.')
+    // Se recarga en vez de parchear el estado: la nota de quién regeneró la
+    // escribe la edge function, así que solo se conoce releyendo la fila.
+    loadCerts()
   }
 
   async function handleReject() {
@@ -209,9 +235,21 @@ export default function CertificatesPage() {
                       </button>
                     </div>
                   ) : (
-                    <span style={{ padding: '4px 10px', borderRadius: 10, fontSize: '.71rem', fontWeight: 700, background: cert.status === 'approved' ? '#DCFCE7' : '#FEE2E2', color: cert.status === 'approved' ? '#16A34A' : '#DC2626', flexShrink: 0 }}>
-                      {cert.status === 'approved' ? '✓ Aprobado' : '✕ Rechazado'}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem', flexShrink: 0 }}>
+                      {cert.status === 'approved' && (
+                        <button
+                          onClick={() => setConfirmRegen(cert)}
+                          disabled={!!isProc}
+                          title="Vuelve a generar el PDF con los datos actuales del curso y del perfil"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.4rem .75rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.76rem', fontWeight: 600, color: 'var(--text-2)', cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1 }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                          {isProc ? 'Regenerando…' : 'Regenerar'}
+                        </button>
+                      )}
+                      <span style={{ padding: '4px 10px', borderRadius: 10, fontSize: '.71rem', fontWeight: 700, background: cert.status === 'approved' ? '#DCFCE7' : '#FEE2E2', color: cert.status === 'approved' ? '#16A34A' : '#DC2626' }}>
+                        {cert.status === 'approved' ? '✓ Aprobado' : '✕ Rechazado'}
+                      </span>
+                    </div>
                   )}
                 </div>
               )
@@ -219,6 +257,36 @@ export default function CertificatesPage() {
           </div>
         )}
       </div>
+
+      {/* Regenerar sobrescribe un documento ya entregado al estudiante, así que
+          se confirma antes en vez de dispararse con un clic suelto. */}
+      {confirmRegen && (
+        <div className="cp-overlay" onClick={() => setConfirmRegen(null)}>
+          <div className="cp-modal" onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.5rem' }}>
+              Regenerar certificado
+            </h3>
+            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1rem' }}>
+              Se sobrescribe el PDF actual con los datos de ahora:<br />
+              Nombre impreso: <strong>{confirmRegen.profiles?.full_name || '—'}</strong><br />
+              {confirmRegen.courses?.type === 'event' ? 'Evento' : 'Curso'}: <strong>{confirmRegen.courses?.title}</strong>
+            </p>
+            <p style={{ fontSize: '.78rem', color: 'var(--text-2)', lineHeight: 1.55, marginBottom: '1.25rem' }}>
+              El código de verificación no cambia, así que cualquier enlace ya compartido sigue siendo válido. Quedará registrado quién lo regeneró y cuándo.
+            </p>
+            <div style={{ display: 'flex', gap: '.7rem' }}>
+              <button onClick={() => setConfirmRegen(null)}
+                style={{ flex: 1, padding: '.7rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.85rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                Cancelar
+              </button>
+              <button onClick={() => handleRegenerate(confirmRegen)} disabled={!!processing}
+                style={{ flex: 1, padding: '.7rem', background: 'var(--jade)', border: 'none', borderRadius: 8, fontSize: '.85rem', fontWeight: 700, color: 'white', cursor: processing ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: processing ? .6 : 1 }}>
+                {processing ? 'Regenerando…' : 'Regenerar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {rejectModal && (
         <div className="cp-overlay" onClick={() => setRejectModal(null)}>

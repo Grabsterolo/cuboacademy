@@ -293,6 +293,7 @@ export function useEventWizard() {
   return {
     step, setStep, completed, isEdit, loading, saving, error, setError, eventId,
     info, setInfo, imgUploading, imgErr, handleImgUpload,
+    profile,
     categories, instructors, isAdmin, enrolledCount,
     eventDetails, setEventDetails,
     cert, setCert, pricing, setPricing,

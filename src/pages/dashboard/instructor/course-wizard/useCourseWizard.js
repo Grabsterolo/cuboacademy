@@ -613,6 +613,7 @@ export function useCourseWizard() {
   return {
     step, setStep, completed, isEdit, loading, saving, error, setError, courseId,
     info, setInfo, imgUploading, imgErr, handleImgUpload,
+    profile,
     categories, instructors, isAdmin, enrolledCount,
     modules, setModules,
     evalData, setEvalData,

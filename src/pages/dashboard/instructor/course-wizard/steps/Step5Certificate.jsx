@@ -1,7 +1,8 @@
 import { StepHeader } from '../components/StepHeader'
 import { Field, PillSelector, Toggle, INP, fi, fb } from '../components/shared'
+import { CertificatePreview } from '../../../../../components/certificates/CertificatePreview'
 
-export function Step5Certificate({ cert, setCert }) {
+export function Step5Certificate({ cert, setCert, instructorName }) {
   const set = (k, v) => setCert(c => ({ ...c, [k]: v }))
   return (
     <div>
@@ -21,11 +22,9 @@ export function Step5Certificate({ cert, setCert }) {
                 options={[{ value: 'complete', label: 'Completar 100%' }, { value: 'pass', label: 'Aprobar evaluación' }]}
                 value={cert.certCondition} onChange={v => set('certCondition', v)} />
             </Field>
-            <div style={{ padding: '1rem 1.1rem', background: 'var(--jade-soft)', borderRadius: 9, border: '1px solid rgba(22,125,120,.2)' }}>
-              <p style={{ fontSize: '.82rem', color: 'var(--jade)', fontWeight: 600, margin: '0 0 .2rem' }}>Vista previa del certificado</p>
-              <p style={{ fontSize: '.78rem', color: 'var(--jade)', margin: 0, opacity: .8 }}>
-                "[Nombre del estudiante] completó exitosamente {cert.certName || 'el curso'}" — Cubo Campus
-              </p>
+            <div>
+              <p style={{ fontSize: '.82rem', color: 'var(--carbon)', fontWeight: 600, margin: '0 0 .6rem' }}>Vista previa del certificado</p>
+              <CertificatePreview certName={cert.certName} instructorName={instructorName} />
             </div>
           </div>
         )}

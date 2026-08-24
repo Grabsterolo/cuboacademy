@@ -1,7 +1,8 @@
 import { StepHeader } from '../../course-wizard/components/StepHeader'
 import { Field, Toggle, INP, fi, fb } from '../../course-wizard/components/shared'
+import { CertificatePreview } from '../../../../../components/certificates/CertificatePreview'
 
-export function Step3EventCertificate({ cert, setCert }) {
+export function Step3EventCertificate({ cert, setCert, instructorName }) {
   const set = (k, v) => setCert(c => ({ ...c, [k]: v }))
   return (
     <div>
@@ -19,11 +20,9 @@ export function Step3EventCertificate({ cert, setCert }) {
             <p style={{ fontSize: '.78rem', color: 'var(--text-2)', margin: 0 }}>
               El certificado se emite cuando marcas la asistencia del estudiante después del evento.
             </p>
-            <div style={{ padding: '1rem 1.1rem', background: 'var(--jade-soft)', borderRadius: 9, border: '1px solid rgba(22,125,120,.2)' }}>
-              <p style={{ fontSize: '.82rem', color: 'var(--jade)', fontWeight: 600, margin: '0 0 .2rem' }}>Vista previa del certificado</p>
-              <p style={{ fontSize: '.78rem', color: 'var(--jade)', margin: 0, opacity: .8 }}>
-                "[Nombre del estudiante] participó en {cert.certName || 'el evento'}" — Cubo Campus
-              </p>
+            <div>
+              <p style={{ fontSize: '.82rem', color: 'var(--carbon)', fontWeight: 600, margin: '0 0 .6rem' }}>Vista previa del certificado</p>
+              <CertificatePreview certName={cert.certName} isEvent instructorName={instructorName} />
             </div>
           </div>
         )}
