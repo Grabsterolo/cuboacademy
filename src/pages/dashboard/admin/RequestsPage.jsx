@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { ModalOverlay, ConfirmModal, Badge, Toast, STATUS_TONE } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
-import { useNavigation } from '../../../context/NavigationContext'
 import { slugify } from '../../../lib/slugify'
 import { formatDateShort } from '../../../lib/formatDate'
 
@@ -65,7 +64,6 @@ function CvRow({ path }) {
 }
 
 export default function RequestsPage() {
-  const { navigate } = useNavigation()
   const [apps, setApps] = useState([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('all')
@@ -76,6 +74,9 @@ export default function RequestsPage() {
   const [confirmReject, setConfirmReject] = useState(false)
   const [toast, setToast] = useState('')
   const [categories, setCategories] = useState({})
+  const [profileByEmail, setProfileByEmail] = useState({})
+  const [provisioning, setProvisioning] = useState(null) // id de la solicitud en curso
+  const [actionLink, setActionLink] = useState(null)     // { email, link } si el correo falló
 
   useEffect(() => {
     loadData()
@@ -90,8 +91,85 @@ export default function RequestsPage() {
       .from('instructor_applications')
       .select('*')
       .order('created_at', { ascending: false })
-    setApps(data || [])
+    const rows = data || []
+    setApps(rows)
+
+    // `profile_id` no basta para saber si el instructor tiene cuenta: en las
+    // solicitudes antiguas quedó en null aunque la persona sí se hubiera
+    // registrado por su cuenta. Se resuelve por correo para no marcar como
+    // «sin cuenta» a alguien que sí la tiene.
+    const emails = rows.map(a => a.email).filter(Boolean)
+    if (emails.length) {
+      const variants = [...new Set([...emails, ...emails.map(e => e.toLowerCase())])]
+      const { data: profs } = await supabase
+        .from('profiles').select('id, email').in('email', variants)
+      setProfileByEmail(Object.fromEntries(
+        (profs || []).map(p => [(p.email || '').toLowerCase(), p.id]),
+      ))
+    } else {
+      setProfileByEmail({})
+    }
     setLoading(false)
+  }
+
+  function hasAccount(app) {
+    return Boolean(app.profile_id || profileByEmail[(app.email || '').toLowerCase()])
+  }
+
+  /**
+   * Crea la cuenta real del instructor. Todo el trabajo privilegiado (alta en
+   * Auth, perfil con rol instructor, correo de invitación) ocurre en la edge
+   * function, que revalida que quien llama es admin con la service key.
+   */
+  async function provisionInstructor(app) {
+    const { data, error } = await supabase.functions.invoke('provision-instructor', {
+      body: { applicationId: app.id },
+    })
+    // functions.invoke da un error genérico; el motivo real viene en el cuerpo.
+    if (error) {
+      let detail = ''
+      try { detail = (await error.context?.json())?.error || '' } catch { /* sin cuerpo legible */ }
+      return { error: detail || error.message || 'No se pudo crear la cuenta.' }
+    }
+    if (data?.error) return { error: data.error }
+    return { data }
+  }
+
+  function accountToast(res) {
+    if (res.actionLink) {
+      return 'Cuenta creada, pero no se pudo enviar el correo de invitación. Copia el enlace para establecer contraseña desde la ficha de la solicitud.'
+    }
+    if (res.invited) return 'Cuenta de instructor creada. Se le envió un correo para establecer su contraseña.'
+    return 'La persona ya tenía cuenta: se le otorgó el rol de instructor.'
+  }
+
+  /**
+   * Enlace de acceso bajo demanda. Una cuenta creada por invitación no tiene
+   * contraseña hasta que la persona abre el correo; si ese correo no llegó, sin
+   * esto el instructor se queda fuera y el admin sin forma de ayudarle.
+   */
+  async function handleAccessLink(app) {
+    setProvisioning(app.id)
+    const { data, error } = await supabase.functions.invoke('provision-instructor', {
+      body: { applicationId: app.id, mode: 'access-link' },
+    })
+    setProvisioning(null)
+    let detail = data?.error || ''
+    if (error && !detail) {
+      try { detail = (await error.context?.json())?.error || '' } catch { /* sin cuerpo legible */ }
+    }
+    if (detail || !data?.actionLink) { showToast(`Error: ${detail || 'No se pudo generar el enlace.'}`); return }
+    setActionLink({ email: app.email, link: data.actionLink })
+  }
+
+  async function handleCreateAccount(app) {
+    setProvisioning(app.id)
+    const { data, error } = await provisionInstructor(app)
+    setProvisioning(null)
+    if (error) { showToast(`Error: ${error}`); return }
+    if (data?.actionLink) setActionLink({ email: app.email, link: data.actionLink })
+    showToast(accountToast(data || {}))
+    loadData()
   }
 
   function showToast(msg) {
@@ -100,9 +178,9 @@ export default function RequestsPage() {
   }
 
   // Seeds a draft course from the applicant's proposal so they don't have to
-  // retype it into the wizard. Only possible when the instructor already has
-  // a profile (existingProfile branch) -- a brand-new account has no id yet
-  // to attach the course to.
+  // retype it into the wizard. Now runs for every approval: provisioning
+  // returns the profile id even for brand-new accounts, which is what this
+  // used to be missing.
   async function seedDraftCourseFromApplication(app, instructorId) {
     if (!app.course_title?.trim()) return
     const baseSlug = slugify(app.course_title.trim())
@@ -126,41 +204,52 @@ export default function RequestsPage() {
     }
   }
 
+  /**
+   * Aprobar significa que la persona pueda entrar como instructor. Antes esto
+   * solo cambiaba el estado y notificaba: la cuenta nunca se creaba, así que
+   * quedaban instructores «aprobados» sin poder iniciar sesión.
+   *
+   * La cuenta se crea primero y el estado solo se mueve si eso salió bien; si
+   * falla, la solicitud se queda exactamente como estaba y el admin ve el
+   * motivo, en vez de quedar marcada como resuelta sin estarlo.
+   */
   async function handleApprove() {
     if (!selected) return
-    setActionLoading(true)
-    const { error } = await supabase
-      .from('instructor_applications')
-      .update({ status: 'approved', reviewer_notes: notes || null, reviewed_at: new Date().toISOString() })
-      .eq('id', selected.id)
-
-    if (error) { setActionLoading(false); showToast('Error al aprobar.'); return }
-
-    // A DB trigger (notify_instructor_application_approved) reacts to this same
-    // status update: if the applicant's email already has an account, it grants
-    // the instructor role and notifies them there — no client-side write needed.
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('id')
-      .ilike('email', selected.email)
-      .maybeSingle()
-
     const app = selected
-    setActionLoading(false)
-    setSelected(null)
-    setNotes('')
-    loadData()
+    setActionLoading(true)
 
-    if (existingProfile) {
-      await seedDraftCourseFromApplication(app, existingProfile.id)
-      showToast('Solicitud aprobada. Se otorgó el rol de instructor a la cuenta existente y se creó un borrador con su propuesta de curso.')
+    const { data: provisioned, error: provisionErr } = await provisionInstructor(app)
+    if (provisionErr) {
+      setActionLoading(false)
+      showToast(`No se aprobó: ${provisionErr}`)
       return
     }
 
-    showToast('Solicitud aprobada. Completa la creación de la cuenta de instructor.')
-    navigate('usuarios', {
-      prefillUser: { full_name: `${app.full_name} ${app.last_name}`.trim(), email: app.email, role: 'instructor' },
-    })
+    const { error } = await supabase
+      .from('instructor_applications')
+      .update({ status: 'approved', reviewer_notes: notes || null, reviewed_at: new Date().toISOString() })
+      .eq('id', app.id)
+
+    setActionLoading(false)
+
+    if (error) {
+      // La cuenta ya existe; solo quedó sin marcar. Decirlo tal cual, porque
+      // reintentar es seguro (la función reutiliza la cuenta ya creada).
+      showToast('La cuenta se creó, pero no se pudo marcar la solicitud como aprobada. Vuelve a intentarlo.')
+      loadData()
+      return
+    }
+
+    if (provisioned?.actionLink) setActionLink({ email: app.email, link: provisioned.actionLink })
+
+    setSelected(null)
+    setNotes('')
+
+    if (provisioned?.profileId) {
+      await seedDraftCourseFromApplication(app, provisioned.profileId)
+    }
+    loadData()
+    showToast(`Solicitud aprobada. ${accountToast(provisioned || {})}`)
   }
 
   async function handleReject() {
@@ -262,8 +351,13 @@ export default function RequestsPage() {
           {filtered.map(a => {
             const sb = STATUS_BADGE[a.status] || STATUS_BADGE.pending
             const initials = `${a.full_name?.[0] || ''}${a.last_name?.[0] || ''}`.toUpperCase()
+            // Aprobada pero sin cuenta: el instructor no puede entrar. Es el
+            // rastro que dejaron las aprobaciones anteriores a que esto se
+            // creara la cuenta de verdad.
+            const missingAccount = a.status === 'approved' && !hasAccount(a)
             return (
-              <div key={a.id} className="rq-row" onClick={() => { setSelected(a); setNotes(a.reviewer_notes || '') }}>
+              <div key={a.id}>
+              <div className="rq-row" onClick={() => { setSelected(a); setNotes(a.reviewer_notes || '') }}>
                 <div style={{ flex: '0 0 36px', width: 36, height: 36, borderRadius: '50%', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700, color: 'var(--jade)', flexShrink: 0 }}>
                   {initials}
                 </div>
@@ -278,10 +372,25 @@ export default function RequestsPage() {
                   <Badge {...sb} />
                 </span>
               </div>
+
+              {missingAccount && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap', padding: '.6rem 1rem .7rem 3.7rem', background: '#FFFBEB', borderBottom: '1px solid var(--border)' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <span style={{ fontSize: '.76rem', color: '#92400E', flex: 1, minWidth: 180 }}>
+                    Aprobada pero sin cuenta: <strong>{a.email}</strong> no puede iniciar sesión.
+                  </span>
+                  <button onClick={e => { e.stopPropagation(); handleCreateAccount(a) }} disabled={provisioning === a.id}
+                    style={{ padding: '.35rem .8rem', borderRadius: 7, border: '1px solid #FDE68A', background: 'white', color: '#92400E', fontSize: '.76rem', fontWeight: 700, cursor: provisioning === a.id ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: provisioning === a.id ? .6 : 1, flexShrink: 0 }}>
+                    {provisioning === a.id ? 'Creando…' : 'Crear cuenta ahora'}
+                  </button>
+                </div>
+              )}
+              </div>
             )
           })}
         </div>
       </div>
+
 
       {/* Detail modal */}
       {selected && (
@@ -368,6 +477,19 @@ export default function RequestsPage() {
                 </Section>
               )}
 
+              {/* Acceso del instructor ya aprobado */}
+              {selected.status === 'approved' && hasAccount(selected) && (
+                <Section title="Acceso del instructor">
+                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.6, margin: '0 0 .75rem' }}>
+                    Si no recibió el correo de invitación, genera un enlace y hazlo llegar tú. Le sirve tanto para establecer su contraseña por primera vez como para recuperarla.
+                  </p>
+                  <button onClick={() => handleAccessLink(selected)} disabled={provisioning === selected.id}
+                    style={{ padding: '.6rem 1.1rem', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--cream)', color: 'var(--carbon)', fontSize: '.82rem', fontWeight: 600, cursor: provisioning === selected.id ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: provisioning === selected.id ? .6 : 1 }}>
+                    {provisioning === selected.id ? 'Generando…' : 'Generar enlace de acceso'}
+                  </button>
+                </Section>
+              )}
+
               {/* Show reviewer notes if already decided */}
               {selected.status !== 'pending' && selected.reviewer_notes && (
                 <Section title="Notas del revisor">
@@ -392,6 +514,35 @@ export default function RequestsPage() {
           loading={actionLoading}
           danger
         />
+      )}
+
+      {/* Enlace de respaldo: la cuenta existe pero Auth no pudo enviar el
+          correo (SMTP sin configurar). Sin esto el instructor quedaría creado
+          y sin forma de entrar. */}
+      {actionLink && (
+        <ModalOverlay onClose={() => setActionLink(null)}>
+          <div style={{ background: 'white', borderRadius: 16, padding: '1.75rem', width: '100%', maxWidth: 520, boxShadow: '0 24px 60px rgba(23,26,28,.2)' }}>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>
+              Enlace de acceso
+            </h3>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1rem' }}>
+              Hazle llegar este enlace a <strong>{actionLink.email}</strong> para que establezca su contraseña y pueda entrar. Es de un solo uso y caduca.
+            </p>
+            <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, padding: '.7rem .85rem', fontSize: '.75rem', color: 'var(--carbon)', wordBreak: 'break-all', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', marginBottom: '1rem' }}>
+              {actionLink.link}
+            </div>
+            <div style={{ display: 'flex', gap: '.6rem' }}>
+              <button onClick={() => navigator.clipboard?.writeText(actionLink.link)}
+                style={{ flex: 1, padding: '.7rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.85rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                Copiar enlace
+              </button>
+              <button onClick={() => setActionLink(null)}
+                style={{ flex: 1, padding: '.7rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.85rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
       )}
 
       <Toast message={toast} />
