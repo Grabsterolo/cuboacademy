@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
   const { data: cert, error: certErr } = await adminClient
     .from('certificates')
     .select(`
-      id, unique_code, status, student_id, admin_notes,
+      id, unique_code, status, student_id, course_id, admin_notes,
       profiles!student_id(full_name),
       courses!course_id(title, certificate_name, type, profiles!instructor_id(full_name))
     `)
@@ -164,7 +164,8 @@ Deno.serve(async (req) => {
   // no borrar notas previas del admin ni regeneraciones anteriores.
   if (isRegeneration) {
     const who = callerProfile?.full_name || caller.email || caller.id;
-    const stamp = `Regenerado por ${who} el ${now.toLocaleString('es-CR', { dateStyle: 'medium', timeStyle: 'short' })}.`;
+    // Sin punto final: el formato de es-CR ya termina en «p. m.» / «a. m.».
+    const stamp = `Regenerado por ${who} el ${now.toLocaleString('es-CR', { dateStyle: 'medium', timeStyle: 'short' })}`;
     patch.admin_notes = cert.admin_notes ? `${cert.admin_notes}\n${stamp}` : stamp;
   }
 
@@ -174,23 +175,41 @@ Deno.serve(async (req) => {
     .eq('id', certificateId);
   if (updateErr) return json({ error: 'El PDF se generó pero no se pudo aprobar el certificado: ' + updateErr.message }, 500);
 
-  // En una regeneración no se manda correo: el estudiante ya fue avisado
-  // cuando se aprobó, y repetirlo por una corrección tipográfica sería ruido.
-  if (!isRegeneration) {
-    // Best-effort transactional email — never blocks the approval response.
+  // Al aprobar, la notificación in-app la crea el trigger notify_certificate_review
+  // al cambiar el status. En una regeneración el status no cambia, así que ese
+  // trigger no dispara y hay que insertarla aquí — y es la vía que de verdad
+  // llega hoy, porque el correo no se entrega sin RESEND_API_KEY configurada.
+  if (isRegeneration) {
     try {
-      await fetch(`${supabaseUrl}/functions/v1/send-notification-email`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${serviceRoleKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipientId: cert.student_id,
-          type: 'certificate',
-          subject: 'Tu certificado está listo',
-          message: `Tu certificado ${isEvent ? 'del evento' : 'del curso'} "${courseName}" fue aprobado y ya está disponible para descargar en Cubo Campus.`,
-        }),
+      await adminClient.from('notifications').insert({
+        recipient_id: cert.student_id,
+        type: 'certificate_updated',
+        title: 'Tu certificado fue actualizado',
+        message: `Volvimos a emitir tu certificado ${isEvent ? 'del evento' : 'del curso'} "${courseName}" con los datos corregidos. Descarga la versión nueva.`,
+        screen: 'certificados',
+        params: { courseId: cert.course_id },
       });
     } catch { /* non-blocking */ }
   }
+
+  // Best-effort transactional email — never blocks the response.
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/send-notification-email`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${serviceRoleKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipientId: cert.student_id,
+        type: 'certificate',
+        subject: isRegeneration ? 'Tu certificado fue actualizado' : 'Tu certificado está listo',
+        message: isRegeneration
+          // Se distingue del correo de aprobación a propósito: quien ya tiene
+          // el certificado descargado necesita saber que debe volver a bajarlo,
+          // no leer otra vez que fue aprobado.
+          ? `Volvimos a emitir tu certificado ${isEvent ? 'del evento' : 'del curso'} "${courseName}" con los datos corregidos. La versión anterior queda sustituida: descarga la nueva desde Mis certificados en Cubo Campus. El código de verificación no cambió.`
+          : `Tu certificado ${isEvent ? 'del evento' : 'del curso'} "${courseName}" fue aprobado y ya está disponible para descargar en Cubo Campus.`,
+      }),
+    });
+  } catch { /* non-blocking */ }
 
   return json({ pdfUrl: publicUrl, regenerated: isRegeneration }, 200);
 });
