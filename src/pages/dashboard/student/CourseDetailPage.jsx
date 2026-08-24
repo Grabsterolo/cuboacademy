@@ -38,9 +38,9 @@ export default function CourseDetailPage() {
   async function loadAll() {
     setLoading(true)
     const [{ data: courseData }, { data: modsData }] = await Promise.all([
-      supabase.from('courses')
+      supabase.rpc('course_by_slug', { p_slug: slug })
         .select('id, slug, title, description, cover_image_url, price, level, duration_hours, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
-        .eq('slug', slug).eq('status', 'published').maybeSingle(),
+        .maybeSingle(),
       // Filter modules through the embedded courses relation instead of
       // looking up the course id first — one round trip instead of two.
       supabase.from('modules')

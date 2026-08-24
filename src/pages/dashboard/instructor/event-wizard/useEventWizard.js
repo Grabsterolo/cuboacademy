@@ -51,6 +51,7 @@ export function useEventWizard() {
 
   // Step 6
   const [pubStatus, setPubStatus]  = useState('draft')
+  const [visibility, setVisibility] = useState('public')
   const [pubError, setPubError]    = useState('')
 
   const loadedRef = useRef(false)
@@ -95,6 +96,7 @@ export function useEventWizard() {
         setPricing({ isFree: !event.price || event.price === 0, price: event.price ? String(event.price) : '', discount: '' })
         setPubStatus(event.status || 'draft')
         setCert({ hasCert: event.has_certificate || false, certName: event.certificate_name || '' })
+        setVisibility(event.visibility || 'public')
       }
 
       setCompleted(new Set([1, 2, 3, 4, 5, 6]))
@@ -270,7 +272,7 @@ export function useEventWizard() {
   async function handleDraft() {
     if (!eventId) return
     setSaving(true); setPubError('')
-    const { error } = await supabase.from('courses').update({ status: 'draft' }).eq('id', eventId)
+    const { error } = await supabase.from('courses').update({ status: 'draft', visibility }).eq('id', eventId)
     setSaving(false)
     if (error) { setPubError(error.message); return }
     navigate('eventos')
@@ -284,7 +286,7 @@ export function useEventWizard() {
     }
     setSaving(true); setPubError('')
     const dbStatus = pubStatus === 'review' ? 'pending' : pubStatus
-    const { error } = await supabase.from('courses').update({ status: dbStatus }).eq('id', eventId)
+    const { error } = await supabase.from('courses').update({ status: dbStatus, visibility }).eq('id', eventId)
     setSaving(false)
     if (error) { setPubError(error.message); return }
     navigate('eventos')
@@ -298,6 +300,7 @@ export function useEventWizard() {
     eventDetails, setEventDetails,
     cert, setCert, pricing, setPricing,
     pubStatus, setPubStatus, pubError,
+    visibility, setVisibility,
     navigate, totalSteps: TOTAL_STEPS,
     handleNext, handleBack, handleSaveStep, handleDraft, handleReview,
     validateStep,

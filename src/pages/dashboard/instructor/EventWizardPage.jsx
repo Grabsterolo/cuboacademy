@@ -30,6 +30,7 @@ export default function EventWizardPage() {
     eventDetails, setEventDetails,
     cert, setCert, pricing, setPricing,
     pubStatus, setPubStatus, pubError,
+    visibility, setVisibility,
     navigate, totalSteps,
     handleNext, handleBack, handleSaveStep, handleDraft, handleReview,
   } = useEventWizard()
@@ -48,7 +49,7 @@ export default function EventWizardPage() {
       case 3: return <Step3EventCertificate cert={cert} setCert={setCert} instructorName={certInstructorName} />
       case 4: return <Step6Pricing pricing={pricing} setPricing={setPricing} />
       case 5: return <Step5EventPreview info={info} eventDetails={eventDetails} cert={cert} pricing={pricing} />
-      case 6: return <Step8Publish status={pubStatus} setStatus={setPubStatus} saving={saving} error={pubError} onDraft={handleDraft} onReview={handleReview} isAdmin={isAdmin} noun="evento" />
+      case 6: return <Step8Publish status={pubStatus} setStatus={setPubStatus} visibility={visibility} setVisibility={setVisibility} saving={saving} error={pubError} onDraft={handleDraft} onReview={handleReview} isAdmin={isAdmin} noun="evento" />
       default: return null
     }
   }

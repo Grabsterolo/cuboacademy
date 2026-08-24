@@ -84,6 +84,7 @@ export default function EventCatalogPage() {
         .select('id, slug, title, cover_image_url, price, modality, event_start_at, category_id, categories(name), profiles!instructor_id(full_name)')
         .eq('type', 'event')
         .eq('status', 'published')
+      .eq('visibility', 'public')
         .order('event_start_at', { ascending: true })
         .limit(500),
       supabase.from('categories').select('id, name').order('name'),

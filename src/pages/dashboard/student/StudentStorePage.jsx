@@ -116,6 +116,7 @@ function CatalogTab({ wishlistIds, onToggleWishlist }) {
         .select('id, slug, title, cover_image_url, price, level, duration_hours, category_id, categories(name), profiles!instructor_id(full_name)')
         .eq('type', 'course')
         .eq('status', 'published')
+        .eq('visibility', 'public')
         .order('created_at', { ascending: false })
         .limit(500),
       supabase.from('categories').select('id, name').order('name'),
@@ -193,6 +194,7 @@ function EventsTab({ wishlistIds, onToggleWishlist }) {
         .select('id, slug, title, cover_image_url, price, type, modality, event_start_at, category_id, categories(name), profiles!instructor_id(full_name)')
         .eq('type', 'event')
         .eq('status', 'published')
+        .eq('visibility', 'public')
         .order('event_start_at', { ascending: true })
         .limit(500),
       supabase.from('categories').select('id, name').order('name'),

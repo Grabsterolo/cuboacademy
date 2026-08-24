@@ -30,12 +30,14 @@ export default function CourseDetailPage() {
   useEffect(() => {
     async function load() {
       setLoading(true)
+      // course_by_slug en vez de la tabla: RLS deja la tabla en «solo público»
+      // para que nada unlisted o privado sea enumerable por /rest/v1/courses.
+      // Esta función es la puerta del enlace directo — entrega unlisted, y
+      // privado solo a admin, instructor asignado o matriculado.
       const { data: c, error } = await supabase
-        .from('courses')
+        .rpc('course_by_slug', { p_slug: slug })
         .select('*, categories(name), profiles!instructor_id(full_name, bio, avatar_url)')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .single()
+        .maybeSingle()
 
       if (error || !c) { setNotFound(true); setLoading(false); return }
       setCourse(c)

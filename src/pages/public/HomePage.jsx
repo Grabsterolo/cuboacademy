@@ -213,6 +213,7 @@ export default function HomePage() {
       .select('id, title, slug, cover_image_url, price, level, duration_hours, categories(name), profiles!instructor_id(full_name, avatar_url)')
       .eq('type', 'course')
       .eq('status', 'published')
+      .eq('visibility', 'public')
       .order('created_at', { ascending: false })
       .limit(6)
       .then(({ data }) => {
@@ -227,6 +228,7 @@ export default function HomePage() {
       .select('id, title, slug, cover_image_url, price, modality, event_start_at, categories(name), profiles!instructor_id(full_name, avatar_url)')
       .eq('type', 'event')
       .eq('status', 'published')
+      .eq('visibility', 'public')
       .gte('event_start_at', new Date().toISOString())
       .order('event_start_at', { ascending: true })
       .limit(6)

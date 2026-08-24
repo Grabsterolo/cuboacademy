@@ -34,6 +34,7 @@ export default function CourseWizardPage() {
     evalData, setEvalData,
     cert, setCert, pricing, setPricing,
     pubStatus, setPubStatus, pubError,
+    visibility, setVisibility,
     navigate,
     handleNext, handleBack, handleSaveStep, handleDraft, handleReview,
   } = useCourseWizard()
@@ -55,7 +56,7 @@ export default function CourseWizardPage() {
       case 5: return <Step5Certificate cert={cert} setCert={setCert} instructorName={certInstructorName} />
       case 6: return <Step6Pricing pricing={pricing} setPricing={setPricing} />
       case 7: return <Step7Preview info={info} modules={modules} eval={evalData} cert={cert} pricing={pricing} />
-      case 8: return <Step8Publish status={pubStatus} setStatus={setPubStatus} saving={saving} error={pubError} onDraft={handleDraft} onReview={handleReview} isAdmin={isAdmin} />
+      case 8: return <Step8Publish status={pubStatus} setStatus={setPubStatus} visibility={visibility} setVisibility={setVisibility} saving={saving} error={pubError} onDraft={handleDraft} onReview={handleReview} isAdmin={isAdmin} />
       default: return null
     }
   }

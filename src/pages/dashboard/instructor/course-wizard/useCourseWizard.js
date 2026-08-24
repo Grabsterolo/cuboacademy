@@ -56,6 +56,7 @@ export function useCourseWizard() {
 
   // Step 8
   const [pubStatus, setPubStatus]  = useState('draft')
+  const [visibility, setVisibility] = useState('public')
   const [pubError, setPubError]    = useState('')
 
   // profile?.role resolves asynchronously (undefined -> the real role), which
@@ -105,6 +106,7 @@ export function useCourseWizard() {
         setPricing({ isFree: !course.price || course.price === 0, price: course.price ? String(course.price) : '', discount: '' })
         setPubStatus(course.status || 'draft')
         setCert({ hasCert: course.has_certificate || false, certName: course.certificate_name || '', certCondition: course.certificate_condition || 'complete' })
+        setVisibility(course.visibility || 'public')
       }
 
       if (mods) {
@@ -588,7 +590,7 @@ export function useCourseWizard() {
   async function handleDraft() {
     if (!courseId) return
     setSaving(true); setPubError('')
-    const { error } = await supabase.from('courses').update({ status: 'draft' }).eq('id', courseId)
+    const { error } = await supabase.from('courses').update({ status: 'draft', visibility }).eq('id', courseId)
     setSaving(false)
     if (error) { setPubError(error.message); return }
     navigate('cursos')
@@ -604,7 +606,7 @@ export function useCourseWizard() {
     setSaving(true); setPubError('')
     // 'review' is a UI-only state; map to valid DB enum values
     const dbStatus = pubStatus === 'review' ? 'pending' : pubStatus
-    const { error } = await supabase.from('courses').update({ status: dbStatus }).eq('id', courseId)
+    const { error } = await supabase.from('courses').update({ status: dbStatus, visibility }).eq('id', courseId)
     setSaving(false)
     if (error) { setPubError(error.message); return }
     navigate('cursos')
@@ -619,6 +621,7 @@ export function useCourseWizard() {
     evalData, setEvalData,
     cert, setCert, pricing, setPricing,
     pubStatus, setPubStatus, pubError,
+    visibility, setVisibility,
     navigate,
     handleNext, handleBack, handleSaveStep, handleDraft, handleReview,
     validateStep,

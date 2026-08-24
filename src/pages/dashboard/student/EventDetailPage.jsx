@@ -39,9 +39,10 @@ export default function EventDetailPage() {
 
   async function loadAll() {
     setLoading(true)
-    const { data: eventData } = await supabase.from('courses')
+    const { data: eventData } = await supabase.rpc('course_by_slug', { p_slug: slug })
       .select('id, slug, title, description, cover_image_url, price, modality, event_start_at, event_end_at, country, city, location, capacity, has_certificate, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
-      .eq('slug', slug).eq('type', 'event').eq('status', 'published').maybeSingle()
+      .eq('type', 'event')
+      .maybeSingle()
 
     if (!eventData) { setLoading(false); return }
     setEvent(eventData)
