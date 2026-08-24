@@ -101,12 +101,19 @@ export default function EventDetailPage() {
         .buy-btn { width: 100%; padding: 1rem; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: var(--serif); transition: opacity .2s; }
         .buy-btn:hover { opacity: .88; }
         @media (max-width: 860px) { .dtl-grid { grid-template-columns: 1fr !important; } }
+        /* The sharp cover layer competes with the overlaid title on narrow screens — a
+           "contain"-fit image and full-width text end up sharing the same horizontal
+           space instead of sitting side by side like they do on desktop. Below the
+           image, the blurred backdrop + gradient scrim alone is what keeps the title
+           readable, regardless of what's in the source image. */
+        .hero-sharp-img { height: 340px; }
+        @media (max-width: 640px) { .hero-sharp-img { display: none; } }
       `}</style>
 
       {/* Hero */}
       <div style={{ minHeight: 340, position: 'relative', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)' }}>
         {event.cover_image_url && <div style={{ position: 'absolute', inset: -12, backgroundImage: `url(${event.cover_image_url})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(24px) brightness(.6)' }} />}
-        {event.cover_image_url && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${event.cover_image_url})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />}
+        {event.cover_image_url && <div className="hero-sharp-img" style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundImage: `url(${event.cover_image_url})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />}
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.88) 0%,rgba(8,24,28,.4) 60%,transparent 100%)' }} />
         <div style={{ position: 'relative', zIndex: 1, padding: '2.5rem 5%', width: '100%', boxSizing: 'border-box' }}>
           <nav style={{ fontSize: '.76rem', color: 'rgba(255,255,255,.6)', marginBottom: '1rem', display: 'flex', gap: '.4rem', alignItems: 'center' }}>

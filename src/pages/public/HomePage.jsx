@@ -134,26 +134,32 @@ const INST_COLORS = ['var(--jade)', '#C96E4B', 'var(--jade-dark)', '#104447']
 const LEVEL_LABELS = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const MODALITY_LABELS = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
-function useReveal() {
+// deps lets callers re-scan once async sections (courses/events/instructors) finish
+// loading — otherwise cards rendered after the initial mount never get observed and
+// just snap in without the fade-in the rest of the page gets.
+function useReveal(deps = []) {
+  const obsRef = useRef(null)
   useEffect(() => {
-    const els = document.querySelectorAll('.reveal')
+    if (!obsRef.current) {
+      obsRef.current = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible')
+            obsRef.current.unobserve(e.target)
+          }
+        })
+      }, { threshold: 0.08 })
+    }
     const vp = window.innerHeight
-    els.forEach(el => {
+    document.querySelectorAll('.reveal:not(.will-animate)').forEach(el => {
       if (el.getBoundingClientRect().top > vp * 0.95) {
         el.classList.add('will-animate')
+        obsRef.current.observe(el)
       }
     })
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible')
-          obs.unobserve(e.target)
-        }
-      })
-    }, { threshold: 0.08 })
-    document.querySelectorAll('.reveal.will-animate').forEach(el => obs.observe(el))
-    return () => obs.disconnect()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps)
+  useEffect(() => () => obsRef.current?.disconnect(), [])
 }
 
 const ROTATING_WORDS = ['organizaciones', 'equipos', 'líderes', 'empresas']
@@ -185,7 +191,7 @@ export default function HomePage() {
     setSaveData(mq.matches || navigator.connection?.saveData || false)
   }, [])
   const tracksScrollRef = useRef(null)
-  useReveal()
+  useReveal([coursesLoading, eventsLoading, tracks, instructors])
 
   function scrollTracks(dir) {
     const el = tracksScrollRef.current
@@ -221,6 +227,7 @@ export default function HomePage() {
       .select('id, title, slug, cover_image_url, price, modality, event_start_at, categories(name), profiles!instructor_id(full_name, avatar_url)')
       .eq('type', 'event')
       .eq('status', 'published')
+      .gte('event_start_at', new Date().toISOString())
       .order('event_start_at', { ascending: true })
       .limit(6)
       .then(({ data }) => {

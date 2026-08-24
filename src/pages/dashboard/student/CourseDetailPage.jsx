@@ -159,7 +159,9 @@ export default function CourseDetailPage() {
             {/* ── Left: course info ── */}
             <div>
               {/* Cover */}
-              <div style={{ width: '100%', height: 320, borderRadius: 14, background: course.cover_image_url ? `url(${course.cover_image_url}) center/cover no-repeat` : 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', marginBottom: '1.75rem', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: 320, borderRadius: 14, background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', position: 'relative', marginBottom: '1.75rem', overflow: 'hidden' }}>
+                {course.cover_image_url && <div style={{ position: 'absolute', inset: -12, backgroundImage: `url(${course.cover_image_url})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(24px) brightness(.6)' }} />}
+                {course.cover_image_url && <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${course.cover_image_url})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }} />}
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(8,24,28,.7) 0%,transparent 55%)' }} />
                 {course.categories?.name && (
                   <span style={{ position: 'absolute', top: 14, left: 14, fontSize: '.68rem', fontWeight: 700, padding: '4px 10px', borderRadius: 20, background: 'rgba(0,0,0,.45)', color: 'white', backdropFilter: 'blur(6px)', letterSpacing: '.05em', textTransform: 'uppercase' }}>
