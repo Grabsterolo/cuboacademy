@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { enrollCourse } from '../../lib/enrollCourse'
+import { fetchCourseSyllabus } from '../../lib/courseSyllabus'
 import { CourseReviews } from '../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../components/payment/PaymentInstructions'
 
@@ -42,31 +43,16 @@ export default function CourseDetailPage() {
       if (error || !c) { setNotFound(true); setLoading(false); return }
       setCourse(c)
 
-      // Load modules, then lesson metadata separately from the public syllabus
-      // preview view — the lessons table itself no longer exposes rows to
-      // non-enrolled visitors (video_url/description require enrollment)
-      const { data: mods } = await supabase
-        .from('modules')
-        .select('*')
-        .eq('course_id', c.id)
-        .order('order_index', { ascending: true })
-
-      const moduleIds = (mods || []).map(m => m.id)
-      const { data: lessonRows } = moduleIds.length > 0
-        ? await supabase
-            .from('lessons_syllabus_preview')
-            .select('id, module_id, title, duration_mins, order_index')
-            .in('module_id', moduleIds)
-            .order('order_index', { ascending: true })
-        : { data: [] }
-
-      setModules((mods || []).map(m => ({
-        ...m,
-        lessons: (lessonRows || []).filter(l => l.module_id === m.id),
-      })))
+      // El temario también por función: leer `modules` pasa por su RLS, que
+      // acaba consultando courses, y esa política no le entrega un curso
+      // unlisted a un visitante no matriculado — el acordeón salía vacío bajo
+      // una ficha que sí había cargado. Trae módulos y títulos de lección de
+      // una vez, sin video_url ni descripción: eso sigue exigiendo matrícula.
+      const mods = await fetchCourseSyllabus(slug)
+      setModules(mods)
 
       // Open first module
-      if (mods?.length) setExpanded(new Set([mods[0].id]))
+      if (mods.length) setExpanded(new Set([mods[0].id]))
 
       // Check enrollment and pending orders
       if (user) {

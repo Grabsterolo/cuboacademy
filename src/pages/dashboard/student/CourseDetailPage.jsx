@@ -5,6 +5,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 import { enrollCourse } from '../../../lib/enrollCourse'
+import { fetchCourseSyllabus } from '../../../lib/courseSyllabus'
 import { CourseReviews } from '../../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../../components/payment/PaymentInstructions'
 import { Avatar } from '../../../components/ui'
@@ -37,37 +38,21 @@ export default function CourseDetailPage() {
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: courseData }, { data: modsData }] = await Promise.all([
+    const [{ data: courseData }, mods] = await Promise.all([
       supabase.rpc('course_by_slug', { p_slug: slug })
         .select('id, slug, title, description, cover_image_url, price, level, duration_hours, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
         .maybeSingle(),
-      // Filter modules through the embedded courses relation instead of
-      // looking up the course id first — one round trip instead of two.
-      supabase.from('modules')
-        .select('id, title, order_index, courses!inner(slug, status)')
-        .eq('courses.slug', slug).eq('courses.status', 'published')
-        .order('order_index', { ascending: true }),
+      // Modules and lesson titles in one call, through the same
+      // visibility-aware function the course itself comes from. Reading the
+      // modules table instead would go through its RLS, which resolves against
+      // courses — and courses hands a non-enrolled visitor nothing but
+      // published + public ones, so an `unlisted` course used to render its
+      // page with an empty syllabus.
+      fetchCourseSyllabus(slug),
     ])
 
     if (!courseData) { setLoading(false); return }
     setCourse(courseData)
-
-    // Lesson titles/durations for the syllabus outline come from the public
-    // preview view, not the lessons table directly — a non-enrolled student
-    // can't read lessons (RLS requires enrollment or is_free_preview), so
-    // querying the raw table here would silently show every module as empty.
-    const moduleIds = (modsData || []).map(m => m.id)
-    const { data: lessonRows } = moduleIds.length > 0
-      ? await supabase.from('lessons_syllabus_preview')
-          .select('id, module_id, title, duration_mins, order_index')
-          .in('module_id', moduleIds)
-          .order('order_index', { ascending: true })
-      : { data: [] }
-
-    const mods = (modsData || []).map(m => ({
-      ...m,
-      lessons: (lessonRows || []).filter(l => l.module_id === m.id),
-    }))
     setModules(mods)
     if (mods.length > 0) setExpandedMods(new Set([mods[0].id]))
 
