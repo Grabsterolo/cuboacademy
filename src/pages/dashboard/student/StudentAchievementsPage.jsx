@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { ACHIEVEMENTS } from '../../../utils/achievements'
+import { splitEnrollments } from '../../../lib/eventStatus'
 
 const STAR_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
 const BOOK_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -52,7 +53,7 @@ export default function StudentAchievementsPage() {
     if (!user) return
     supabase
       .from('enrollments')
-      .select('id, enrolled_at, completed_at')
+      .select('id, enrolled_at, completed_at, courses(type)')
       .eq('student_id', user.id)
       .then(({ data, error }) => {
         if (!error) setEnrollments(data || [])
@@ -60,9 +61,13 @@ export default function StudentAchievementsPage() {
       })
   }, [user])
 
+  // Los logros siguen midiéndose sobre toda la matrícula — recortarlos a solo
+  // cursos le quitaría a alguien un logro ya desbloqueado. Lo que se separa es
+  // el recuento que se muestra, que es donde un evento se hacía pasar por curso.
   const achievements   = buildAchievements(enrollments)
   const unlocked       = achievements.filter(a => a.unlocked).length
-  const completedCount = enrollments.filter(e => !!e.completed_at).length
+  const { courses: courseEnrollments, events: eventEnrollments } = splitEnrollments(enrollments)
+  const completedCourseCount = courseEnrollments.filter(e => !!e.completed_at).length
 
   return (
     <DashboardLayout>
@@ -97,12 +102,21 @@ export default function StudentAchievementsPage() {
               </div>
               <div style={{ height: 38, width: 1, background: 'var(--border)' }} />
               <div>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{enrollments.length}</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{courseEnrollments.length}</div>
                 <div style={{ fontSize: '.73rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 500 }}>Cursos inscritos</div>
               </div>
+              {eventEnrollments.length > 0 && (
+                <>
+                  <div style={{ height: 38, width: 1, background: 'var(--border)' }} />
+                  <div>
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{eventEnrollments.length}</div>
+                    <div style={{ fontSize: '.73rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 500 }}>Eventos inscritos</div>
+                  </div>
+                </>
+              )}
               <div style={{ height: 38, width: 1, background: 'var(--border)' }} />
               <div>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{completedCount}</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{completedCourseCount}</div>
                 <div style={{ fontSize: '.73rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 500 }}>Cursos completados</div>
               </div>
               <div style={{ flex: 1, minWidth: 160 }}>

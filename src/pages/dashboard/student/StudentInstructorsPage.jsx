@@ -3,6 +3,38 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { ModalOverlay, Avatar } from '../../../components/ui'
+import { isEvent } from '../../../lib/eventStatus'
+
+// Cursos y eventos se listan por separado: llamar «curso» a un evento
+// presencial al que el estudiante asistió es simplemente incorrecto.
+function EnrolledWithInstructor({ courses, events, compact }) {
+  const groups = [
+    { items: courses, one: 'Tu curso con este instructor',  many: n => `Tus ${n} cursos con este instructor` },
+    { items: events,  one: 'Tu evento con este instructor', many: n => `Tus ${n} eventos con este instructor` },
+  ].filter(g => g.items.length > 0)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? '.7rem' : '1rem' }}>
+      {groups.map(g => (
+        <div key={g.one}>
+          <div style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: compact ? '.4rem' : '.55rem' }}>
+            {g.items.length === 1 ? g.one : g.many(g.items.length)}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? '.25rem' : '.4rem' }}>
+            {g.items.map(c => (
+              <div key={c.id} style={compact
+                ? { fontSize: '.79rem', color: 'var(--carbon)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '.4rem' }
+                : { fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .7rem', background: 'var(--cream)', borderRadius: 8 }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--jade)', flexShrink: 0 }} />
+                {c.title}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const USERS_ICON = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 
@@ -13,7 +45,7 @@ const SOCIAL_ICONS = {
 }
 
 function InstructorModal({ instructor, onClose }) {
-  const { profile, courses } = instructor
+  const { profile, courses, events } = instructor
 
   return (
     <ModalOverlay onClose={onClose}>
@@ -68,19 +100,7 @@ function InstructorModal({ instructor, onClose }) {
             </p>
           )}
 
-          <div>
-            <div style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.55rem' }}>
-              {courses.length === 1 ? 'Tu curso con este instructor' : `Tus ${courses.length} cursos con este instructor`}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
-              {courses.map(c => (
-                <div key={c.id} style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.5rem .7rem', background: 'var(--cream)', borderRadius: 8 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--jade)', flexShrink: 0 }} />
-                  {c.title}
-                </div>
-              ))}
-            </div>
-          </div>
+          <EnrolledWithInstructor courses={courses} events={events} />
         </div>
       </div>
     </ModalOverlay>
@@ -89,7 +109,7 @@ function InstructorModal({ instructor, onClose }) {
 
 export default function StudentInstructorsPage() {
   const { user } = useAuth()
-  const [instructors, setInstructors] = useState([]) // { profile, courseCount, courses[] }
+  const [instructors, setInstructors] = useState([]) // { profile, courses[], events[] }
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
@@ -98,7 +118,7 @@ export default function StudentInstructorsPage() {
     if (!user) return
 
     supabase.from('enrollments')
-      .select('course_id, courses(id, title, instructor_id, profiles!instructor_id(id, full_name, bio, avatar_url, profession, country, specialty, years_experience, current_company, linkedin_url, website_url, twitter_url))')
+      .select('course_id, courses(id, type, title, instructor_id, profiles!instructor_id(id, full_name, bio, avatar_url, profession, country, specialty, years_experience, current_company, linkedin_url, website_url, twitter_url))')
       .eq('student_id', user.id)
       .then(({ data }) => {
         const rows = data || []
@@ -111,9 +131,11 @@ export default function StudentInstructorsPage() {
           if (!p?.id) return
 
           if (!map[p.id]) {
-            map[p.id] = { profile: p, courses: [] }
+            map[p.id] = { profile: p, courses: [], events: [] }
           }
-          map[p.id].courses.push({ id: c.id, title: c.title })
+          // Un evento presencial no es «un curso con este instructor».
+          const bucket = isEvent(c) ? map[p.id].events : map[p.id].courses
+          bucket.push({ id: c.id, title: c.title })
         })
 
         setInstructors(Object.values(map))
@@ -173,7 +195,7 @@ export default function StudentInstructorsPage() {
           <>
             <div className="sinst-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
               {(filtered.length > 0 ? filtered : instructors).map(instructor => {
-                const { profile, courses } = instructor
+                const { profile, courses, events } = instructor
                 return (
                 <div key={profile.id} className="sinst-card" role="button" tabIndex={0}
                   onClick={() => setSelected(instructor)}
@@ -199,19 +221,7 @@ export default function StudentInstructorsPage() {
                     </p>
                   )}
 
-                  <div>
-                    <div style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.4rem' }}>
-                      {courses.length === 1 ? 'Tu curso con este instructor' : `Tus ${courses.length} cursos con este instructor`}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
-                      {courses.map(c => (
-                        <div key={c.id} style={{ fontSize: '.79rem', color: 'var(--carbon)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '.4rem' }}>
-                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--jade)', flexShrink: 0 }} />
-                          {c.title}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <EnrolledWithInstructor courses={courses} events={events} compact />
                 </div>
                 )
               })}
@@ -221,7 +231,7 @@ export default function StudentInstructorsPage() {
             )}
             {instructors.length > 0 && (
               <div style={{ marginTop: '.85rem', fontSize: '.74rem', color: 'var(--text-2)' }}>
-                {filtered.length > 0 ? filtered.length : instructors.length} instructor{instructors.length !== 1 ? 'es' : ''} en tus cursos
+                {filtered.length > 0 ? filtered.length : instructors.length} instructor{instructors.length !== 1 ? 'es' : ''} en tus inscripciones
               </div>
             )}
           </>

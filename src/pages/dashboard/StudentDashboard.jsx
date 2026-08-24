@@ -6,9 +6,12 @@ import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 import { ACHIEVEMENTS as ACHIEVEMENT_DEFS } from '../../utils/achievements'
 import { calculateProgressByCourse } from '../../utils/progress'
-import { formatDateShort } from '../../lib/formatDate'
+import { formatDateShort, formatEventDateTime } from '../../lib/formatDate'
+import { isEvent, splitEnrollments, eventStatus, sortEventsByRelevance } from '../../lib/eventStatus'
+import { formatEventLocation } from '../../lib/eventLocation'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
+const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
 function StatCard({ value, label, icon, sub, onClick }) {
   return (
@@ -38,7 +41,10 @@ async function loadDashboardData(userId) {
   const [enrRes, annRes] = await Promise.all([
     supabase
       .from('enrollments')
-      .select('id, enrolled_at, completed_at, course_id, courses(id, title, cover_image_url, level, categories(name), profiles!instructor_id(full_name))')
+      // `type` y los campos de evento son imprescindibles: sin ellos esta
+      // pantalla no puede distinguir un evento presencial de un curso, que es
+      // justo lo que hacía que un evento acabara en el reproductor de lecciones.
+      .select('id, enrolled_at, completed_at, course_id, courses(id, slug, type, title, cover_image_url, level, modality, event_start_at, event_end_at, location, city, country, categories(name), profiles!instructor_id(full_name))')
       .eq('student_id', userId)
       .order('enrolled_at', { ascending: false }),
     supabase
@@ -49,7 +55,9 @@ async function loadDashboardData(userId) {
   ])
 
   const enrollments = enrRes.data || []
-  const courseIds = enrollments.map(e => e.course_id).filter(Boolean)
+  // El progreso solo tiene sentido para cursos con lecciones; pedirlo para
+  // eventos devolvería 0% y ensuciaría el promedio.
+  const courseIds = enrollments.filter(e => !isEvent(e.courses)).map(e => e.course_id).filter(Boolean)
   const progressByCourse = await calculateProgressByCourse(supabase, userId, courseIds)
 
   return { enrollments, progressByCourse, announcements: annRes.data || [] }
@@ -76,12 +84,21 @@ export default function StudentDashboard() {
     })
   }, [user])
 
-  const active    = enrollments.filter(e => !e.completed_at)
-  const completed = enrollments.filter(e => !!e.completed_at)
+  // Un evento no es un curso: no tiene lecciones que continuar ni progreso que
+  // promediar. Se separan aquí para que «Continuar aprendiendo», el conteo de
+  // cursos activos y el progreso hablen solo de cursos.
+  const { courses: courseEnrollments, events: eventEnrollments } = splitEnrollments(enrollments)
 
-  // Achievements derived from enrollment data (same logic as StudentAchievementsPage)
-  const unlockedAchievements = ACHIEVEMENT_DEFS.filter(a => a.check(enrollments.length, completed.length))
+  const active    = courseEnrollments.filter(e => !e.completed_at)
+  const completed = courseEnrollments.filter(e => !!e.completed_at)
+  const events    = sortEventsByRelevance(eventEnrollments)
+
+  // Los logros siguen contando toda la matrícula (cursos + eventos): cambiar el
+  // criterio le revocaría a alguien un logro que ya tenía desbloqueado.
+  const completedAll = enrollments.filter(e => !!e.completed_at)
+  const unlockedAchievements = ACHIEVEMENT_DEFS.filter(a => a.check(enrollments.length, completedAll.length))
   const logrosCount = unlockedAchievements.length
+  const pendingAchievements = ACHIEVEMENT_DEFS.length - logrosCount
 
   // Average progress across active courses
   const activePcts = active.map(e => progressByCourse[e.course_id] ?? 0)
@@ -245,6 +262,43 @@ export default function StudentDashboard() {
               </div>
             )}
 
+            {/* Próximos eventos — nunca llevan al reproductor de lecciones */}
+            {!loading && events.length > 0 && (
+              <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+                <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Próximos eventos</h2>
+                  <button onClick={() => navigate('eventos')} style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', padding: 0 }}>Ver todos →</button>
+                </div>
+                <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                  {events.slice(0, 4).map(e => {
+                    const c = e.courses
+                    const st = eventStatus(c)
+                    const place = formatEventLocation(c)
+                    const modality = MODALITY_LABEL[c.modality] || c.modality
+                    return (
+                      <div key={e.id} className="course-row"
+                        style={{ display: 'flex', gap: '.85rem', alignItems: 'center', cursor: 'pointer', padding: '.6rem .75rem', borderRadius: 9, border: '1px solid var(--border)', transition: 'box-shadow .15s, border-color .15s' }}
+                        onClick={() => navigate('evento-detalle', { slug: c.slug })}>
+                        <div style={{ width: 60, height: 44, background: 'linear-gradient(140deg,#0d3840,#082830)', borderRadius: 7, flexShrink: 0, overflow: 'hidden' }}>
+                          {c.cover_image_url && <img loading="lazy" src={c.cover_image_url} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', marginBottom: '.2rem' }}>
+                            <span style={{ fontSize: '.84rem', fontWeight: 600, color: 'var(--carbon)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title}</span>
+                            <span style={{ fontSize: '.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: 10, background: st.bg, color: st.color, flexShrink: 0 }}>{st.label}</span>
+                          </div>
+                          <div style={{ fontSize: '.7rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {[c.event_start_at && formatEventDateTime(c.event_start_at), modality, place].filter(Boolean).join(' · ')}
+                          </div>
+                        </div>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Completed courses */}
             {!loading && completed.length > 0 && (
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
@@ -346,9 +400,9 @@ export default function StudentDashboard() {
                         <span style={{ marginLeft: 'auto', fontSize: '.62rem', fontWeight: 700, color: 'var(--jade)', letterSpacing: '.06em', textTransform: 'uppercase' }}>Desbloqueado</span>
                       </div>
                     ))}
-                    {ACHIEVEMENT_DEFS.filter(a => !a.check(enrollments.length, completed.length)).length > 0 && (
+                    {pendingAchievements > 0 && (
                       <div style={{ fontSize: '.74rem', color: 'var(--text-2)', textAlign: 'center', marginTop: '.25rem' }}>
-                        {ACHIEVEMENT_DEFS.filter(a => !a.check(enrollments.length, completed.length)).length} logro{ACHIEVEMENT_DEFS.filter(a => !a.check(enrollments.length, completed.length)).length !== 1 ? 's' : ''} pendiente{ACHIEVEMENT_DEFS.filter(a => !a.check(enrollments.length, completed.length)).length !== 1 ? 's' : ''}
+                        {pendingAchievements} logro{pendingAchievements !== 1 ? 's' : ''} pendiente{pendingAchievements !== 1 ? 's' : ''}
                       </div>
                     )}
                   </div>

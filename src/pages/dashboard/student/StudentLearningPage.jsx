@@ -138,7 +138,12 @@ export default function StudentLearningPage() {
   const [examSubmission, setExamSubmission] = useState(null)
   const [submitting, setSubmitting]     = useState(false)
 
-  useEffect(() => { if (!courseId) navigate('cursos') }, [courseId])
+  // navigate() reemplaza todos los params, así que en cuanto redirigimos a otra
+  // pantalla `courseId` queda vacío y este guardia dispararía una segunda
+  // navegación que pisa la primera. El ref lo desactiva una vez que ya hemos
+  // decidido irnos.
+  const redirectingRef = useRef(false)
+  useEffect(() => { if (!courseId && !redirectingRef.current) navigate('cursos') }, [courseId])
 
   useEffect(() => {
     if (!courseId || !user) return
@@ -149,7 +154,7 @@ export default function StudentLearningPage() {
     setLoading(true)
     const [{ data: courseData }, { data: modulesData }, { data: enrollData }] = await Promise.all([
       supabase.from('courses')
-        .select('id, title, cover_image_url, certificate_condition, profiles!instructor_id(full_name)')
+        .select('id, slug, type, title, cover_image_url, certificate_condition, profiles!instructor_id(full_name)')
         .eq('id', courseId).single(),
       supabase.from('modules')
         .select('id, title, description, order_index, lessons(id, title, description, video_url, duration_mins, order_index, type, resources(id, title, file_url, file_type))')
@@ -160,6 +165,17 @@ export default function StudentLearningPage() {
         .select('id, enrolled_at, completed_at')
         .eq('student_id', user.id).eq('course_id', courseId).maybeSingle(),
     ])
+
+    // Un evento no tiene lecciones que reproducir. Si algún enlace todavía
+    // apunta aquí con un evento, el reproductor mostraría «0/0 lecciones · el
+    // instructor está preparando el contenido», que es falso. Este es el único
+    // punto por el que se entra al reproductor, así que redirigir aquí lo
+    // garantiza para cualquier ruta, presente o futura.
+    if (courseData?.type === 'event') {
+      redirectingRef.current = true
+      navigate('evento-detalle', { slug: courseData.slug })
+      return
+    }
 
     if (!enrollData) { setNotEnrolled(true); setLoading(false); return }
 

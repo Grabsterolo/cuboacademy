@@ -7,6 +7,7 @@ import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 import { enrollCourse } from '../../../lib/enrollCourse'
 import { googleCalendarUrl } from '../../../lib/googleCalendar'
 import { formatEventLocation } from '../../../lib/eventLocation'
+import { eventStatus, eventAccessLink } from '../../../lib/eventStatus'
 import { CourseReviews } from '../../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../../components/payment/PaymentInstructions'
 import { Avatar } from '../../../components/ui'
@@ -79,6 +80,10 @@ export default function EventDetailPage() {
   const isEnrolled = !!enrollment?.enrolled_at
   const modality = event ? MODALITY_LABEL[event.modality] || event.modality : ''
   const locationText = event ? formatEventLocation(event) : ''
+  // En eventos virtuales `location` guarda el enlace de acceso, no una
+  // dirección; la tarjeta lo muestra como enlace pulsable en vez de como calle.
+  const accessLink = event ? eventAccessLink(event) : null
+  const status = eventStatus(event)
 
   if (!slug) return null
 
@@ -214,7 +219,54 @@ export default function EventDetailPage() {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         <span style={{ fontSize: '.84rem', fontWeight: 600, color: '#166534' }}>Ya estás inscrito en este evento</span>
                       </div>
-                      {event.event_start_at && (
+
+                      {/* Cuándo y dónde — lo que un evento sí tiene, en vez de un
+                          porcentaje de lecciones que nunca va a existir. */}
+                      <div style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '.85rem 1rem', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.5rem' }}>
+                          <span style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Estado</span>
+                          <span style={{ fontSize: '.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: status.bg, color: status.color }}>{status.label}</span>
+                        </div>
+                        {event.event_start_at && (
+                          <div>
+                            <div style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.15rem' }}>Cuándo</div>
+                            <div style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 600 }}>{formatEventDateTime(event.event_start_at)}</div>
+                          </div>
+                        )}
+                        {modality && (
+                          <div>
+                            <div style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.15rem' }}>Modalidad</div>
+                            <div style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 600 }}>{modality}</div>
+                          </div>
+                        )}
+                        {accessLink ? (
+                          <div>
+                            <div style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.15rem' }}>Enlace de acceso</div>
+                            <a href={accessLink} target="_blank" rel="noopener noreferrer"
+                              style={{ fontSize: '.82rem', color: 'var(--jade)', fontWeight: 600, wordBreak: 'break-all' }}>{accessLink}</a>
+                          </div>
+                        ) : locationText ? (
+                          <div>
+                            <div style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.15rem' }}>Dónde</div>
+                            <div style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 600 }}>{locationText}</div>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {/* Instrucciones de asistencia, según el estado real */}
+                      <p style={{ fontSize: '.78rem', color: 'var(--text-2)', lineHeight: 1.6, margin: '0 0 1rem' }}>
+                        {status.key === 'past'
+                          ? 'Este evento ya finalizó. Si asististe y tu certificado no aparece, escríbenos.'
+                          : status.key === 'today'
+                            ? (accessLink
+                                ? 'El evento es hoy. Entra por el enlace de acceso unos minutos antes de la hora de inicio.'
+                                : 'El evento es hoy. Preséntate en la ubicación indicada unos minutos antes de la hora de inicio.')
+                            : (accessLink
+                                ? 'Guarda el enlace de acceso. Podrás entrar por ahí el día del evento.'
+                                : 'Preséntate en la ubicación indicada el día del evento. Te recomendamos llegar unos minutos antes.')}
+                      </p>
+
+                      {event.event_start_at && status.key !== 'past' && (
                         <a href={googleCalendarUrl(event)} target="_blank" rel="noopener noreferrer"
                           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.45rem', width: '100%', padding: '.85rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 10, fontSize: '.9rem', fontWeight: 700, textDecoration: 'none', boxSizing: 'border-box' }}>
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
