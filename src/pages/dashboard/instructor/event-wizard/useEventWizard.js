@@ -42,6 +42,11 @@ export function useEventWizard() {
 
   // Step 2 state
   const [eventDetails, setEventDetails] = useState({ startAt: '', endAt: '', modality: 'presencial', country: '', city: '', location: '', capacity: '' })
+  // Los eventos creados antes de que existieran `country` y `city` guardan la
+  // sede completa como texto libre en `location`. Exigirles ahora la ubicación
+  // estructurada los dejaría sin forma de editarse ni republicarse desde el
+  // asistente, así que se aceptan tal cual.
+  const [hadLegacyLocation, setHadLegacyLocation] = useState(false)
 
   // Step 3 state
   const [cert, setCert]            = useState({ hasCert: false, certName: '' })
@@ -93,6 +98,9 @@ export function useEventWizard() {
           location: event.location || '',
           capacity: event.capacity != null ? String(event.capacity) : '',
         })
+        // Un evento virtual guarda el enlace en `location` y no lleva país ni
+        // ciudad por diseño, así que no cuenta como heredado.
+        setHadLegacyLocation(event.modality !== 'virtual' && Boolean(event.location) && !event.country && !event.city)
         setPricing({ isFree: !event.price || event.price === 0, price: event.price ? String(event.price) : '', discount: '' })
         setPubStatus(event.status || 'draft')
         setCert({ hasCert: event.has_certificate || false, certName: event.certificate_name || '' })
@@ -132,6 +140,10 @@ export function useEventWizard() {
     }
   }
 
+  // La excepción heredada deja de aplicarse en cuanto se elige país o ciudad:
+  // a partir de ahí se piden ambos, para no guardar una ubicación a medias.
+  const legacyLocation = hadLegacyLocation && !eventDetails.country && !eventDetails.city.trim()
+
   // ── step validations ──────────────────────────────────────────────────────
   function validateStep(n) {
     switch (n) {
@@ -147,7 +159,7 @@ export function useEventWizard() {
         if (!eventDetails.startAt)                return 'La fecha y hora de inicio son obligatorias.'
         if (eventDetails.endAt && eventDetails.endAt < eventDetails.startAt) return 'La hora de fin no puede ser antes de la hora de inicio.'
         if (!eventDetails.modality)                return 'Selecciona una modalidad.'
-        if (eventDetails.modality !== 'virtual') {
+        if (eventDetails.modality !== 'virtual' && !legacyLocation) {
           if (!eventDetails.country)                return 'Selecciona un país.'
           if (!eventDetails.city.trim())            return 'Selecciona o escribe una ciudad.'
         }
@@ -297,7 +309,7 @@ export function useEventWizard() {
     info, setInfo, imgUploading, imgErr, handleImgUpload,
     profile,
     categories, instructors, isAdmin, enrolledCount,
-    eventDetails, setEventDetails,
+    eventDetails, setEventDetails, legacyLocation,
     cert, setCert, pricing, setPricing,
     pubStatus, setPubStatus, pubError,
     visibility, setVisibility,

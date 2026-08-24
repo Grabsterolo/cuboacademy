@@ -52,7 +52,7 @@ function CityCombobox({ country, value, onChange, id }) {
   )
 }
 
-export function Step2EventDetails({ eventDetails, setEventDetails }) {
+export function Step2EventDetails({ eventDetails, setEventDetails, legacyLocation }) {
   const set = (k, v) => setEventDetails(d => ({ ...d, [k]: v }))
   const isVirtual = eventDetails.modality === 'virtual'
   const locationLabel = isVirtual ? 'Enlace de acceso' : 'Dirección específica'
@@ -81,15 +81,26 @@ export function Step2EventDetails({ eventDetails, setEventDetails }) {
           <PillSelector options={MODALITY_OPTS} value={eventDetails.modality} onChange={v => set('modality', v)} />
         </Field>
 
+        {!isVirtual && legacyLocation && (
+          <div style={{ marginBottom: '1.1rem', padding: '.75rem 1rem', borderRadius: 9, background: '#FFFBEB', border: '1px solid #FDE68A', display: 'flex', alignItems: 'flex-start', gap: '.55rem' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round" style={{ marginTop: 1, flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p style={{ margin: 0, fontSize: '.82rem', color: '#92400E', lineHeight: 1.5 }}>
+              Este evento se creó antes de que existieran los campos País y Ciudad, así que su sede
+              está guardada completa en «{locationLabel}». Puedes completarlos para que la ficha se
+              vea mejor, o dejarlos vacíos y continuar sin perder la sede actual.
+            </p>
+          </div>
+        )}
+
         {!isVirtual && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }} className="wiz-grid">
-            <Field label="País" req id="wiz-event-country">
+            <Field label="País" req={!legacyLocation} id="wiz-event-country">
               <select id="wiz-event-country" style={SEL} value={eventDetails.country} onChange={e => setCountry(e.target.value)} onFocus={fi} onBlur={fb}>
                 <option value="">— Selecciona un país —</option>
                 {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
-            <Field label="Ciudad" req id="wiz-event-city">
+            <Field label="Ciudad" req={!legacyLocation} id="wiz-event-city">
               <CityCombobox id="wiz-event-city" country={eventDetails.country} value={eventDetails.city} onChange={v => set('city', v)} />
             </Field>
           </div>

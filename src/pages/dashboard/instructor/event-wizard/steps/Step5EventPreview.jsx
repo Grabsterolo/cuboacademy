@@ -5,10 +5,13 @@ import { formatEventLocation } from '../../../../../lib/eventLocation'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
-export function Step5EventPreview({ info, eventDetails, cert, pricing }) {
+export function Step5EventPreview({ info, eventDetails, cert, pricing, legacyLocation }) {
+  // `legacyLocation` marca los eventos anteriores a los campos País y Ciudad,
+  // que traen la sede completa dentro de la dirección: para ellos la ubicación
+  // ya está completa y el checklist no debe marcarlos como pendientes.
   const hasLocation = eventDetails.modality === 'virtual'
     ? Boolean(eventDetails.location.trim())
-    : Boolean(eventDetails.country && eventDetails.city.trim() && eventDetails.location.trim())
+    : Boolean(eventDetails.location.trim()) && (legacyLocation || Boolean(eventDetails.country && eventDetails.city.trim()))
   const checks = [
     { label: 'Tiene título',                ok: Boolean(info.title.trim()) },
     { label: 'Tiene descripción',           ok: Boolean(stripHtml(info.description)) },

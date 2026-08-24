@@ -27,7 +27,7 @@ export default function EventWizardPage() {
     info, setInfo, imgUploading, imgErr, handleImgUpload,
     profile,
     categories, instructors, isAdmin,
-    eventDetails, setEventDetails,
+    eventDetails, setEventDetails, legacyLocation,
     cert, setCert, pricing, setPricing,
     pubStatus, setPubStatus, pubError,
     visibility, setVisibility,
@@ -45,10 +45,10 @@ export default function EventWizardPage() {
   function renderStep() {
     switch (step) {
       case 1: return <Step1EventInfo info={info} onChange={(k, v) => setInfo(i => ({ ...i, [k]: v }))} categories={categories} instructors={instructors} isAdmin={isAdmin} imgUploading={imgUploading} imgErr={imgErr} onImgUpload={handleImgUpload} />
-      case 2: return <Step2EventDetails eventDetails={eventDetails} setEventDetails={setEventDetails} />
+      case 2: return <Step2EventDetails eventDetails={eventDetails} setEventDetails={setEventDetails} legacyLocation={legacyLocation} />
       case 3: return <Step3EventCertificate cert={cert} setCert={setCert} instructorName={certInstructorName} />
       case 4: return <Step6Pricing pricing={pricing} setPricing={setPricing} />
-      case 5: return <Step5EventPreview info={info} eventDetails={eventDetails} cert={cert} pricing={pricing} />
+      case 5: return <Step5EventPreview info={info} eventDetails={eventDetails} cert={cert} pricing={pricing} legacyLocation={legacyLocation} />
       case 6: return <Step8Publish status={pubStatus} setStatus={setPubStatus} visibility={visibility} setVisibility={setVisibility} saving={saving} error={pubError} onDraft={handleDraft} onReview={handleReview} isAdmin={isAdmin} noun="evento" />
       default: return null
     }
