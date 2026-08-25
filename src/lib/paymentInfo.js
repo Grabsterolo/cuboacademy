@@ -18,6 +18,35 @@ export const PAYMENT_SETTING_KEYS = [
 ]
 
 /**
+ * Etiquetas legibles del medio de pago.
+ *
+ * La columna guarda el valor del enum en minúscula («sinpe», «transferencia»),
+ * que no es texto para enseñarle a nadie: el recibo llegó a imprimir «paypal»
+ * tal cual, un medio que además no existe en la plataforma.
+ *
+ * `paypal` y `stripe` se mantienen porque siguen en el enum y hay órdenes
+ * históricas que podrían tenerlos; no significa que estén integrados.
+ */
+export const PAYMENT_PROVIDER_LABEL = {
+  manual:        'Pago manual',
+  sinpe:         'SINPE Móvil',
+  transferencia: 'Transferencia bancaria',
+  paypal:        'PayPal',
+  stripe:        'Stripe',
+}
+
+/** Medios que el admin puede elegir al aprobar. Sin pasarelas: no hay ninguna. */
+export const SELECTABLE_PROVIDERS = ['sinpe', 'transferencia', 'manual']
+
+/**
+ * Nunca devuelve el valor crudo: si apareciera uno desconocido, es preferible
+ * un guion a imprimir un identificador interno en un recibo.
+ */
+export function paymentProviderLabel(provider) {
+  return PAYMENT_PROVIDER_LABEL[provider] || '—'
+}
+
+/**
  * Referencia corta que el estudiante escribe en el detalle de la transferencia
  * y que el admin ve en el listado de órdenes. Derivada del id para que ambos
  * lados la calculen igual sin una columna extra.

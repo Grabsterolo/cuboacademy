@@ -7,7 +7,7 @@ import { useCourseRatingSummaries, RatingBadge } from '../../../components/revie
 import { STATUS_TONE } from '../../../components/ui'
 import { formatDateLong, formatEventDateTime } from '../../../lib/formatDate'
 import { PaymentInstructions } from '../../../components/payment/PaymentInstructions'
-import { orderReference } from '../../../lib/paymentInfo'
+import { orderReference, paymentProviderLabel } from '../../../lib/paymentInfo'
 import { runQuery } from '../../../lib/db'
 import { ErrorState } from '../../../components/ui/ErrorState'
 
@@ -315,7 +315,7 @@ function PurchasesTab({ user }) {
     if (!user) return
     runQuery(
       supabase.from('orders')
-        .select('id, amount, currency, status, created_at, payment_provider, courses(id, slug, title, cover_image_url, type, categories(name))')
+        .select('id, amount, currency, status, created_at, payment_provider, provider_order_id, courses(id, slug, title, cover_image_url, type, categories(name))')
         .eq('student_id', user.id)
         .order('created_at', { ascending: false }),
       'StudentStorePage: mis compras',
@@ -362,10 +362,19 @@ function PurchasesTab({ user }) {
                 <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', fontSize: '.9rem', marginBottom: '.2rem' }}>
                   {c ? <span style={{ cursor: 'pointer', color: 'inherit' }} onClick={() => navigate(c.type === 'event' ? 'evento-detalle' : 'curso-detalle', { slug: c.slug })}>{c.title}</span> : `Orden ${order.id.slice(0,8)}`}
                 </div>
-                {/* La referencia es lo que el estudiante escribe en la transferencia
-                    y lo que el admin busca al conciliar; el proveedor interno
-                    ("manual", "paypal") no le dice nada a nadie. */}
-                <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>{date} · Ref. {orderReference(order.id)}</div>
+                {/* El medio de pago va con etiqueta legible, nunca el valor del
+                    enum: el recibo llegó a imprimir «paypal» tal cual, un medio
+                    que ni siquiera existe en la plataforma. Solo se muestra en
+                    órdenes ya pagadas — en una pendiente todavía no se sabe. */}
+                <div style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>
+                  {date} · Ref. {orderReference(order.id)}
+                  {order.status === 'completed' && order.payment_provider && (
+                    <> · {paymentProviderLabel(order.payment_provider)}</>
+                  )}
+                  {order.status === 'completed' && order.provider_order_id && (
+                    <> · Comprobante {order.provider_order_id}</>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {order.amount && <span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.95rem', color: 'var(--carbon)' }}>${Number(order.amount).toFixed(2)}</span>}

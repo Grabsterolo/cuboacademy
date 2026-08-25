@@ -3,7 +3,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { STATUS_TONE } from '../../../components/ui'
 import { formatDateShort } from '../../../lib/formatDate'
-import { orderReference } from '../../../lib/paymentInfo'
+import { orderReference, PAYMENT_PROVIDER_LABEL, SELECTABLE_PROVIDERS, paymentProviderLabel } from '../../../lib/paymentInfo'
 import { runQuery, runMutation, runFunction, errorMessage } from '../../../lib/db'
 import { ErrorState } from '../../../components/ui/ErrorState'
 
@@ -34,6 +34,11 @@ export default function OrdersPage() {
   const [confirmAction, setConfirmAction] = useState(null) // { orderId, action }
   const [actionErr, setActionErr] = useState('')
   const [loadErr, setLoadErr] = useState(null)
+  // Medio real y comprobante que el admin registra al aprobar. 'sinpe' por
+  // defecto porque es el canal más usado, pero siempre queda a la vista para
+  // que nadie lo confirme sin mirarlo.
+  const [confirmProvider, setConfirmProvider] = useState('sinpe')
+  const [confirmRef, setConfirmRef] = useState('')
 
   useEffect(() => { loadOrders() }, [])
 
@@ -43,7 +48,7 @@ export default function OrdersPage() {
     const { data, error } = await runQuery(
       supabase
         .from('orders')
-        .select('id, amount, status, created_at, payment_provider, student_id, course_id, profiles!student_id(full_name, avatar_url), courses(id, title, cover_image_url)')
+        .select('id, amount, status, created_at, payment_provider, provider_order_id, student_id, course_id, profiles!student_id(full_name, avatar_url), courses(id, title, cover_image_url)')
         .order('created_at', { ascending: false })
         .limit(500),
       'OrdersPage: listar órdenes',
@@ -58,9 +63,13 @@ export default function OrdersPage() {
     setActing(order.id)
     setActionErr('')
 
-    // 1. Mark order as completed
+    // 1. Mark order as completed, recording how it was actually paid
+    const provider = confirmProvider
+    const providerRef = confirmRef.trim() || null
     const { ok, error: orderErr } = await runMutation(
-      supabase.from('orders').update({ status: 'completed' }).eq('id', order.id),
+      supabase.from('orders')
+        .update({ status: 'completed', payment_provider: provider, provider_order_id: providerRef })
+        .eq('id', order.id),
       'OrdersPage: confirmar orden',
     )
     // Antes esto hacía `return` en silencio: el admin pulsaba «Confirmar», no
@@ -98,7 +107,10 @@ export default function OrdersPage() {
       message: `Tu pago para "${order.courses?.title || 'tu curso'}" fue confirmado. Ya tienes acceso al curso en Cubo Campus.`,
     }, 'OrdersPage: correo de pago confirmado')
 
-    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'completed' } : o))
+    setOrders(prev => prev.map(o => o.id === order.id
+      ? { ...o, status: 'completed', payment_provider: provider, provider_order_id: providerRef }
+      : o))
+    setConfirmRef('')
     setActing(null)
   }
 
@@ -261,7 +273,8 @@ export default function OrdersPage() {
               const date = formatDateShort(order.created_at)
               const isConfirming = confirmAction?.orderId === order.id
               return (
-                <div key={order.id} className="op-row">
+                <div key={order.id}>
+                <div className="op-row">
                   {/* Student avatar */}
                   {student?.avatar_url
                     ? <img loading="lazy" src={student.avatar_url} alt={student?.full_name || ''} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
@@ -279,6 +292,12 @@ export default function OrdersPage() {
                           transferencia — sin esto no hay forma de casar un
                           comprobante con su orden. */}
                       <span style={{ color: '#B5B2AB' }}> · Ref. {orderReference(order.id)}</span>
+                      {order.status === 'completed' && (
+                        <span style={{ color: '#B5B2AB' }}>
+                          {' · '}{paymentProviderLabel(order.payment_provider)}
+                          {order.provider_order_id ? ` · ${order.provider_order_id}` : ''}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -299,17 +318,11 @@ export default function OrdersPage() {
                   {order.status === 'pending' && (
                     <div style={{ display: 'flex', gap: '.4rem', flexShrink: 0 }}>
                       {isConfirming ? (
-                        <>
-                          <span style={{ fontSize: '.75rem', color: 'var(--text-2)', alignSelf: 'center', fontFamily: 'var(--sans)' }}>¿Confirmar?</span>
-                          <button onClick={() => handleConfirm(order)} disabled={isActing}
-                            style={{ padding: '.35rem .85rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 7, fontSize: '.77rem', fontWeight: 700, cursor: isActing ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isActing ? .7 : 1 }}>
-                            {isActing ? '…' : 'Sí'}
-                          </button>
-                          <button onClick={() => setConfirmAction(null)} disabled={isActing}
-                            style={{ padding: '.35rem .65rem', background: 'none', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.77rem', color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-                            No
-                          </button>
-                        </>
+                        /* La confirmación ocurre en el panel de abajo, donde se
+                           registra el medio y el comprobante. */
+                        <span style={{ fontSize: '.75rem', color: 'var(--jade)', alignSelf: 'center', fontFamily: 'var(--sans)', fontWeight: 600 }}>
+                          Registra el cobro ↓
+                        </span>
                       ) : (
                         <>
                           <button onClick={() => setConfirmAction({ orderId: order.id, action: 'confirm' })} disabled={isActing}
@@ -353,6 +366,39 @@ export default function OrdersPage() {
                       )}
                     </div>
                   )}
+                </div>
+
+                {/* Registro del cobro. Antes payment_provider se quedaba con el
+                    default del enum ('paypal', una pasarela que no existe aquí)
+                    y provider_order_id siempre vacío, así que el recibo del
+                    estudiante mentía sobre cómo había pagado. */}
+                {isConfirming && confirmAction?.action === 'confirm' && (
+                  <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '.9rem 1.1rem', display: 'flex', gap: '.7rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
+                      <label htmlFor={`prov-${order.id}`} style={{ fontSize: '.68rem', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Medio de pago</label>
+                      <select id={`prov-${order.id}`} value={confirmProvider} onChange={e => setConfirmProvider(e.target.value)}
+                        style={{ padding: '.45rem .7rem', borderRadius: 7, border: '1px solid var(--border)', fontSize: '.8rem', fontFamily: 'var(--sans)', background: 'white', color: 'var(--carbon)' }}>
+                        {SELECTABLE_PROVIDERS.map(v => (
+                          <option key={v} value={v}>{PAYMENT_PROVIDER_LABEL[v]}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', flex: 1, minWidth: 180 }}>
+                      <label htmlFor={`ref-${order.id}`} style={{ fontSize: '.68rem', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Referencia del comprobante</label>
+                      <input id={`ref-${order.id}`} type="text" value={confirmRef} onChange={e => setConfirmRef(e.target.value)}
+                        placeholder="Nº de comprobante o transacción (opcional)"
+                        style={{ padding: '.45rem .7rem', borderRadius: 7, border: '1px solid var(--border)', fontSize: '.8rem', fontFamily: 'var(--sans)', background: 'white', color: 'var(--carbon)', width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+                    <button onClick={() => handleConfirm(order)} disabled={isActing}
+                      style={{ padding: '.5rem 1.1rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 7, fontSize: '.8rem', fontWeight: 700, cursor: isActing ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isActing ? .7 : 1 }}>
+                      {isActing ? 'Confirmando…' : 'Confirmar pago'}
+                    </button>
+                    <button onClick={() => setConfirmAction(null)} disabled={isActing}
+                      style={{ padding: '.5rem .9rem', background: 'white', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.8rem', color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                      Cancelar
+                    </button>
+                  </div>
+                )}
                 </div>
               )
             })}
