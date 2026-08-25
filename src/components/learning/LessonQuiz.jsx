@@ -139,7 +139,7 @@ export default function LessonQuiz({ lessonId, studentId, onPassed }) {
 
       {bestAttempt && (
         <div style={{ marginBottom: '1rem', padding: '.75rem 1rem', borderRadius: 9, background: bestAttempt.passed ? '#F0FDF4' : '#FEF2F2', border: `1px solid ${bestAttempt.passed ? '#BBF7D0' : '#FECACA'}`, display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-          <span style={{ fontSize: '.85rem', fontWeight: 700, color: bestAttempt.passed ? '#16A34A' : '#DC2626' }}>
+          <span style={{ fontSize: '.85rem', fontWeight: 700, color: bestAttempt.passed ? '#15803D' : '#DC2626' }}>
             {bestAttempt.passed ? '✓ Aprobado' : 'No aprobado'}
           </span>
           <span style={{ fontSize: '.8rem', color: 'var(--text-2)' }}>· última puntuación: {bestAttempt.score}%</span>
@@ -167,7 +167,7 @@ export default function LessonQuiz({ lessonId, studentId, onPassed }) {
           </div>
         ) : (
           <div style={{ marginBottom: '1rem', padding: '.85rem 1rem', borderRadius: 9, background: result.passed ? '#F0FDF4' : '#FEF2F2', border: `1px solid ${result.passed ? '#BBF7D0' : '#FECACA'}` }}>
-            <p style={{ margin: 0, fontSize: '.85rem', fontWeight: 700, color: result.passed ? '#16A34A' : '#DC2626' }}>
+            <p style={{ margin: 0, fontSize: '.85rem', fontWeight: 700, color: result.passed ? '#15803D' : '#DC2626' }}>
               {result.passed ? `¡Aprobaste con ${result.score}%!` : `Obtuviste ${result.score}%, no alcanzaste el mínimo.`}
             </p>
           </div>

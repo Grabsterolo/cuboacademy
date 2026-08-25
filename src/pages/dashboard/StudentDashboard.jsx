@@ -215,7 +215,7 @@ export default function StudentDashboard() {
                     <div style={{ marginBottom: '1rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.35rem' }}>
                         <span style={{ fontSize: '.72rem', color: 'var(--text-2)', fontWeight: 500 }}>Tu progreso</span>
-                        <span style={{ fontSize: '.72rem', fontWeight: 700, color: heroPct === 100 ? '#16a34a' : 'var(--jade)' }}>{heroPct}%</span>
+                        <span style={{ fontSize: '.72rem', fontWeight: 700, color: heroPct === 100 ? '#15803D' : 'var(--jade)' }}>{heroPct}%</span>
                       </div>
                       <ProgressBar pct={heroPct} height={6} />
                     </div>

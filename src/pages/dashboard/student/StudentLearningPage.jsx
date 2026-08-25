@@ -406,7 +406,7 @@ export default function StudentLearningPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', flexShrink: 0 }}>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '.72rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>{completedCount}/{totalLessons} lecciones</div>
-                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: courseCompleted ? '#16A34A' : 'var(--carbon)' }}>{progressPct}%</div>
+                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: courseCompleted ? '#15803D' : 'var(--carbon)' }}>{progressPct}%</div>
                 </div>
                 <div style={{ width: 48, height: 48, position: 'relative', flexShrink: 0 }}>
                   <svg viewBox="0 0 36 36" style={{ width: 48, height: 48, transform: 'rotate(-90deg)' }}>
@@ -415,7 +415,7 @@ export default function StudentLearningPage() {
                       strokeDasharray={`${progressPct} ${100 - progressPct}`} strokeLinecap="round"
                       style={{ transition: 'stroke-dasharray .4s ease' }} />
                   </svg>
-                  <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.6rem', fontWeight: 700, color: courseCompleted ? '#16A34A' : 'var(--carbon)', fontFamily: 'var(--sans)' }}>
+                  <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.6rem', fontWeight: 700, color: courseCompleted ? '#15803D' : 'var(--carbon)', fontFamily: 'var(--sans)' }}>
                     {progressPct}%
                   </span>
                 </div>
@@ -494,13 +494,13 @@ export default function StudentLearningPage() {
                   </div>
 
                   {isExamLesson ? (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.1rem', borderRadius: 9, fontSize: '.82rem', fontWeight: 600, fontFamily: 'var(--sans)', flexShrink: 0, background: isCompleted ? '#DCFCE7' : 'var(--cream)', color: isCompleted ? '#16A34A' : 'var(--text-2)', border: '1px solid var(--border)' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.1rem', borderRadius: 9, fontSize: '.82rem', fontWeight: 600, fontFamily: 'var(--sans)', flexShrink: 0, background: isCompleted ? '#DCFCE7' : 'var(--cream)', color: isCompleted ? '#15803D' : 'var(--text-2)', border: '1px solid var(--border)' }}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                       {isCompleted ? 'Examen aprobado' : 'Se completa al aprobar el examen'}
                     </span>
                   ) : (
                   <button onClick={markComplete} disabled={marking}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.1rem', borderRadius: 9, fontSize: '.85rem', fontWeight: 600, cursor: marking ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, border: 'none', transition: 'all .2s', opacity: marking ? .7 : 1, background: isCompleted ? '#DCFCE7' : 'var(--jade)', color: isCompleted ? '#16A34A' : 'white' }}>
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.1rem', borderRadius: 9, fontSize: '.85rem', fontWeight: 600, cursor: marking ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', flexShrink: 0, border: 'none', transition: 'all .2s', opacity: marking ? .7 : 1, background: isCompleted ? '#DCFCE7' : 'var(--jade)', color: isCompleted ? '#15803D' : 'white' }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                     {isCompleted ? 'Completada' : marking ? 'Guardando…' : 'Marcar completada'}
                   </button>
@@ -650,7 +650,7 @@ export default function StudentLearningPage() {
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem 1.1rem', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.65rem' }}>
                   <span style={{ fontSize: '.72rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Progreso</span>
-                  <span style={{ fontSize: '.78rem', fontWeight: 700, color: courseCompleted ? '#16A34A' : 'var(--jade)' }}>{progressPct}%</span>
+                  <span style={{ fontSize: '.78rem', fontWeight: 700, color: courseCompleted ? '#15803D' : 'var(--jade)' }}>{progressPct}%</span>
                 </div>
                 <div style={{ height: 6, background: 'var(--cream)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${progressPct}%`, background: courseCompleted ? '#22C55E' : 'var(--jade)', borderRadius: 3, transition: 'width .4s ease' }} />
@@ -671,7 +671,7 @@ export default function StudentLearningPage() {
                       onMouseEnter={e => e.currentTarget.style.background = 'var(--cream)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'white'}>
                       <div style={{ width: 26, height: 26, borderRadius: 6, background: 'var(--jade-soft)', border: '1px solid var(--jade-light,rgba(22,125,120,.18))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ fontSize: '.65rem', fontWeight: 700, color: 'var(--jade)' }}>{mi + 1}</span>
+                        <span style={{ fontSize: '.65rem', fontWeight: 700, color: 'var(--jade-ink)' }}>{mi + 1}</span>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mod.title}</div>
@@ -699,7 +699,7 @@ export default function StudentLearningPage() {
                             )}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? 'var(--jade)' : done ? 'var(--text-2)' : 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
+                            <div style={{ fontSize: '.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? 'var(--jade-ink)' : done ? 'var(--text-2)' : 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
                               {les.title}
                             </div>
                             {les.duration_mins != null && (

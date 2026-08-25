@@ -452,7 +452,7 @@ export default function AnnouncementsPage() {
               <div style={{ marginBottom: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.6rem' }}>
                   <p className="section-label" style={{ margin: 0 }}>Mensaje</p>
-                  <span style={{ fontSize: '.7rem', color: content.length > MAX_CHARS * 0.9 ? '#D97706' : 'var(--text-3)', fontFamily: 'var(--sans)' }}>{content.length}/{MAX_CHARS}</span>
+                  <span style={{ fontSize: '.7rem', color: content.length > MAX_CHARS * 0.9 ? '#96530A' : 'var(--text-3)', fontFamily: 'var(--sans)' }}>{content.length}/{MAX_CHARS}</span>
                 </div>
                 <textarea className="ann-inp" placeholder="Escribe el contenido del comunicado aquí…" value={content} onChange={e => setContent(e.target.value.slice(0, MAX_CHARS))} required rows={6}
                   style={{ resize: 'vertical', minHeight: 130, lineHeight: 1.6 }} />

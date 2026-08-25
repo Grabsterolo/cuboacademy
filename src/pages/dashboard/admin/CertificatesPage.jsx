@@ -265,7 +265,7 @@ export default function CertificatesPage() {
                           {isProc ? 'Regenerando…' : 'Regenerar'}
                         </button>
                       )}
-                      <span style={{ padding: '4px 10px', borderRadius: 10, fontSize: '.71rem', fontWeight: 700, background: cert.status === 'approved' ? '#DCFCE7' : '#FEE2E2', color: cert.status === 'approved' ? '#16A34A' : '#DC2626' }}>
+                      <span style={{ padding: '4px 10px', borderRadius: 10, fontSize: '.71rem', fontWeight: 700, background: cert.status === 'approved' ? '#DCFCE7' : '#FEE2E2', color: cert.status === 'approved' ? '#15803D' : '#DC2626' }}>
                         {cert.status === 'approved' ? '✓ Aprobado' : '✕ Rechazado'}
                       </span>
                     </div>

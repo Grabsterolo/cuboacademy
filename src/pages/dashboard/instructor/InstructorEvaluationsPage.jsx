@@ -265,7 +265,7 @@ export default function InstructorEvaluationsPage() {
                   <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.86rem', color: 'var(--carbon)' }}>{quiz.title}</div>
                 </div>
                 {attempt ? (
-                  <span style={{ fontSize: '.74rem', fontWeight: 700, color: attempt.passed ? '#16A34A' : '#DC2626', flexShrink: 0 }}>
+                  <span style={{ fontSize: '.74rem', fontWeight: 700, color: attempt.passed ? '#15803D' : '#DC2626', flexShrink: 0 }}>
                     {attempt.score}% {attempt.passed ? '· Aprobado' : '· No aprobado'}
                   </span>
                 ) : (
@@ -469,7 +469,7 @@ export default function InstructorEvaluationsPage() {
                         </button>
                       </div>
                     ) : (
-                      <span style={{ padding: '4px 10px', borderRadius: 10, fontSize: '.71rem', fontWeight: 700, background: sub.status === 'approved' ? '#DCFCE7' : '#FEE2E2', color: sub.status === 'approved' ? '#16A34A' : '#DC2626', flexShrink: 0 }}>
+                      <span style={{ padding: '4px 10px', borderRadius: 10, fontSize: '.71rem', fontWeight: 700, background: sub.status === 'approved' ? '#DCFCE7' : '#FEE2E2', color: sub.status === 'approved' ? '#15803D' : '#DC2626', flexShrink: 0 }}>
                         {sub.status === 'approved' ? '✓ Aprobada' : '✕ Rechazada'}
                       </span>
                     )}

@@ -21,7 +21,7 @@ function ProgressBar({ pct }) {
       <div style={{ flex: 1, height: 5, background: 'var(--border)', borderRadius: 3 }}>
         <div style={{ width: `${pct}%`, height: '100%', background: done ? '#22c55e' : 'var(--jade)', borderRadius: 3, transition: 'width .5s ease' }} />
       </div>
-      <span style={{ fontSize: '.68rem', fontWeight: 700, color: done ? '#16a34a' : 'var(--jade)', flexShrink: 0, minWidth: 28, textAlign: 'right' }}>{pct}%</span>
+      <span style={{ fontSize: '.68rem', fontWeight: 700, color: done ? '#15803D' : 'var(--jade)', flexShrink: 0, minWidth: 28, textAlign: 'right' }}>{pct}%</span>
     </div>
   )
 }

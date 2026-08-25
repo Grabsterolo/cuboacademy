@@ -194,7 +194,7 @@ export default function StudentCertificatesPage() {
                         {CERT_ICON_BIG}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '.66rem', fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: '.3rem' }}>
+                        <div style={{ fontSize: '.66rem', fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'white', marginBottom: '.3rem' }}>
                           Certificado de finalización
                         </div>
                         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'white', lineHeight: 1.25, margin: 0 }}>{c.title}</h3>
