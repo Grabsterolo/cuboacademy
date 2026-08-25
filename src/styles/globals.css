@@ -28,7 +28,11 @@
   --jade-soft: #DCEDEA;
   --jade-light: #5ABFBA;
   --terra: #C96E4B;
-  --terra-light: #D9855E;
+  /* Terra para texto sobre las tarjetas oscuras translúcidas de la portada.
+     #D9855E cumplía contra el carbon-deep puro, pero esas tarjetas llevan un
+     velo claro encima y el fondo real ronda el #1C4244, donde se quedaba en
+     3.91:1. */
+  --terra-light: #E5A283;
   /* Terra capaz de llevar texto blanco encima: --terra se queda en 3.61:1 con
      blanco, insuficiente para avatares y chips rellenos. */
   --terra-deep: #A55A3E;

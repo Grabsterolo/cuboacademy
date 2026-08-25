@@ -76,7 +76,7 @@ export function Step1Info({ info, onChange, categories, instructors, isAdmin, im
                 )}
               </div>
             )}
-            {imgErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.4rem 0 0' }}>{imgErr}</p>}
+            {imgErr && <p style={{ fontSize: '.75rem', color: '#C81E1E', margin: '.4rem 0 0' }}>{imgErr}</p>}
           </Field>
         </div>
       </div>

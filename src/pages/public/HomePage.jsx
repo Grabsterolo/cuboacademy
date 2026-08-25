@@ -880,7 +880,7 @@ export default function HomePage() {
             <button onClick={() => navigate('register')} style={{ padding: '1rem 2.2rem', background: 'var(--terra)', color: 'var(--carbon)', borderRadius: 9, fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(201,110,75,.35)' }}>
               Crear cuenta gratis
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'rgba(248,246,241,.55)', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, padding: '.4rem .85rem', backdropFilter: 'blur(6px)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'rgba(248,246,241,.7)', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, padding: '.4rem .85rem', backdropFilter: 'blur(6px)' }}>
               Sin tarjeta de crédito · Regístrate en un minuto
             </div>
           </div>

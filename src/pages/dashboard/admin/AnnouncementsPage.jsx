@@ -35,7 +35,7 @@ const TYPES = [
   {
     value: 'maintenance',
     label: 'Mantenimiento',
-    color: '#D97706',
+    color: '#96530A',
     bg: 'rgba(217,119,6,.1)',
     border: 'rgba(217,119,6,.3)',
     icon: (
@@ -78,7 +78,7 @@ const TARGETS = [
     value: 'student',
     label: 'Estudiantes',
     desc: 'Solo estudiantes',
-    color: '#8B5CF6',
+    color: '#6D28D9',
     bg: 'rgba(139,92,246,.08)',
     border: 'rgba(139,92,246,.3)',
     icon: (

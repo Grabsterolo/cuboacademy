@@ -164,7 +164,7 @@ function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onAddFileRe
                   )}
                 </div>
               )}
-              {docErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.4rem 0 0' }}>{docErr}</p>}
+              {docErr && <p style={{ fontSize: '.75rem', color: '#C81E1E', margin: '.4rem 0 0' }}>{docErr}</p>}
             </Field>
           )}
           <Field label="Texto explicativo" hint="Notas o transcripción de la lección">
@@ -201,7 +201,7 @@ function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onAddFileRe
                 {IC.upload} {resUploading ? 'Subiendo…' : 'Subir PDF o plantilla'}
               </button>
             </div>
-            {resErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.4rem 0 0' }}>{resErr}</p>}
+            {resErr && <p style={{ fontSize: '.75rem', color: '#C81E1E', margin: '.4rem 0 0' }}>{resErr}</p>}
           </div>
         </div>
       )}

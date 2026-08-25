@@ -52,7 +52,7 @@ export function ErrorState({
       )}
 
       {code && (
-        <p style={{ fontSize: '.68rem', color: '#C09186', margin: '.9rem 0 0', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+        <p style={{ fontSize: '.68rem', color: 'var(--text-3)', margin: '.9rem 0 0', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
           Código {code}
         </p>
       )}

@@ -238,7 +238,7 @@ export default function EventsPage() {
 
                     {confirmDelete === e.id ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <button onClick={() => handleDelete(e.id)} style={{ fontSize: '.72rem', fontWeight: 700, color: '#DC2626', background: 'rgba(239,68,68,.09)', border: 'none', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sí</button>
+                        <button onClick={() => handleDelete(e.id)} style={{ fontSize: '.72rem', fontWeight: 700, color: '#C81E1E', background: 'rgba(239,68,68,.09)', border: 'none', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sí</button>
                         <button onClick={() => setConfirmDelete(null)} style={{ fontSize: '.72rem', color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' }}>No</button>
                       </div>
                     ) : (

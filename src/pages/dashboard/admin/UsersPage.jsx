@@ -9,7 +9,7 @@ import { ErrorState } from '../../../components/ui/ErrorState'
 
 const ROLE_LABELS = { admin: 'Admin', instructor: 'Instructor', student: 'Estudiante' }
 const ROLE_STYLE = {
-  admin:      { background: 'rgba(22,125,120,.12)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
+  admin:      { background: 'rgba(22,125,120,.12)',  color: 'var(--jade-ink)',   border: '1px solid rgba(22,125,120,.25)' },
   instructor: { background: 'rgba(59,130,246,.1)',   color: '#1D4ED8',       border: '1px solid rgba(59,130,246,.25)' },
   student:    { background: 'rgba(113,128,126,.1)',  color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
 }
@@ -393,7 +393,7 @@ export default function UsersPage() {
 
                     {/* Status badge */}
                     {isActive ? (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.22)', flexShrink: 0 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.68rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(22,125,120,.1)', color: 'var(--jade-ink)', border: '1px solid rgba(22,125,120,.22)', flexShrink: 0 }}>
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--jade)', display: 'inline-block' }} />Activo
                       </span>
                     ) : (

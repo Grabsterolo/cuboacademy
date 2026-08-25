@@ -9,7 +9,7 @@ const LessonRow = memo(function LessonRow({ mod, les, lIdx, updateLesson, remove
     <div onDragOver={e => onLesDragOver(e, mod.id, lIdx)}
       style={{ display: 'flex', alignItems: 'center', gap: '.55rem', padding: '.6rem 1.1rem .6rem 2rem', borderBottom: '1px solid var(--border)', background: '#FAFAF9' }}>
       <span draggable onDragStart={e => onLesDragStart(e, mod.id, lIdx)} onDragEnd={onLesDragEnd}
-        style={{ color: '#C9C5BE', cursor: 'grab', flexShrink: 0 }}>{IC.drag}</span>
+        style={{ color: 'var(--text-3)', cursor: 'grab', flexShrink: 0 }}>{IC.drag}</span>
       <span style={{ color: 'var(--text-2)', flexShrink: 0 }}>{LESSON_TYPE_ICON[les.type] || IC.video}</span>
       <input
         value={les.title}

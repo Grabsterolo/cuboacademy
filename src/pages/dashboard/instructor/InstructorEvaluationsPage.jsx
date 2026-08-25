@@ -308,7 +308,7 @@ export default function InstructorEvaluationsPage() {
                                       style={{ padding: '.35rem .8rem', background: inputVal !== '' ? 'var(--jade)' : 'var(--border)', border: 'none', borderRadius: 7, fontSize: '.78rem', fontWeight: 700, color: inputVal !== '' ? 'white' : 'var(--text-2)', cursor: isGrading || inputVal === '' ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)' }}>
                                       {isGrading ? '…' : 'Calificar'}
                                     </button>
-                                    {err && <span style={{ fontSize: '.74rem', color: '#DC2626', width: '100%' }}>{err}</span>}
+                                    {err && <span style={{ fontSize: '.74rem', color: '#C81E1E', width: '100%' }}>{err}</span>}
                                   </div>
                                 )
                               )}
@@ -458,7 +458,7 @@ export default function InstructorEvaluationsPage() {
                         <button
                           onClick={() => { setRejectModal(sub); setRejectNotes('') }}
                           disabled={!!isProc}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', background: 'white', border: '1.5px solid #FECACA', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, color: '#DC2626', cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1 }}>
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', background: 'white', border: '1.5px solid #FECACA', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, color: '#C81E1E', cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1 }}>
                           {X_ICON} Rechazar
                         </button>
                         <button

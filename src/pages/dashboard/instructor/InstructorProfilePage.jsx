@@ -291,7 +291,7 @@ export default function InstructorProfilePage() {
                     </div>
                   )}
                   {!bio && !specialty && (
-                    <p style={{ fontSize: '.76rem', color: '#C5C2BB', fontStyle: 'italic', marginTop: '.5rem' }}>Completa tu perfil para que los estudiantes puedan conocerte.</p>
+                    <p style={{ fontSize: '.76rem', color: 'var(--text-2)', fontStyle: 'italic', marginTop: '.5rem' }}>Completa tu perfil para que los estudiantes puedan conocerte.</p>
                   )}
                 </div>
               </div>

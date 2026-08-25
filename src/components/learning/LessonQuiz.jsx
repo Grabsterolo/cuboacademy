@@ -174,7 +174,7 @@ export default function LessonQuiz({ lessonId, studentId, onPassed }) {
         )
       )}
 
-      {error && <p style={{ fontSize: '.82rem', color: '#DC2626', marginBottom: '1rem' }}>{error}</p>}
+      {error && <p style={{ fontSize: '.82rem', color: '#C81E1E', marginBottom: '1rem' }}>{error}</p>}
 
       {attemptsLeft <= 0 || hasPendingReview ? (
         !hasPendingReview && <p style={{ fontSize: '.82rem', color: 'var(--text-2)' }}>Has alcanzado el número máximo de intentos para este quiz.</p>

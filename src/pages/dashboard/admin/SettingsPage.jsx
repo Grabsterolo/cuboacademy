@@ -386,7 +386,7 @@ export default function SettingsPage() {
                           {heroVideoUploading ? 'Subiendo…' : 'Reemplazar video'}
                         </button>
                         <button type="button" onClick={handleRemoveHeroVideo} disabled={heroVideoUploading}
-                          style={{ padding: '.45rem .9rem', background: 'none', border: '1px solid #FECACA', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: '#DC2626', cursor: heroVideoUploading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)' }}>
+                          style={{ padding: '.45rem .9rem', background: 'none', border: '1px solid #FECACA', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: '#C81E1E', cursor: heroVideoUploading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)' }}>
                           Quitar video
                         </button>
                       </div>
@@ -397,7 +397,7 @@ export default function SettingsPage() {
                       {heroVideoUploading ? 'Subiendo…' : 'Subir video'}
                     </button>
                   )}
-                  {heroVideoErr && <p style={{ fontSize: '.75rem', color: '#DC2626', margin: '.5rem 0 0' }}>{heroVideoErr}</p>}
+                  {heroVideoErr && <p style={{ fontSize: '.75rem', color: '#C81E1E', margin: '.5rem 0 0' }}>{heroVideoErr}</p>}
                 </Field>
                 <Field label="Email de contacto" id="setting-contact-email">
                   <input className="sett-inp" style={inp} type="email" value={settings.contact_email}

@@ -182,7 +182,7 @@ export default function StudentAchievementsPage() {
                   <div style={{ width: 44, height: 44, background: 'var(--cream)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', flexShrink: 0, border: '1px dashed var(--border)' }}>{f.icon}</div>
                   <div>
                     <div style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: 'var(--text-3)', marginBottom: '.2rem' }}>{f.title}</div>
-                    <div style={{ fontSize: '.77rem', color: '#C8C5BE', lineHeight: 1.55, fontWeight: 300 }}>{f.desc}</div>
+                    <div style={{ fontSize: '.77rem', color: 'var(--text-2)', lineHeight: 1.55, fontWeight: 300 }}>{f.desc}</div>
                   </div>
                 </div>
               ))}
