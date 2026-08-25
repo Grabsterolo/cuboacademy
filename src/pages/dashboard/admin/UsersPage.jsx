@@ -10,7 +10,7 @@ import { ErrorState } from '../../../components/ui/ErrorState'
 const ROLE_LABELS = { admin: 'Admin', instructor: 'Instructor', student: 'Estudiante' }
 const ROLE_STYLE = {
   admin:      { background: 'rgba(22,125,120,.12)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
-  instructor: { background: 'rgba(59,130,246,.1)',   color: '#3B7EF6',       border: '1px solid rgba(59,130,246,.25)' },
+  instructor: { background: 'rgba(59,130,246,.1)',   color: '#1D4ED8',       border: '1px solid rgba(59,130,246,.25)' },
   student:    { background: 'rgba(113,128,126,.1)',  color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
 }
 const TABS = [
@@ -332,7 +332,7 @@ export default function UsersPage() {
           <div className="users-tabs" style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
             {TABS.map(tab => (
               <button key={tab.label} className="tab-btn" onClick={() => setActiveTab(tab.value)}
-                style={{ padding: '.35rem .85rem', borderRadius: 20, border: `1.5px solid ${activeTab === tab.value ? 'rgba(22,125,120,.4)' : 'var(--border)'}`, background: activeTab === tab.value ? 'var(--jade-soft)' : 'transparent', color: activeTab === tab.value ? 'var(--jade)' : 'var(--text-2)', fontSize: '.79rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
+                style={{ padding: '.35rem .85rem', borderRadius: 20, border: `1.5px solid ${activeTab === tab.value ? 'rgba(22,125,120,.4)' : 'var(--border)'}`, background: activeTab === tab.value ? 'var(--jade-soft)' : 'transparent', color: activeTab === tab.value ? 'var(--jade-ink)' : 'var(--text-2)', fontSize: '.79rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
                 {tab.label}
               </button>
             ))}

@@ -34,7 +34,7 @@ export function Step7Preview({ info, modules, eval: ev, cert, pricing }) {
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
               {!pricing.isFree && pricing.price ? (
-                <span style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--jade)' }}>
+                <span style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--jade-ink)' }}>
                   ${pricing.discount ? (parseFloat(pricing.price) * (1 - parseFloat(pricing.discount) / 100)).toFixed(2) : parseFloat(pricing.price).toFixed(2)}
                 </span>
               ) : (

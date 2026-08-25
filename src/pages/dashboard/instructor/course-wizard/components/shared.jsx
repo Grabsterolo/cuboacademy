@@ -111,7 +111,7 @@ export function PillSelector({ options, value, onChange }) {
     <div style={{ display: 'flex', gap: '.45rem', flexWrap: 'wrap' }}>
       {options.map(o => (
         <button key={o.value} type="button" onClick={() => onChange(o.value)}
-          style={{ padding: '.4rem .95rem', borderRadius: 20, fontSize: '.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s', border: value === o.value ? '1.5px solid var(--jade)' : '1.5px solid var(--border)', background: value === o.value ? 'var(--jade-soft)' : 'white', color: value === o.value ? 'var(--jade)' : 'var(--text-2)' }}>
+          style={{ padding: '.4rem .95rem', borderRadius: 20, fontSize: '.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s', border: value === o.value ? '1.5px solid var(--jade)' : '1.5px solid var(--border)', background: value === o.value ? 'var(--jade-soft)' : 'white', color: value === o.value ? 'var(--jade-ink)' : 'var(--text-2)' }}>
           {o.label}
         </button>
       ))}

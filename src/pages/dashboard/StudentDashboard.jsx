@@ -397,7 +397,7 @@ export default function StudentDashboard() {
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
                         <span style={{ fontSize: '.8rem', fontWeight: 600, color: 'var(--jade-dark,#0d4a46)' }}>{a.title}</span>
-                        <span style={{ marginLeft: 'auto', fontSize: '.62rem', fontWeight: 700, color: 'var(--jade)', letterSpacing: '.06em', textTransform: 'uppercase' }}>Desbloqueado</span>
+                        <span style={{ marginLeft: 'auto', fontSize: '.62rem', fontWeight: 700, color: 'var(--jade-ink)', letterSpacing: '.06em', textTransform: 'uppercase' }}>Desbloqueado</span>
                       </div>
                     ))}
                     {pendingAchievements > 0 && (

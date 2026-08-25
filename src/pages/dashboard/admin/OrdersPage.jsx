@@ -231,7 +231,7 @@ export default function OrdersPage() {
               return (
                 <button key={f.value} className="op-pill"
                   onClick={() => setStatusFilter(f.value)}
-                  style={{ border: `1.5px solid ${active ? (s?.border?.replace('1px solid ', '') || 'rgba(22,125,120,.3)') : 'var(--border)'}`, background: active ? (s?.bg || 'var(--jade-soft)') : 'white', color: active ? (s?.color || 'var(--jade)') : 'var(--text-2)' }}>
+                  style={{ border: `1.5px solid ${active ? (s?.border?.replace('1px solid ', '') || 'rgba(22,125,120,.3)') : 'var(--border)'}`, background: active ? (s?.bg || 'var(--jade-soft)') : 'white', color: active ? (s?.color || 'var(--jade-ink)') : 'var(--text-2)' }}>
                   {f.label}
                 </button>
               )

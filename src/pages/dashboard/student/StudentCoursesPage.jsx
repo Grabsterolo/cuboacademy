@@ -180,8 +180,8 @@ export default function StudentCoursesPage() {
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.22rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap', marginBottom: '.3rem' }}>
                         {c.categories?.name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span>}
-                        {c.level && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
-                        {c.profiles?.full_name && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.profiles.full_name}</span></>}
+                        {c.level && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
+                        {c.profiles?.full_name && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.profiles.full_name}</span></>}
                       </div>
                       <ProgressBar pct={pct} />
                     </div>
@@ -192,7 +192,7 @@ export default function StudentCoursesPage() {
                         <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: 'var(--jade-soft)', color: 'var(--jade-ink)', border: '1px solid rgba(22,125,120,.25)' }}>✓ Completado</span>
                       )}
                       <button onClick={e => { e.stopPropagation(); navigate('aprender', { courseId: c.id }) }}
-                        style={{ padding: '.4rem .9rem', background: done ? 'var(--jade-soft)' : 'var(--jade)', color: done ? 'var(--jade)' : 'white', border: done ? '1px solid rgba(22,125,120,.25)' : 'none', borderRadius: 7, fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
+                        style={{ padding: '.4rem .9rem', background: done ? 'var(--jade-soft)' : 'var(--jade)', color: done ? 'var(--jade-ink)' : 'white', border: done ? '1px solid rgba(22,125,120,.25)' : 'none', borderRadius: 7, fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
                         {done ? 'Ver curso' : pct === 0 ? 'Comenzar' : 'Continuar'}
                       </button>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>

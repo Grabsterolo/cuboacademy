@@ -18,7 +18,7 @@ function ReadOnlySection({ icon, title, text, onCtaClick, cta }) {
       <div style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
         <div style={{ width: 40, height: 40, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .75rem', color: 'var(--jade-ink)' }}>{icon}</div>
         <p style={{ fontSize: '.8rem', color: 'var(--text-2)', marginBottom: cta ? '.9rem' : 0, lineHeight: 1.55, fontWeight: 400 }}>{text}</p>
-        {cta && <button onClick={onCtaClick} style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--jade)', background: 'transparent', border: '1px solid rgba(22,125,120,.3)', padding: '.4rem .9rem', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--sans)' }}>{cta}</button>}
+        {cta && <button onClick={onCtaClick} style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--jade-ink)', background: 'transparent', border: '1px solid rgba(22,125,120,.3)', padding: '.4rem .9rem', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--sans)' }}>{cta}</button>}
       </div>
     </div>
   )

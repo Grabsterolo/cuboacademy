@@ -122,7 +122,7 @@ export default function InstructorStudentsPage() {
                     const active = filterCourse === c.id
                     return (
                       <button key={String(c.id)} onClick={() => setFilterCourse(c.id)}
-                        style={{ padding: '.27rem .7rem', borderRadius: 20, border: `1.5px solid ${active ? 'rgba(22,125,120,.4)' : 'var(--border)'}`, background: active ? 'var(--jade-soft)' : 'transparent', color: active ? 'var(--jade)' : 'var(--text-2)', fontSize: '.77rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        style={{ padding: '.27rem .7rem', borderRadius: 20, border: `1.5px solid ${active ? 'rgba(22,125,120,.4)' : 'var(--border)'}`, background: active ? 'var(--jade-soft)' : 'transparent', color: active ? 'var(--jade-ink)' : 'var(--text-2)', fontSize: '.77rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {c.title}
                       </button>
                     )
@@ -158,7 +158,7 @@ export default function InstructorStudentsPage() {
                     </div>
                     <div style={{ fontSize: '.75rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.courseTitle}</div>
                   </div>
-                  <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, flexShrink: 0, background: r.completed_at ? 'var(--jade-soft)' : '#F5F5F0', color: r.completed_at ? 'var(--jade)' : 'var(--text-3)' }}>
+                  <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, flexShrink: 0, background: r.completed_at ? 'var(--jade-soft)' : '#F5F5F0', color: r.completed_at ? 'var(--jade-ink)' : 'var(--text-3)' }}>
                     {r.completed_at ? 'Completado' : 'En curso'}
                   </span>
                   <div style={{ fontSize: '.72rem', color: 'var(--text-3)', flexShrink: 0 }}>

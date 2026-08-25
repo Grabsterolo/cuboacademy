@@ -142,7 +142,7 @@ export default function EventAttendancePage() {
                     </div>
                   </div>
                   <button onClick={() => toggleAttendance(r)} disabled={isProc}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1, flexShrink: 0, border: r.completed_at ? '1.5px solid rgba(22,125,120,.4)' : '1.5px solid var(--border)', background: r.completed_at ? 'var(--jade-soft)' : 'white', color: r.completed_at ? 'var(--jade)' : 'var(--text-2)' }}>
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', padding: '.45rem .85rem', borderRadius: 8, fontSize: '.8rem', fontWeight: 600, cursor: isProc ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: isProc ? .6 : 1, flexShrink: 0, border: r.completed_at ? '1.5px solid rgba(22,125,120,.4)' : '1.5px solid var(--border)', background: r.completed_at ? 'var(--jade-soft)' : 'white', color: r.completed_at ? 'var(--jade-ink)' : 'var(--text-2)' }}>
                     {r.completed_at
                       ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> Asistió</>
                       : 'Marcar asistencia'}

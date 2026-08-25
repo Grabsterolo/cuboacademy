@@ -405,7 +405,7 @@ export default function SettingsPage() {
                 </Field>
                 <Field label="WhatsApp de contacto" hint="se muestra en el pie y junto al botón de compra" id="setting-contact-whatsapp">
                   <input className="sett-inp" style={inp} type="text" value={settings.contact_whatsapp}
-                    onChange={e => set('contact_whatsapp', e.target.value)} placeholder="+506 8888 8888" onFocus={fi} onBlur={fb} />
+                    onChange={e => set('contact_whatsapp', e.target.value)} placeholder="+506 8888 8888" />
                 </Field>
                 <SaveRow loading={s2.saving} success={s2.ok} error={s2.err} />
               </form>

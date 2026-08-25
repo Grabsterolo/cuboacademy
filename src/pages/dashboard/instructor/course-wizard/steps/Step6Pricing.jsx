@@ -32,7 +32,7 @@ export function Step6Pricing({ pricing, setPricing }) {
             </Field>
             {pricing.price && pricing.discount ? (
               <div style={{ padding: '.85rem 1.1rem', background: 'var(--jade-soft)', borderRadius: 9, border: '1px solid rgba(22,125,120,.2)' }}>
-                <p style={{ fontSize: '.82rem', color: 'var(--jade)', margin: 0 }}>
+                <p style={{ fontSize: '.82rem', color: 'var(--jade-ink)', margin: 0 }}>
                   Precio final: <strong>${(parseFloat(pricing.price) * (1 - parseFloat(pricing.discount) / 100)).toFixed(2)}</strong>
                   {' '}<span style={{ textDecoration: 'line-through', opacity: .7 }}>${parseFloat(pricing.price).toFixed(2)}</span>
                 </p>

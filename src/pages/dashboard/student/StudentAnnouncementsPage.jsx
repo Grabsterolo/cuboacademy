@@ -7,12 +7,12 @@ import { ErrorState } from '../../../components/ui/ErrorState'
 
 const TYPES = {
   general: {
-    label: 'Aviso general', color: '#71807E',
+    label: 'Aviso general', color: 'var(--text-2)',
     bg: 'rgba(113,128,126,.1)', border: 'rgba(113,128,126,.25)',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
   },
   news: {
-    label: 'Novedad', color: 'var(--jade)',
+    label: 'Novedad', color: 'var(--jade-ink)',
     bg: 'var(--jade-soft)', border: 'rgba(22,125,120,.25)',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   },
@@ -22,7 +22,7 @@ const TYPES = {
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
   },
   event: {
-    label: 'Evento', color: '#3B7EF6',
+    label: 'Evento', color: '#1D4ED8',
     bg: 'rgba(59,126,246,.1)', border: 'rgba(59,126,246,.25)',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
   },
@@ -104,7 +104,7 @@ export default function StudentAnnouncementsPage() {
                 const t = opt.value ? typeInfo(opt.value) : null
                 return (
                   <button key={String(opt.value)} onClick={() => setFilterType(opt.value)} className="ann-filter-pill"
-                    style={{ border: `1.5px solid ${active ? (t?.border || 'rgba(22,125,120,.3)') : 'var(--border)'}`, background: active ? (t?.bg || 'var(--jade-soft)') : 'white', color: active ? (t?.color || 'var(--jade)') : 'var(--text-2)' }}>
+                    style={{ border: `1.5px solid ${active ? (t?.border || 'rgba(22,125,120,.3)') : 'var(--border)'}`, background: active ? (t?.bg || 'var(--jade-soft)') : 'white', color: active ? (t?.color || 'var(--jade-ink)') : 'var(--text-2)' }}>
                     {opt.label}
                   </button>
                 )

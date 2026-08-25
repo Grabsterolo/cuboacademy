@@ -16,7 +16,7 @@ const STATUS_STYLE = {
 function StatCard({ value, label, icon, accent }) {
   return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '.85rem' }}>
-      <div style={{ width: 40, height: 40, background: accent ? 'rgba(201,110,75,.1)' : 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: accent ? 'var(--terra)' : 'var(--jade)' }}>{icon}</div>
+      <div style={{ width: 40, height: 40, background: accent ? 'rgba(201,110,75,.1)' : 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: accent ? 'var(--terra)' : 'var(--jade-ink)' }}>{icon}</div>
       <div>
         <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{value}</div>
         <div style={{ fontSize: '.72rem', color: 'var(--text-2)', marginTop: '.2rem' }}>{label}</div>

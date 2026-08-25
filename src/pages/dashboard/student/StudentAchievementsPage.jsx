@@ -147,7 +147,7 @@ export default function StudentAchievementsPage() {
             <div className="ach-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '.85rem', marginBottom: '2rem' }}>
               {achievements.map(a => (
                 <div key={a.id} className={`ach-badge ${a.unlocked ? '' : 'locked'}`}>
-                  <div style={{ width: 56, height: 56, background: a.unlocked ? 'var(--jade-soft)' : 'var(--border)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: a.unlocked ? 'var(--jade)' : 'var(--text-2)', position: 'relative' }}>
+                  <div style={{ width: 56, height: 56, background: a.unlocked ? 'var(--jade-soft)' : 'var(--border)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: a.unlocked ? 'var(--jade-ink)' : 'var(--text-2)', position: 'relative' }}>
                     {a.icon}
                     {a.unlocked && (
                       <div style={{ position: 'absolute', top: -5, right: -5, width: 18, height: 18, background: 'var(--jade)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -12,7 +12,7 @@ const Skel = Skeleton
 
 const ROLE_BADGE = {
   admin:      { label: 'Admin',       bg: 'rgba(22,125,120,.12)',  color: 'var(--jade)',   border: '1px solid rgba(22,125,120,.25)' },
-  instructor: { label: 'Instructor',  bg: 'rgba(59,130,246,.1)',   color: '#3B7EF6',       border: '1px solid rgba(59,130,246,.25)' },
+  instructor: { label: 'Instructor',  bg: 'rgba(59,130,246,.1)',   color: '#1D4ED8',       border: '1px solid rgba(59,130,246,.25)' },
   student:    { label: 'Estudiante',  bg: 'rgba(113,128,126,.1)',  color: 'var(--text-2)', border: '1px solid rgba(113,128,126,.2)' },
 }
 

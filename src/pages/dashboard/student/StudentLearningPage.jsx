@@ -96,7 +96,7 @@ function VideoPlayer({ lessonId, links, activeIdx, onSelectIdx }) {
         <div style={{ display: 'flex', gap: '.4rem', marginBottom: '.75rem', flexWrap: 'wrap' }}>
           {links.map((l, i) => (
             <button key={i} onClick={() => onSelectIdx(i)}
-              style={{ padding: '.3rem .85rem', borderRadius: 20, fontSize: '.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s', border: `1.5px solid ${activeIdx === i ? 'var(--jade)' : 'var(--border)'}`, background: activeIdx === i ? 'var(--jade-soft)' : 'white', color: activeIdx === i ? 'var(--jade)' : 'var(--text-2)' }}>
+              style={{ padding: '.3rem .85rem', borderRadius: 20, fontSize: '.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s', border: `1.5px solid ${activeIdx === i ? 'var(--jade)' : 'var(--border)'}`, background: activeIdx === i ? 'var(--jade-soft)' : 'white', color: activeIdx === i ? 'var(--jade-ink)' : 'var(--text-2)' }}>
               {l.label || `Video ${i + 1}`}
             </button>
           ))}

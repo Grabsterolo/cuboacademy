@@ -219,8 +219,8 @@ export default function CoursesPage() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap' }}>
                         {c.profiles?.full_name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.profiles.full_name}</span>}
-                        {c.categories?.name && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span></>}
-                        {c.level && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
+                        {c.categories?.name && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span></>}
+                        {c.level && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
                       </div>
                     </div>
 

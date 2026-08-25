@@ -11,7 +11,7 @@ const TYPES = [
   {
     value: 'general',
     label: 'Aviso general',
-    color: '#71807E',
+    color: 'var(--text-2)',
     bg: 'rgba(113,128,126,.1)',
     border: 'rgba(113,128,126,.25)',
     icon: (
@@ -23,7 +23,7 @@ const TYPES = [
   {
     value: 'news',
     label: 'Novedad',
-    color: 'var(--jade)',
+    color: 'var(--jade-ink)',
     bg: 'var(--jade-soft)',
     border: 'rgba(22,125,120,.3)',
     icon: (
@@ -47,7 +47,7 @@ const TYPES = [
   {
     value: 'event',
     label: 'Evento',
-    color: '#3B7EF6',
+    color: '#1D4ED8',
     bg: 'rgba(59,126,246,.1)',
     border: 'rgba(59,126,246,.3)',
     icon: (
@@ -64,7 +64,7 @@ const TARGETS = [
     value: 'all',
     label: 'Todos',
     desc: 'Estudiantes e instructores',
-    color: '#3B7EF6',
+    color: '#1D4ED8',
     bg: 'rgba(59,126,246,.08)',
     border: 'rgba(59,126,246,.3)',
     icon: (
@@ -91,7 +91,7 @@ const TARGETS = [
     value: 'instructor',
     label: 'Instructores',
     desc: 'Solo instructores',
-    color: 'var(--jade)',
+    color: 'var(--jade-ink)',
     bg: 'var(--jade-soft)',
     border: 'rgba(22,125,120,.3)',
     icon: (
@@ -300,7 +300,7 @@ export default function AnnouncementsPage() {
                 const t = opt.value ? typeInfo(opt.value) : null
                 return (
                   <button key={String(opt.value)} onClick={() => setFilterType(opt.value)}
-                    style={{ padding: '.27rem .7rem', borderRadius: 20, border: `1.5px solid ${active ? (t?.border || 'rgba(22,125,120,.4)') : 'var(--border)'}`, background: active ? (t?.bg || 'var(--jade-soft)') : 'transparent', color: active ? (t?.color || 'var(--jade)') : 'var(--text-2)', fontSize: '.77rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
+                    style={{ padding: '.27rem .7rem', borderRadius: 20, border: `1.5px solid ${active ? (t?.border || 'rgba(22,125,120,.4)') : 'var(--border)'}`, background: active ? (t?.bg || 'var(--jade-soft)') : 'transparent', color: active ? (t?.color || 'var(--jade-ink)') : 'var(--text-2)', fontSize: '.77rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
                     {opt.label}
                   </button>
                 )
@@ -317,7 +317,7 @@ export default function AnnouncementsPage() {
                 const tgt = opt.value ? targetInfo(opt.value) : null
                 return (
                   <button key={String(opt.value)} onClick={() => setFilterTarget(opt.value)}
-                    style={{ padding: '.27rem .7rem', borderRadius: 20, border: `1.5px solid ${active ? (tgt?.border || 'rgba(22,125,120,.4)') : 'var(--border)'}`, background: active ? (tgt?.bg || 'var(--jade-soft)') : 'transparent', color: active ? (tgt?.color || 'var(--jade)') : 'var(--text-2)', fontSize: '.77rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
+                    style={{ padding: '.27rem .7rem', borderRadius: 20, border: `1.5px solid ${active ? (tgt?.border || 'rgba(22,125,120,.4)') : 'var(--border)'}`, background: active ? (tgt?.bg || 'var(--jade-soft)') : 'transparent', color: active ? (tgt?.color || 'var(--jade-ink)') : 'var(--text-2)', fontSize: '.77rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'all .15s' }}>
                     {opt.label}
                   </button>
                 )

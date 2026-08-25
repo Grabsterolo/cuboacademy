@@ -167,8 +167,8 @@ export default function InstructorCoursesPage() {
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.28rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap' }}>
                         {c.categories?.name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span>}
-                        {c.level && <><span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
-                        <span style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span>
+                        {c.level && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{LEVEL[c.level] || c.level}</span></>}
+                        <span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span>
                         <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatDateShort(c.created_at)}</span>
                       </div>
                     </div>

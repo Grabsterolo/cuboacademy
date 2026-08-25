@@ -109,7 +109,7 @@ function NavItem({ item, active, onClick, badge = 0 }) {
       style={{
         display: 'flex', alignItems: 'center', gap: '.65rem',
         padding: '.55rem .9rem', borderRadius: 8,
-        color: active ? 'var(--jade)' : 'rgba(255,255,255,.6)',
+        color: active ? 'var(--jade-light)' : 'rgba(255,255,255,.6)',
         background: active ? 'rgba(22,125,120,.18)' : 'transparent',
         border: 'none', width: '100%', textAlign: 'left',
         fontFamily: 'var(--sans)', fontSize: '.855rem',
@@ -196,7 +196,7 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
             {LOGO}
             <span style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700 }}>
               <span style={{ color: 'rgba(255,255,255,.9)' }}>{namePart1}</span>
-              {namePart2 && <span style={{ color: 'var(--jade)' }}>{namePart2}</span>}
+              {namePart2 && <span style={{ color: 'var(--jade-light)' }}>{namePart2}</span>}
             </span>
           </button>
           <NotificationBell onNavigate={handleNotificationNav} />
@@ -221,7 +221,7 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '.82rem', fontWeight: 600, color: 'rgba(255,255,255,.9)', fontFamily: 'var(--serif)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
-            <div style={{ fontSize: '.68rem', color: 'var(--jade)', fontWeight: 500 }}>{roleLabel}</div>
+            <div style={{ fontSize: '.68rem', color: 'var(--jade-light)', fontWeight: 500 }}>{roleLabel}</div>
           </div>
         </div>
         <button onClick={handleSignOut}
