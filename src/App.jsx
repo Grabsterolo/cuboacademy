@@ -32,6 +32,26 @@ function LoadingSection() {
   )
 }
 
+/**
+ * Envoltorio de las cuatro pantallas de acceso, que son de página completa y
+ * no pasan por el layout público.
+ *
+ * Llevan el enlace de salto igual que el resto por coherencia: aquí no hay
+ * barra de navegación que evitar, así que salta poco, pero quien navega con
+ * teclado no tiene por qué descubrir en cada pantalla si el primer Tab le da
+ * un salto o no.
+ */
+function AuthScreen({ children }) {
+  return (
+    <>
+      <SkipLink />
+      <main id="contenido" tabIndex={-1}>
+        <Suspense fallback={<LoadingSection />}>{children}</Suspense>
+      </main>
+    </>
+  )
+}
+
 function AppShell() {
   const { user, loading, passwordRecovery } = useAuth()
   const { screen, navigate, exitPortal } = useNavigation()
@@ -66,10 +86,10 @@ function AppShell() {
   }
 
   // Fullscreen auth screens (no navbar)
-  if (screen === 'login')           return <main id="contenido" tabIndex={-1}><Suspense fallback={<LoadingSection />}><LoginScreen /></Suspense></main>
-  if (screen === 'register')        return <main id="contenido" tabIndex={-1}><Suspense fallback={<LoadingSection />}><RegisterScreen /></Suspense></main>
-  if (screen === 'forgot-password') return <main id="contenido" tabIndex={-1}><Suspense fallback={<LoadingSection />}><ForgotPasswordScreen /></Suspense></main>
-  if (screen === 'reset-password')  return <main id="contenido" tabIndex={-1}><Suspense fallback={<LoadingSection />}><ResetPasswordScreen /></Suspense></main>
+  if (screen === 'login')           return <AuthScreen><LoginScreen /></AuthScreen>
+  if (screen === 'register')        return <AuthScreen><RegisterScreen /></AuthScreen>
+  if (screen === 'forgot-password') return <AuthScreen><ForgotPasswordScreen /></AuthScreen>
+  if (screen === 'reset-password')  return <AuthScreen><ResetPasswordScreen /></AuthScreen>
 
   // Portal (authenticated shell)
   if (screen === 'portal') return <Portal />
