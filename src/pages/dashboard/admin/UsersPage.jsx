@@ -270,9 +270,9 @@ export default function UsersPage() {
     <DashboardLayout>
       <style>{`
         .tab-btn { padding: .38rem .9rem; border-radius: 6px; border: none; cursor: pointer; font-size: .82rem; font-weight: 500; font-family: var(--sans); transition: background .15s, color .15s; }
-        .form-inp-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; transition: border-color .2s, background .2s; font-family: var(--sans); }
+        .form-inp-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; transition: border-color .2s, background .2s; font-family: var(--sans); }
         .form-inp-u:focus { border-color: var(--jade); background: white; }
-        .form-sel-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; cursor: pointer; font-family: var(--sans); transition: border-color .2s; }
+        .form-sel-u { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; cursor: pointer; font-family: var(--sans); transition: border-color .2s; }
         .form-sel-u:focus { border-color: var(--jade); }
         .btn-create { display: flex; align-items: center; gap: .4rem; padding: .5rem 1.1rem; background: var(--jade); color: white; border: none; border-radius: 8px; font-size: .855rem; font-weight: 600; font-family: var(--sans); cursor: pointer; transition: background .2s; -webkit-tap-highlight-color: transparent; }
         .btn-create:hover { background: var(--jade-hover); }
@@ -325,7 +325,7 @@ export default function UsersPage() {
             </svg>
             <input type="text" placeholder="Buscar por nombre o correo..." value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+              style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .18s' }}
               onFocus={e => e.target.style.borderColor = 'var(--jade)'}
               onBlur={e => e.target.style.borderColor = 'var(--border)'} />
           </div>

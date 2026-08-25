@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 import { runQuery } from '../../lib/db'
+import { useFocusTrap } from '../../hooks/useFocusTrap'
 
 export default function Navbar() {
   const { user, profile, signOut } = useAuth()
@@ -18,6 +19,8 @@ export default function Navbar() {
 
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+  const drawerRef = useFocusTrap(menuOpen, closeMenu)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [categories, setCategories] = useState([])
@@ -156,7 +159,7 @@ export default function Navbar() {
               </svg>
               <input type="text" placeholder="Buscar curso o tema..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') runSearch() }}
-                style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '.83rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', width: '100%', opacity: searchOpen ? 1 : 0, pointerEvents: searchOpen ? 'auto' : 'none' }}
+                style={{ border: 'none', background: 'transparent', fontSize: '.83rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', width: '100%', opacity: searchOpen ? 1 : 0, pointerEvents: searchOpen ? 'auto' : 'none' }}
                 autoFocus={searchOpen} />
               {searchOpen && searchQuery && (
                 <button onClick={e => { e.stopPropagation(); setSearchQuery('') }}
@@ -229,7 +232,11 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile drawer */}
-      <div className={`nav-mobile-drawer${menuOpen ? ' open' : ''}`}>
+      {/* aria-hidden y el trap van de la mano: mientras está abierto, el
+          contenido de debajo no debe recibir el foco ni anunciarse. */}
+      <div ref={drawerRef} className={`nav-mobile-drawer${menuOpen ? ' open' : ''}`}
+        role="dialog" aria-modal="true" aria-label="Menú de navegación"
+        aria-hidden={menuOpen ? undefined : true}>
         <nav>
           <button className="nav-mobile-link" onClick={() => { navigate('courses'); setMenuOpen(false) }}>Cursos</button>
           <button className="nav-mobile-link" onClick={() => { navigate('events'); setMenuOpen(false) }}>Eventos</button>

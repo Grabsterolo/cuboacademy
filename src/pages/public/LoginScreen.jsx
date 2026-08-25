@@ -38,7 +38,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
+    <div className="on-dark" style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
       {settings.hero_video_url && !saveData ? (
         <>
           <video src={settings.hero_video_url} autoPlay muted loop playsInline preload="metadata"
@@ -78,7 +78,7 @@ export default function LoginScreen() {
             <div style={{ marginBottom: '1rem' }}>
               <label htmlFor="login-email" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Correo electrónico</label>
               <input id="login-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tucorreo@email.com" autoComplete="email"
-                style={{ width: '100%', padding: '.8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+                style={{ width: '100%', padding: '.8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s' }}
                 onFocus={e => e.target.style.borderColor = 'rgba(22,125,120,.7)'}
                 onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.12)'} />
             </div>
@@ -93,10 +93,12 @@ export default function LoginScreen() {
               </div>
               <div style={{ position: 'relative' }}>
                 <input id="login-password" type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password"
-                  style={{ width: '100%', padding: '.8rem 2.8rem .8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+                  style={{ width: '100%', padding: '.8rem 2.8rem .8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s' }}
                   onFocus={e => e.target.style.borderColor = 'rgba(22,125,120,.7)'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.12)'} />
-                <button type="button" onClick={() => setShowPass(v => !v)} tabIndex={-1}
+                <button type="button" onClick={() => setShowPass(v => !v)}
+                  aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-pressed={showPass}
                   style={{ position: 'absolute', right: '.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.68)', padding: 0, display: 'flex' }}>
                   {showPass
                     ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>

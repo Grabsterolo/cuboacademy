@@ -117,7 +117,7 @@ export default function CourseCatalogPage() {
         .cat-pill.active { background: var(--jade); color: white; border-color: var(--jade); }
         .cat-pill:not(.active) { background: white; color: var(--carbon); }
         .cat-pill:not(.active):hover { background: var(--jade-soft); border-color: var(--jade-light); color: var(--jade-ink); }
-        .srch-inp:focus { border-color: var(--jade) !important; outline: none; }
+        .srch-inp:focus { border-color: var(--jade) !important; }
         @media (max-width: 1100px) { .cat-grid { grid-template-columns: repeat(3,1fr) !important; } }
         @media (max-width: 900px) { .cat-grid { grid-template-columns: repeat(2,1fr) !important; } }
         @media (max-width: 600px) { .cat-grid { grid-template-columns: 1fr !important; } .cat-pills { flex-wrap: wrap !important; } }

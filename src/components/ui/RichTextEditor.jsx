@@ -63,7 +63,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
   return (
     <div style={{ border: '1px solid var(--border)', borderRadius: 8, background: 'var(--cream)', overflow: 'hidden' }}>
       <style>{`
-        .rte-content { padding: .7rem .9rem; min-height: ${minHeight}px; font-size: .875rem; line-height: 1.65; color: var(--carbon); font-family: var(--sans); outline: none; }
+        .rte-content { padding: .7rem .9rem; min-height: ${minHeight}px; font-size: .875rem; line-height: 1.65; color: var(--carbon); font-family: var(--sans); }
         .rte-content p { margin: 0 0 .6rem; }
         .rte-content p:last-child { margin-bottom: 0; }
         .rte-content ul, .rte-content ol { margin: 0 0 .6rem; padding-left: 1.3rem; }

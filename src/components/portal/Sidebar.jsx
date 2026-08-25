@@ -4,6 +4,7 @@ import { useNotifications } from '../../context/NotificationContext'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { ADMIN_NAV, INSTRUCTOR_NAV, STUDENT_NAV } from '../../config/navigation'
 import { formatDateCompact } from '../../lib/formatDate'
 
@@ -136,6 +137,7 @@ function NavItem({ item, active, onClick, badge = 0 }) {
 }
 
 export default function Sidebar({ drawerOpen, onCloseDrawer }) {
+  const drawerRef = useFocusTrap(drawerOpen, onCloseDrawer)
   const { user, profile, signOut } = useAuth()
   const { settings } = useSettings()
   const { section, navigate, exitPortal } = useNavigation()
@@ -241,7 +243,10 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
         <div onClick={onCloseDrawer}
           style={{ display: drawerOpen ? 'block' : 'none', position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(4px)' }} />
         {/* Drawer */}
-        <aside style={{
+        <aside ref={drawerRef} className="on-dark"
+          role="dialog" aria-modal="true" aria-label="Menú del portal"
+          aria-hidden={drawerOpen ? undefined : true}
+          style={{
           position: 'fixed', top: 0, left: 0, bottom: 0, width: 272, zIndex: 201,
           background: 'var(--jade-dark)', transform: drawerOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform .28s cubic-bezier(.4,0,.2,1)',
@@ -260,7 +265,7 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
   }
 
   return (
-    <aside style={{
+    <aside className="on-dark" style={{
       width: 240, minHeight: '100vh', background: 'var(--jade-dark)',
       borderRight: '1px solid rgba(255,255,255,.07)',
       display: 'flex', flexDirection: 'column',

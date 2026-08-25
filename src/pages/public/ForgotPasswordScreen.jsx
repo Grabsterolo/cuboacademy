@@ -22,7 +22,7 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
+    <div className="on-dark" style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)', backgroundSize: '48px 48px', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'rgba(22,125,120,.15)', filter: 'blur(80px)', top: '-15%', right: '-10%', pointerEvents: 'none' }} />
 
@@ -65,7 +65,7 @@ export default function ForgotPasswordScreen() {
               <div style={{ marginBottom: '1.5rem' }}>
                 <label htmlFor="forgot-email" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'rgba(255,255,255,.55)', marginBottom: '.4rem', letterSpacing: '.07em', textTransform: 'uppercase' }}>Correo electrónico</label>
                 <input id="forgot-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tucorreo@email.com" autoComplete="email"
-                  style={{ width: '100%', padding: '.8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+                  style={{ width: '100%', padding: '.8rem 1rem', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'white', fontSize: '.95rem', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s' }}
                   onFocus={e => e.target.style.borderColor = 'rgba(22,125,120,.7)'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,.12)'} />
               </div>

@@ -7,7 +7,7 @@ import { supabase } from '../../../lib/supabase'
 import { validateImageFile, resizeImage } from '../../../lib/imageProcessing'
 import { COUNTRIES } from '../../../lib/countries'
 
-const INP = { width: '100%', padding: '.7rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', outline: 'none', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
+const INP = { width: '100%', padding: '.7rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
 
 function ReadOnlySection({ icon, title, text, onCtaClick, cta }) {
   return (

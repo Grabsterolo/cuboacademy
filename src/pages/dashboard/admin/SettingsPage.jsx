@@ -265,7 +265,7 @@ export default function SettingsPage() {
 
   const inp = {
     width: '100%', padding: '.65rem .9rem', background: 'var(--cream)', border: '1px solid var(--border)',
-    borderRadius: 8, color: 'var(--carbon)', fontSize: '.875rem', outline: 'none',
+    borderRadius: 8, color: 'var(--carbon)', fontSize: '.875rem',
     fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .18s, background .18s',
   }
 
@@ -282,7 +282,7 @@ export default function SettingsPage() {
     <DashboardLayout>
       <style>{`
         .sett-inp:focus { border-color: var(--jade) !important; background: white !important; }
-        .sett-sel { padding: .5rem .75rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; font-size: .84rem; color: var(--carbon); font-family: var(--sans); outline: none; cursor: pointer; transition: border-color .18s; }
+        .sett-sel { padding: .5rem .75rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; font-size: .84rem; color: var(--carbon); font-family: var(--sans); cursor: pointer; transition: border-color .18s; }
         .sett-sel:focus { border-color: var(--jade); }
         .sett-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
         @media (max-width: 900px) { .sett-grid { grid-template-columns: 1fr !important; } }

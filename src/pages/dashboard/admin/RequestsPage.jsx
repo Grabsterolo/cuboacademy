@@ -311,7 +311,7 @@ export default function RequestsPage() {
         .rq-row { display: flex; align-items: center; gap: 1rem; padding: .85rem 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
         .rq-row:last-child { border-bottom: none; }
         .rq-row:hover { background: var(--cream); }
-        .rq-srch { width: 100%; padding: .6rem .9rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; color: var(--carbon); font-size: .875rem; outline: none; font-family: var(--sans); }
+        .rq-srch { width: 100%; padding: .6rem .9rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; color: var(--carbon); font-size: .875rem; font-family: var(--sans); }
         .rq-srch:focus { border-color: var(--jade); background: white; }
         @media (max-width: 768px) { .rq-row-meta { display: none !important; } .rq-pad { padding: 1.25rem 1rem 2rem !important; } }
       `}</style>
@@ -476,7 +476,7 @@ export default function RequestsPage() {
                       value={notes}
                       onChange={e => setNotes(e.target.value)}
                       placeholder="Agrega notas o feedback para el solicitante…"
-                      style={{ width: '100%', minHeight: 80, padding: '.7rem .9rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.84rem', fontFamily: 'var(--sans)', color: 'var(--carbon)', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                      style={{ width: '100%', minHeight: 80, padding: '.7rem .9rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.84rem', fontFamily: 'var(--sans)', color: 'var(--carbon)', resize: 'vertical', boxSizing: 'border-box' }}
                     />
                   </div>
                   <div style={{ display: 'flex', gap: '.75rem' }}>

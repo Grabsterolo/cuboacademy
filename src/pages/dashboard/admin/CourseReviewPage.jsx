@@ -431,7 +431,7 @@ export default function CourseReviewPage() {
                   onChange={e => setRejectNote(e.target.value)}
                   placeholder="Motivo del rechazo (opcional)…"
                   rows={3}
-                  style={{ width: '100%', padding: '.65rem .9rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.84rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: '1.25rem' }}
+                  style={{ width: '100%', padding: '.65rem .9rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.84rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', resize: 'vertical', boxSizing: 'border-box', marginBottom: '1.25rem' }}
                 />
                 <div style={{ display: 'flex', gap: '.65rem' }}>
                   <button onClick={() => setConfirm(null)} disabled={saving}

@@ -158,7 +158,7 @@ export default function EventsPage() {
           <div style={{ position: 'relative' }}>
             <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" placeholder="Buscar por título, instructor o categoría…" value={search} onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+              style={{ width: '100%', padding: '.55rem .85rem .55rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .18s' }}
               onFocus={e => e.target.style.borderColor = 'var(--jade)'}
               onBlur={e => e.target.style.borderColor = 'var(--border)'} />
           </div>

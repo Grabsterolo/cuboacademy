@@ -68,6 +68,63 @@ h1, h2, h3 {
 
 a { text-decoration: none; }
 
+/* ── Foco visible ──────────────────────────────────────────────────────────
+   Antes no había ni una sola regla de foco en esta hoja, y 38 estilos en
+   línea llevaban outline: none, así que navegar con teclado era avanzar a
+   ciegas: nada indicaba dónde estabas.
+
+   El anillo es de dos tonos a propósito. El halo blanco pegado al elemento
+   (box-shadow, 0→2px) y el aro de marca justo fuera (outline con offset,
+   2→4px). Sobre fondo claro el halo no se nota y se ve el aro jade, que
+   cumple 4.95:1 sobre blanco. Sobre los fondos oscuros —barra lateral, hero,
+   pantallas de acceso— el jade solo se quedaría en 2.72:1, pero ahí el halo
+   blanco contrasta 13.5:1 contra el fondo. Siempre hay una de las dos capas
+   por encima de 3:1, que es lo que pide 1.4.11 para el indicador.
+
+   :focus-visible y no :focus: el ratón no debe dejar aros pegados detrás. */
+:focus-visible {
+  outline: 2px solid var(--jade);
+  outline-offset: 2px;
+  /* !important porque muchos botones traen su propia box-shadow en el estilo
+     en línea, que gana a esta hoja. Sin esto el halo desaparece justo en los
+     botones grandes de llamada a la acción, que son los que se apoyan en
+     fondos oscuros y más lo necesitan. La sombra decorativa se pierde mientras
+     el elemento tiene el foco, que es un intercambio que sale a cuenta. */
+  box-shadow: 0 0 0 2px var(--white) !important;
+}
+
+/* Sobre superficies oscuras se invierten los papeles: el aro pasa a ser claro
+   y el halo oscuro, para no depender de que el jade se lea sobre el fondo. */
+.on-dark :focus-visible,
+.on-dark:focus-visible {
+  outline-color: var(--jade-light);
+  box-shadow: 0 0 0 2px var(--carbon-deep) !important;
+}
+
+/* Saltar al contenido: primer elemento enfocable de la página. Fuera de
+   pantalla hasta que recibe el foco, no display:none — eso lo sacaría del
+   orden de tabulación y no serviría de nada. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  padding: .7rem 1.15rem;
+  background: var(--jade);
+  color: #FFFFFF;
+  font-family: var(--sans);
+  font-size: .85rem;
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* El contenedor de contenido recibe el foco al saltar; no debe dibujar aro
+   por ello, porque el usuario ya sabe que acaba de saltar ahí. */
+[tabindex="-1"]:focus { outline: none; box-shadow: none; }
+
 /* Shared styling for saved rich-text HTML rendered read-only (course/lesson
    descriptions). Tailwind's preflight strips list-style from every ul/ol,
    so without this, bullet/numbered lists saved from the editor render with

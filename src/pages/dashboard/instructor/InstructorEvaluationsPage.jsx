@@ -302,7 +302,7 @@ export default function InstructorEvaluationsPage() {
                                     <span style={{ fontSize: '.78rem', color: 'var(--carbon)', fontWeight: 500 }}>Puntos:</span>
                                     <input type="number" min={0} max={q.points} step={1} value={inputVal}
                                       onChange={e => setPointInputs(prev => ({ ...prev, [resp.id]: e.target.value }))}
-                                      style={{ width: 64, padding: '.32rem .5rem', border: `1px solid ${err ? '#FECACA' : 'var(--border)'}`, borderRadius: 7, fontSize: '.8rem', fontFamily: 'var(--sans)', textAlign: 'center', outline: 'none' }} />
+                                      style={{ width: 64, padding: '.32rem .5rem', border: `1px solid ${err ? '#FECACA' : 'var(--border)'}`, borderRadius: 7, fontSize: '.8rem', fontFamily: 'var(--sans)', textAlign: 'center' }} />
                                     <span style={{ fontSize: '.76rem', color: 'var(--text-2)' }}>/ {q.points}</span>
                                     <button onClick={() => gradeResponse(sub, resp.id, q.points)} disabled={isGrading || inputVal === ''}
                                       style={{ padding: '.35rem .8rem', background: inputVal !== '' ? 'var(--jade)' : 'var(--border)', border: 'none', borderRadius: 7, fontSize: '.78rem', fontWeight: 700, color: inputVal !== '' ? 'white' : 'var(--text-2)', cursor: isGrading || inputVal === '' ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)' }}>
@@ -509,7 +509,7 @@ export default function InstructorEvaluationsPage() {
               onChange={e => setRejectNotes(e.target.value)}
               rows={3}
               placeholder="Explica al estudiante qué debe mejorar…"
-              style={{ width: '100%', padding: '.65rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '.65rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', resize: 'vertical', boxSizing: 'border-box' }}
               onFocus={e => e.target.style.borderColor = 'var(--jade)'}
               onBlur={e => e.target.style.borderColor = 'var(--border)'} />
             <div style={{ display: 'flex', gap: '.65rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>

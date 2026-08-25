@@ -238,7 +238,7 @@ export default function AnnouncementsPage() {
   return (
     <DashboardLayout>
       <style>{`
-        .ann-inp { width: 100%; padding: .75rem 1rem; background: var(--cream); border: 1.5px solid var(--border); border-radius: 9px; color: var(--carbon); font-size: .93rem; outline: none; font-family: var(--sans); box-sizing: border-box; transition: border-color .18s, background .18s; }
+        .ann-inp { width: 100%; padding: .75rem 1rem; background: var(--cream); border: 1.5px solid var(--border); border-radius: 9px; color: var(--carbon); font-size: .93rem; font-family: var(--sans); box-sizing: border-box; transition: border-color .18s, background .18s; }
         .ann-inp:focus { border-color: var(--jade); background: white; }
         .ann-icon-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; min-width: 30px; min-height: 30px; }
         .ann-icon-btn:hover { background: rgba(220,38,38,.09); color: #dc2626; }
@@ -284,7 +284,7 @@ export default function AnnouncementsPage() {
           <div style={{ position: 'relative' }}>
             <svg style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" placeholder="Buscar comunicado…" value={search} onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '.58rem .85rem .58rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', outline: 'none', boxSizing: 'border-box', transition: 'border-color .18s' }}
+              style={{ width: '100%', padding: '.58rem .85rem .58rem 2.1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.855rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .18s' }}
               onFocus={e => e.target.style.borderColor = 'var(--jade)'}
               onBlur={e => e.target.style.borderColor = 'var(--border)'} />
           </div>

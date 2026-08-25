@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import Sidebar from './Sidebar'
+import { SkipLink } from '../shared/SkipLink'
 
 // Lazy-loaded per role so a student's bundle never has to fetch the
 // instructor course wizard, admin pages, etc. (and vice versa).
@@ -162,6 +163,7 @@ export default function Portal() {
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
+      <SkipLink />
       <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--cream)' }}>
         <Sidebar drawerOpen={drawerOpen} onCloseDrawer={() => setDrawerOpen(false)} />
 
@@ -169,7 +171,7 @@ export default function Portal() {
         <div style={{ flex: 1, marginLeft: isMobile ? 0 : 240, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           {/* Mobile top bar */}
           {isMobile && (
-            <div style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'white', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem' }}>
+            <header style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'white', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem' }}>
               <button onClick={() => setDrawerOpen(true)}
                 style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 7, padding: '7px 9px', cursor: 'pointer', color: 'var(--carbon)', display: 'flex', alignItems: 'center' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -180,11 +182,11 @@ export default function Portal() {
                 Cubo <span style={{ color: 'var(--jade)' }}>Campus</span>
               </div>
               <div style={{ width: 34 }} />
-            </div>
+            </header>
           )}
 
           {/* Section content */}
-          <div style={{ flex: 1, position: 'relative' }}>
+          <main id="contenido" tabIndex={-1} style={{ flex: 1, position: 'relative' }}>
             <Suspense fallback={<LoadingSection />}>
               {renderSection(displaySection, role, displayParams)}
             </Suspense>
@@ -196,7 +198,7 @@ export default function Portal() {
                 pointerEvents: 'none', zIndex: 5
               }} />
             )}
-          </div>
+          </main>
         </div>
       </div>
     </>

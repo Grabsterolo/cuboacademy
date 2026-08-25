@@ -99,7 +99,7 @@ export function CourseReviews({ courseId, currentUserId, canReview }) {
           </p>
           <RatingInput value={rating} onChange={setRating} />
           <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="¿Qué te pareció? (opcional)" maxLength={500}
-            style={{ width: '100%', minHeight: 70, marginTop: '.75rem', padding: '.65rem .85rem', borderRadius: 8, border: '1px solid var(--border)', fontSize: '.85rem', fontFamily: 'var(--sans)', color: 'var(--carbon)', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+            style={{ width: '100%', minHeight: 70, marginTop: '.75rem', padding: '.65rem .85rem', borderRadius: 8, border: '1px solid var(--border)', fontSize: '.85rem', fontFamily: 'var(--sans)', color: 'var(--carbon)', resize: 'vertical', boxSizing: 'border-box' }} />
           {error && <p style={{ fontSize: '.78rem', color: '#B91C1C', margin: '.5rem 0 0' }}>{error}</p>}
           <button type="submit" disabled={saving}
             style={{ marginTop: '.75rem', padding: '.6rem 1.25rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: saving ? .7 : 1 }}>

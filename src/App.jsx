@@ -6,6 +6,7 @@ import { NotificationProvider } from './context/NotificationContext'
 
 import Navbar from './components/shared/Navbar'
 import Footer from './components/shared/Footer'
+import { SkipLink } from './components/shared/SkipLink'
 import Portal from './components/portal/Portal'
 
 // Public screens — lazy-loaded so the main bundle isn't paying for the
@@ -65,10 +66,10 @@ function AppShell() {
   }
 
   // Fullscreen auth screens (no navbar)
-  if (screen === 'login')           return <Suspense fallback={<LoadingSection />}><LoginScreen /></Suspense>
-  if (screen === 'register')        return <Suspense fallback={<LoadingSection />}><RegisterScreen /></Suspense>
-  if (screen === 'forgot-password') return <Suspense fallback={<LoadingSection />}><ForgotPasswordScreen /></Suspense>
-  if (screen === 'reset-password')  return <Suspense fallback={<LoadingSection />}><ResetPasswordScreen /></Suspense>
+  if (screen === 'login')           return <main id="contenido" tabIndex={-1}><Suspense fallback={<LoadingSection />}><LoginScreen /></Suspense></main>
+  if (screen === 'register')        return <main id="contenido" tabIndex={-1}><Suspense fallback={<LoadingSection />}><RegisterScreen /></Suspense></main>
+  if (screen === 'forgot-password') return <main id="contenido" tabIndex={-1}><Suspense fallback={<LoadingSection />}><ForgotPasswordScreen /></Suspense></main>
+  if (screen === 'reset-password')  return <main id="contenido" tabIndex={-1}><Suspense fallback={<LoadingSection />}><ResetPasswordScreen /></Suspense></main>
 
   // Portal (authenticated shell)
   if (screen === 'portal') return <Portal />
@@ -90,8 +91,17 @@ function AppShell() {
 
   return (
     <div style={{ paddingTop: 66 }}>
-      <Navbar />
-      <Suspense fallback={<LoadingSection />}>{publicContent}</Suspense>
+      <SkipLink />
+      {/* El <header> envuelve la barra, que ya trae su propio <nav> dentro. */}
+      <header>
+        <Navbar />
+      </header>
+      {/* tabIndex -1 para que el salto pueda posar el foco aquí; sin eso el
+          navegador mueve el scroll pero deja el foco en el enlace, y el
+          siguiente tabulador vuelve al principio de la barra. */}
+      <main id="contenido" tabIndex={-1}>
+        <Suspense fallback={<LoadingSection />}>{publicContent}</Suspense>
+      </main>
       {/* El pie va en TODA pantalla pública. Antes solo aparecía en la portada
           y los dos catálogos, así que las fichas de curso y evento —donde se
           decide gastar el dinero— no tenían contacto, condiciones ni política

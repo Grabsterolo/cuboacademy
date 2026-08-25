@@ -33,7 +33,7 @@ function StepBar({ current }) {
   )
 }
 
-const INP_STYLE = { width: '100%', padding: '.72rem 1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', outline: 'none', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
+const INP_STYLE = { width: '100%', padding: '.72rem 1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
 const LBL_STYLE = { display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'var(--text-3)', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }
 const FIELD_STYLE = { marginBottom: '.95rem' }
 

@@ -138,9 +138,9 @@ export default function CategoriesPage() {
         .cat-icon-btn.delete:hover { background: #fef2f0; color: #c0392b; }
         .btn-create-cat { display: flex; align-items: center; gap: .4rem; padding: .5rem 1.1rem; background: var(--jade); color: white; border: none; border-radius: 8px; font-size: .855rem; font-weight: 600; font-family: var(--sans); cursor: pointer; transition: background .2s; -webkit-tap-highlight-color: transparent; }
         .btn-create-cat:hover { background: var(--jade-hover); }
-        .form-inp-c { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; transition: border-color .2s, background .2s; font-family: var(--sans); box-sizing: border-box; }
+        .form-inp-c { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; transition: border-color .2s, background .2s; font-family: var(--sans); box-sizing: border-box; }
         .form-inp-c:focus { border-color: var(--jade); background: white; }
-        .form-area-c { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; outline: none; resize: vertical; min-height: 80px; font-family: var(--sans); transition: border-color .2s, background .2s; box-sizing: border-box; }
+        .form-area-c { width: 100%; padding: .7rem .95rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; color: var(--carbon); font-size: 16px; resize: vertical; min-height: 80px; font-family: var(--sans); transition: border-color .2s, background .2s; box-sizing: border-box; }
         .form-area-c:focus { border-color: var(--jade); background: white; }
         .btn-submit-c { width: 100%; padding: .875rem; background: var(--jade); color: white; border: none; border-radius: 8px; font-size: .93rem; font-weight: 700; cursor: pointer; font-family: var(--sans); transition: background .2s, opacity .2s; margin-top: .25rem; }
         .btn-submit-c:hover { background: var(--jade-hover); }
