@@ -5,7 +5,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import LessonQuiz from '../../../components/learning/LessonQuiz'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
-import { runQuery } from '../../../lib/db'
+import {runQuery, errorMessage } from '../../../lib/db'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -287,7 +287,10 @@ export default function StudentLearningPage() {
         { student_id: user.id, lesson_id: lessonId, completed: true, completed_at: now, last_watched_at: now },
         { onConflict: 'student_id,lesson_id' }
       )
-      if (!error) setCompletedIds(prev => new Set([...prev, lessonId]))
+      // Sin esto, si el guardado fallaba la lección simplemente no se marcaba
+      // y el estudiante creía que su avance quedó registrado.
+      if (error) setCompleteError('No se pudo guardar tu avance: ' + errorMessage(error))
+      else setCompletedIds(prev => new Set([...prev, lessonId]))
     }
     // the DB trigger (re)submits the evaluation on pass — refresh its status
     if (enrollment) {

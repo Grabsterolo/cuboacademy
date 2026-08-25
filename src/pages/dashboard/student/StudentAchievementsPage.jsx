@@ -4,6 +4,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { ACHIEVEMENTS } from '../../../utils/achievements'
 import { splitEnrollments } from '../../../lib/eventStatus'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const STAR_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
 const BOOK_ICON  = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -48,6 +49,7 @@ export default function StudentAchievementsPage() {
   const { user } = useAuth()
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadErr, setLoadErr] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -56,7 +58,11 @@ export default function StudentAchievementsPage() {
       .select('id, enrolled_at, completed_at, courses(type)')
       .eq('student_id', user.id)
       .then(({ data, error }) => {
-        if (!error) setEnrollments(data || [])
+        // Al fallar, los logros salían todos bloqueados como si el estudiante
+        // no hubiera hecho nada.
+        if (error) console.error('[db] consulta falló — StudentAchievementsPage: matrículas', error)
+        setLoadErr(error || null)
+        setEnrollments(data || [])
         setLoading(false)
       })
   }, [user])
@@ -90,6 +96,13 @@ export default function StudentAchievementsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '.85rem' }}>
             {[1,2,3,4].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, height: 160, opacity: 1 - i * 0.18 }} />)}
           </div>
+        ) : loadErr ? (
+          <ErrorState
+            title="No pudimos cargar tus logros"
+            description="Falló la consulta a tus inscripciones. Los logros saldrían todos bloqueados como si no hubieras hecho nada, así que mejor no mostrarlos."
+            error={loadErr}
+            onRetry={() => window.location.reload()}
+          />
         ) : (
           <>
             {/* Summary bar */}

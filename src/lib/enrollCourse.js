@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { fetchPaymentSettings, buildPaymentEmail } from './paymentInfo'
+import { runFunction } from './db'
 
 /**
  * Enrola a un estudiante en un curso.
@@ -45,8 +46,7 @@ export async function enrollCourse({ userId, course }) {
  */
 function sendPaymentInstructionsEmail({ userId, course, order }) {
   fetchPaymentSettings()
-    .then(settings => supabase.functions.invoke('send-notification-email', {
-      body: {
+    .then(settings => runFunction(supabase, 'send-notification-email', {
         recipientId: userId,
         type: 'purchase',
         subject: `Cómo completar tu pago · ${course.title}`,
@@ -57,7 +57,8 @@ function sendPaymentInstructionsEmail({ userId, course, order }) {
           currency: order.currency,
           settings,
         }),
-      },
-    }))
+    }, 'enrollCourse: correo de instrucciones de pago'))
+    // Sigue siendo best-effort — el estudiante ya tiene las instrucciones en el
+    // modal y en «Mis compras» —, pero runFunction deja constancia del fallo.
     .catch(() => {})
 }

@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { useSettings } from '../../context/SettingsContext'
 import { supabase } from '../../lib/supabase'
+import { runFunction } from '../../lib/db'
 
 export default function RegisterScreen() {
   const { signUp } = useAuth()
@@ -38,16 +39,15 @@ export default function RegisterScreen() {
     setLoading(false)
     if (err) { setError(err.message); return }
 
-    // Best-effort welcome email — never blocks the UI on failure.
+    // Best-effort welcome email — never blocks the UI on failure, pero por
+    // runFunction para que el fallo quede registrado en vez de desaparecer.
     if (data?.user?.id) {
-      supabase.functions.invoke('send-notification-email', {
-        body: {
-          recipientId: data.user.id,
-          type: 'welcome',
-          subject: '¡Bienvenido a Cubo Campus!',
-          message: `Hola ${firstName.trim()}, tu cuenta en Cubo Campus fue creada con éxito. Ya puedes explorar el catálogo de cursos y comenzar a aprender.`,
-        },
-      }).catch(() => {})
+      runFunction(supabase, 'send-notification-email', {
+        recipientId: data.user.id,
+        type: 'welcome',
+        subject: '¡Bienvenido a Cubo Campus!',
+        message: `Hola ${firstName.trim()}, tu cuenta en Cubo Campus fue creada con éxito. Ya puedes explorar el catálogo de cursos y comenzar a aprender.`,
+      }, 'RegisterScreen: correo de bienvenida')
     }
 
     setDone(true)

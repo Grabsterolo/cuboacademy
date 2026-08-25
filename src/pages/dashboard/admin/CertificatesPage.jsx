@@ -4,7 +4,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { Toast } from '../../../components/ui'
 import { formatDateShort } from '../../../lib/formatDate'
-import { runQuery } from '../../../lib/db'
+import {runQuery, errorMessage } from '../../../lib/db'
 import { ErrorState } from '../../../components/ui/ErrorState'
 
 const CERT_ICON = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
@@ -114,9 +114,15 @@ export default function CertificatesPage() {
       .from('certificates')
       .update({ status: 'rejected', admin_notes: rejectNotes || null, approved_at: now })
       .eq('id', cert.id)
-    if (!error) {
-      setCerts(prev => prev.map(c => c.id === cert.id ? { ...c, status: 'rejected', admin_notes: rejectNotes || null } : c))
+    // Antes la interfaz marcaba «Rechazado» solo si no había error, pero al
+    // fallar cerraba el modal sin avisar: el admin creía haberlo rechazado y no
+    // era así. Mismo patrón que handleReject en OrdersPage.
+    if (error) {
+      showToast('No se pudo rechazar el certificado: ' + errorMessage(error))
+      setProcessing(null)
+      return
     }
+    setCerts(prev => prev.map(c => c.id === cert.id ? { ...c, status: 'rejected', admin_notes: rejectNotes || null } : c))
     setRejectModal(null)
     setRejectNotes('')
     setProcessing(null)

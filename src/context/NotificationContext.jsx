@@ -16,7 +16,10 @@ export function NotificationProvider({ children }) {
       .eq('recipient_id', userId)
       .order('created_at', { ascending: false })
       .limit(30)
-    if (!error) setNotifications(data || [])
+    // Antes: `if (!error) setNotifications(...)`. Al fallar, la campana se
+    // quedaba vacía y en silencio — indistinguible de «no tienes avisos».
+    if (error) console.error('[db] consulta falló — NotificationContext: notificaciones', error)
+    else setNotifications(data || [])
     setLoading(false)
   }, [])
 

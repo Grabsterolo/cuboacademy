@@ -3,7 +3,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { formatDateLong } from '../../../lib/formatDate'
-import { runQuery } from '../../../lib/db'
+import {runQuery, errorMessage } from '../../../lib/db'
 import { ErrorState } from '../../../components/ui/ErrorState'
 
 const CERT_ICON_BIG = <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
@@ -39,6 +39,7 @@ export default function StudentCertificatesPage() {
   const [loading, setLoading] = useState(true)
   const [loadErr, setLoadErr] = useState(null)
   const [requestingId, setRequestingId] = useState(null)
+  const [actionErr, setActionErr] = useState('')
 
   function load() {
     if (!user) return
@@ -69,7 +70,11 @@ export default function StudentCertificatesPage() {
     setRequestingId(certId)
     const { error } = await supabase.rpc('request_certificate_review', { p_certificate_id: certId })
     setRequestingId(null)
-    if (!error) load()
+    // Antes, al fallar el botón simplemente no hacía nada: el estudiante volvía
+    // a pulsarlo sin saber por qué no pasaba nada.
+    if (error) { setActionErr('No se pudo solicitar la revisión: ' + errorMessage(error)); return }
+    setActionErr('')
+    load()
   }
 
   return (
@@ -115,6 +120,11 @@ export default function StudentCertificatesPage() {
           </div>
         )}
 
+        {actionErr && (
+          <div role="alert" style={{ background: '#FEF6F5', border: '1px solid #F5C6BB', color: '#8C2F22', borderRadius: 9, padding: '.75rem 1.1rem', fontSize: '.84rem', marginBottom: '1.25rem' }}>
+            {actionErr}
+          </div>
+        )}
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
             {[1,2].map(i => <div key={i} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, height: 140, opacity: 1 - i * 0.3 }} />)}
