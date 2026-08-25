@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
 import { Icon } from '../../../components/ui/icons'
+import { runQuery } from '../../../lib/db'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const LESSON_TYPE_LABEL = { video: 'Video', text: 'Texto', document: 'Documento', quiz: 'Quiz' }
@@ -84,17 +85,23 @@ export default function CourseReviewPage() {
   async function load() {
     setLoading(true)
 
-    const { data: c } = await supabase
+    const { data: c } = await runQuery(
+      supabase
       .from('courses')
       .select('*, categories(name), profiles:instructor_id(full_name, email)')
       .eq('id', courseId)
-      .single()
+      .single(),
+      'CourseReviewPage: consulta 1',
+    )
 
-    const { data: mods } = await supabase
+    const { data: mods } = await runQuery(
+      supabase
       .from('modules')
       .select('*, lessons(id, title, description, video_url, duration_mins, order_index, type)')
       .eq('course_id', courseId)
-      .order('order_index')
+      .order('order_index'),
+      'CourseReviewPage: consulta 2',
+    )
 
     const regularMods = (mods || []).filter(m => m.title !== 'Evaluación Final')
     const evalMod     = (mods || []).find(m => m.title === 'Evaluación Final')
@@ -103,10 +110,13 @@ export default function CourseReviewPage() {
     const allLessonIds = (mods || []).flatMap(m => m.lessons || []).map(l => l.id)
     let quizLessonIds = new Set()
     if (allLessonIds.length) {
-      const { data: quizRows } = await supabase
+      const { data: quizRows } = await runQuery(
+        supabase
         .from('quizzes')
         .select('lesson_id')
-        .in('lesson_id', allLessonIds)
+        .in('lesson_id', allLessonIds),
+        'CourseReviewPage: consulta 3',
+      )
       quizLessonIds = new Set((quizRows || []).map(q => q.lesson_id))
     }
 
@@ -122,13 +132,19 @@ export default function CourseReviewPage() {
     // load quiz if eval module exists
     if (evalMod?.lessons?.[0]?.id) {
       const lessonId = evalMod.lessons[0].id
-      const { data: quiz } = await supabase
+      const { data: quiz } = await runQuery(
+        supabase
         .from('quizzes')
         .select('*, questions(id, type, text, answers(id, text))')
         .eq('lesson_id', lessonId)
-        .single()
+        .single(),
+        'CourseReviewPage: consulta 4',
+      )
       if (quiz) {
-        const { data: answerKey } = await supabase.rpc('get_answer_key', { p_quiz_ids: [quiz.id] })
+        const { data: answerKey } = await runQuery(
+          supabase.rpc('get_answer_key', { p_quiz_ids: [quiz.id] }),
+          'CourseReviewPage: consulta 5',
+        )
         const correctById = new Map((answerKey || []).map(k => [k.answer_id, k.is_correct]))
         quiz.questions = (quiz.questions || []).map(q => ({
           ...q,

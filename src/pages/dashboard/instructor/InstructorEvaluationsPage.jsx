@@ -45,10 +45,13 @@ export default function InstructorEvaluationsPage() {
 
   async function loadSubmissions() {
     setLoading(true)
-    const { data: courses } = await supabase
+    const { data: courses } = await runQuery(
+      supabase
       .from('courses')
       .select('id')
-      .eq('instructor_id', user.id)
+      .eq('instructor_id', user.id),
+      'InstructorEvaluationsPage: consulta 1',
+    )
 
     const courseIds = (courses || []).map(c => c.id)
     if (courseIds.length === 0) { setSubmissions([]); setLoading(false); return }
@@ -82,7 +85,8 @@ export default function InstructorEvaluationsPage() {
 
     // Scoped to the single "Evaluación Final" module — regular per-lesson
     // quizzes don't exist as a product concept anymore, only the final exam.
-    const { data: evalModule } = await supabase
+    const { data: evalModule } = await runQuery(
+      supabase
       .from('modules')
       .select(`
         id, title,
@@ -93,7 +97,9 @@ export default function InstructorEvaluationsPage() {
       `)
       .eq('course_id', sub.course_id)
       .eq('title', 'Evaluación Final')
-      .maybeSingle()
+      .maybeSingle(),
+      'InstructorEvaluationsPage: consulta 2',
+    )
 
     const quizzes = []
     const lessons = [...(evalModule?.lessons || [])].sort((a, b) => a.order_index - b.order_index)
@@ -130,10 +136,13 @@ export default function InstructorEvaluationsPage() {
       attempts = attemptsData || []
       const attemptIds = attempts.map(a => a.id)
       if (attemptIds.length) {
-        const { data: responsesData } = await supabase
+        const { data: responsesData } = await runQuery(
+          supabase
           .from('quiz_responses')
           .select('id, attempt_id, question_id, answer_id, open_response, points_earned')
-          .in('attempt_id', attemptIds)
+          .in('attempt_id', attemptIds),
+          'InstructorEvaluationsPage: consulta 3',
+        )
         responses = responsesData || []
       }
     }

@@ -5,6 +5,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import LessonQuiz from '../../../components/learning/LessonQuiz'
 import { sanitizeHtml } from '../../../lib/sanitizeHtml'
+import { runQuery } from '../../../lib/db'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -187,30 +188,39 @@ export default function StudentLearningPage() {
     // Load completed lessons from DB
     const allLessonIds = mods.flatMap(m => m.lessons).map(l => l.id)
     if (allLessonIds.length > 0) {
-      const { data: quizRows } = await supabase
+      const { data: quizRows } = await runQuery(
+        supabase
         .from('quizzes')
         .select('lesson_id')
-        .in('lesson_id', allLessonIds)
+        .in('lesson_id', allLessonIds),
+        'StudentLearningPage: consulta 1',
+      )
       setQuizLessonIds(new Set((quizRows || []).map(q => q.lesson_id)))
     }
     let completed = new Set()
     if (allLessonIds.length > 0) {
-      const { data: lpData } = await supabase
+      const { data: lpData } = await runQuery(
+        supabase
         .from('lesson_progress')
         .select('lesson_id')
         .eq('student_id', user.id)
         .eq('completed', true)
-        .in('lesson_id', allLessonIds)
+        .in('lesson_id', allLessonIds),
+        'StudentLearningPage: consulta 2',
+      )
       if (lpData) completed = new Set(lpData.map(r => r.lesson_id))
     }
     setCompletedIds(completed)
 
     // Load exam submission for this enrollment
-    const { data: esData } = await supabase
+    const { data: esData } = await runQuery(
+      supabase
       .from('exam_submissions')
       .select('id, status, submitted_at, notes')
       .eq('enrollment_id', enrollData.id)
-      .maybeSingle()
+      .maybeSingle(),
+      'StudentLearningPage: consulta 3',
+    )
     setExamSubmission(esData || null)
 
     // Pick first uncompleted lesson or first lesson
@@ -281,11 +291,14 @@ export default function StudentLearningPage() {
     }
     // the DB trigger (re)submits the evaluation on pass — refresh its status
     if (enrollment) {
-      const { data } = await supabase
-        .from('exam_submissions')
-        .select('id, status, submitted_at, notes')
-        .eq('enrollment_id', enrollment.id)
-        .maybeSingle()
+      const { data } = await runQuery(
+        supabase
+          .from('exam_submissions')
+          .select('id, status, submitted_at, notes')
+          .eq('enrollment_id', enrollment.id)
+          .maybeSingle(),
+        'StudentLearningPage: estado del examen tras aprobar',
+      )
       setExamSubmission(data || null)
     }
   }

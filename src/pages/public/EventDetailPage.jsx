@@ -9,6 +9,7 @@ import { PaymentInstructions, PaymentInstructionsModal } from '../../components/
 import { formatEventDateTime } from '../../lib/formatDate'
 import { googleCalendarUrl } from '../../lib/googleCalendar'
 import { formatEventLocation } from '../../lib/eventLocation'
+import { runQuery } from '../../lib/db'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
@@ -45,22 +46,28 @@ export default function EventDetailPage() {
       setEvent(e)
 
       if (user) {
-        const { data: enr } = await supabase
+        const { data: enr } = await runQuery(
+          supabase
           .from('enrollments')
           .select('id')
           .eq('student_id', user.id)
           .eq('course_id', e.id)
-          .maybeSingle()
+          .maybeSingle(),
+          'EventDetailPage: consulta 4',
+        )
         setEnrolled(!!enr)
 
         if (!enr) {
-          const { data: order } = await supabase
+          const { data: order } = await runQuery(
+            supabase
             .from('orders')
             .select('id, amount, currency')
             .eq('student_id', user.id)
             .eq('course_id', e.id)
             .eq('status', 'pending')
-            .maybeSingle()
+            .maybeSingle(),
+            'EventDetailPage: consulta 5',
+          )
           setPendingOrder(order || null)
         }
       }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { formatDateShort } from '../../lib/formatDate'
+import { runQuery } from '../../lib/db'
 
 function Star({ filled, size = 16, onClick, onMouseEnter }) {
   return (
@@ -51,7 +52,10 @@ export function CourseReviews({ courseId, currentUserId, canReview }) {
     // other students' rows, so every review rendered as "Estudiante". This RPC
     // returns the same reviews the table's SELECT policy already allows, with
     // just the author's full_name and avatar_url attached.
-    const { data } = await supabase.rpc('public_course_reviews', { p_course_id: courseId })
+    const { data } = await runQuery(
+      supabase.rpc('public_course_reviews', { p_course_id: courseId }),
+      'CourseReviews: reseñas del curso',
+    )
     setReviews(data || [])
     const mine = (data || []).find(r => r.student_id === currentUserId)
     if (mine) { setRating(mine.rating); setComment(mine.comment || '') }
@@ -146,8 +150,10 @@ export function useCourseRatingSummaries(courseIds) {
   const [summaries, setSummaries] = useState({})
   useEffect(() => {
     if (!courseIds || courseIds.length === 0) { setSummaries({}); return }
-    supabase.from('course_reviews').select('course_id, rating').in('course_id', courseIds)
-      .then(({ data }) => {
+    runQuery(
+      supabase.from('course_reviews').select('course_id, rating').in('course_id', courseIds),
+      'useCourseRatingSummaries: valoraciones',
+    ).then(({ data }) => {
         const byCourse = {}
         for (const r of data || []) {
           if (!byCourse[r.course_id]) byCourse[r.course_id] = { sum: 0, count: 0 }

@@ -1,12 +1,17 @@
+import { runQuery } from '../lib/db'
+
 // Shared progress-by-course calculation — used by StudentDashboard and StudentCoursesPage
 // so the two views can never drift out of sync.
 export async function calculateProgressByCourse(supabase, userId, courseIds) {
   if (!courseIds || courseIds.length === 0) return {}
 
-  const { data: modData } = await supabase
-    .from('modules')
-    .select('course_id, lessons(id)')
-    .in('course_id', courseIds)
+  const { data: modData } = await runQuery(
+    supabase
+      .from('modules')
+      .select('course_id, lessons(id)')
+      .in('course_id', courseIds),
+    'calculateProgressByCourse: módulos y lecciones',
+  )
 
   const lessonCountByCourse = {}
   const lessonToCourse = {}
@@ -20,12 +25,15 @@ export async function calculateProgressByCourse(supabase, userId, courseIds) {
   const allLessonIds = Object.keys(lessonToCourse)
   let completedSet = new Set()
   if (allLessonIds.length > 0) {
-    const { data: lpData } = await supabase
-      .from('lesson_progress')
-      .select('lesson_id')
-      .eq('student_id', userId)
-      .eq('completed', true)
-      .in('lesson_id', allLessonIds)
+    const { data: lpData } = await runQuery(
+      supabase
+        .from('lesson_progress')
+        .select('lesson_id')
+        .eq('student_id', userId)
+        .eq('completed', true)
+        .in('lesson_id', allLessonIds),
+      'calculateProgressByCourse: lecciones completadas',
+    )
     completedSet = new Set((lpData || []).map(p => p.lesson_id))
   }
 

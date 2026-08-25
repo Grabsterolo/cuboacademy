@@ -7,6 +7,7 @@ import { enrollCourse } from '../../lib/enrollCourse'
 import { fetchCourseSyllabus } from '../../lib/courseSyllabus'
 import { CourseReviews } from '../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../components/payment/PaymentInstructions'
+import { runQuery } from '../../lib/db'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
@@ -56,22 +57,28 @@ export default function CourseDetailPage() {
 
       // Check enrollment and pending orders
       if (user) {
-        const { data: enr } = await supabase
+        const { data: enr } = await runQuery(
+          supabase
           .from('enrollments')
           .select('id')
           .eq('student_id', user.id)
           .eq('course_id', c.id)
-          .maybeSingle()
+          .maybeSingle(),
+          'CourseDetailPage: consulta 3',
+        )
         setEnrolled(!!enr)
 
         if (!enr) {
-          const { data: order } = await supabase
+          const { data: order } = await runQuery(
+            supabase
             .from('orders')
             .select('id, amount, currency')
             .eq('student_id', user.id)
             .eq('course_id', c.id)
             .eq('status', 'pending')
-            .maybeSingle()
+            .maybeSingle(),
+            'CourseDetailPage: consulta 4',
+          )
           setPendingOrder(order || null)
         }
       }

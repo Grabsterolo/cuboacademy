@@ -12,6 +12,7 @@ import { CourseReviews } from '../../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../../components/payment/PaymentInstructions'
 import { Avatar } from '../../../components/ui'
 import { formatEventDateTime } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
@@ -39,26 +40,35 @@ export default function EventDetailPage() {
 
   async function loadAll() {
     setLoading(true)
-    const { data: eventData } = await supabase.rpc('course_by_slug', { p_slug: slug })
+    const { data: eventData } = await runQuery(
+      supabase.rpc('course_by_slug', { p_slug: slug })
       .select('id, slug, title, description, cover_image_url, price, modality, event_start_at, event_end_at, country, city, location, capacity, has_certificate, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
       .eq('type', 'event')
-      .maybeSingle()
+      .maybeSingle(),
+      'EventDetailPage: consulta 1',
+    )
 
     if (!eventData) { setLoading(false); return }
     setEvent(eventData)
 
-    const { data: enrData } = await supabase.from('enrollments')
+    const { data: enrData } = await runQuery(
+      supabase.from('enrollments')
       .select('id, enrolled_at, completed_at')
-      .eq('student_id', user.id).eq('course_id', eventData.id).maybeSingle()
+      .eq('student_id', user.id).eq('course_id', eventData.id).maybeSingle(),
+      'EventDetailPage: consulta 2',
+    )
     setEnrollment(enrData || null)
 
     if (!enrData) {
-      const { data: orderData } = await supabase.from('orders')
+      const { data: orderData } = await runQuery(
+        supabase.from('orders')
         .select('id, amount, currency')
         .eq('student_id', user.id)
         .eq('course_id', eventData.id)
         .eq('status', 'pending')
-        .maybeSingle()
+        .maybeSingle(),
+        'EventDetailPage: consulta 3',
+      )
       setPendingOrder(orderData || null)
     }
 

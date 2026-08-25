@@ -8,6 +8,8 @@ import { STATUS_TONE } from '../../../components/ui'
 import { formatDateLong, formatEventDateTime } from '../../../lib/formatDate'
 import { PaymentInstructions } from '../../../components/payment/PaymentInstructions'
 import { orderReference } from '../../../lib/paymentInfo'
+import { runQuery } from '../../../lib/db'
+import { ErrorState } from '../../../components/ui/ErrorState'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const LEVEL_OPTS = ['', 'beginner', 'intermediate', 'advanced']
@@ -260,16 +262,28 @@ function EventsTab({ wishlistIds, onToggleWishlist }) {
 function WishlistTab({ wishlistIds, onToggleWishlist }) {
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(false)
+  const [loadErr, setLoadErr] = useState(null)
 
   useEffect(() => {
     if (!wishlistIds.length) { setCourses([]); return }
     setLoading(true)
-    supabase.from('courses')
-      .select('id, slug, title, cover_image_url, price, type, level, duration_hours, modality, event_start_at, categories(name), profiles!instructor_id(full_name)')
-      .in('id', wishlistIds)
-      .eq('status', 'published')
-      .then(({ data }) => { setCourses(data || []); setLoading(false) })
+    runQuery(
+      supabase.from('courses')
+        .select('id, slug, title, cover_image_url, price, type, level, duration_hours, modality, event_start_at, categories(name), profiles!instructor_id(full_name)')
+        .in('id', wishlistIds)
+        .eq('status', 'published'),
+      'StudentStorePage: lista de deseos',
+    ).then(({ data, error }) => { setLoadErr(error); setCourses(data || []); setLoading(false) })
   }, [wishlistIds])
+
+  if (loadErr) return (
+    <ErrorState
+      title="No pudimos cargar tu lista de deseos"
+      description="Falló la consulta, así que puede haber cursos guardados que no se están mostrando."
+      error={loadErr}
+      onRetry={() => window.location.reload()}
+    />
+  )
 
   if (!wishlistIds.length) return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
@@ -295,15 +309,17 @@ function PurchasesTab({ user }) {
   const { navigate } = useNavigation()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadErr, setLoadErr] = useState(null)
 
   useEffect(() => {
     if (!user) return
-    supabase.from('orders')
-      .select('id, amount, currency, status, created_at, payment_provider, courses(id, slug, title, cover_image_url, type, categories(name))')
-      .eq('student_id', user.id)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => { setOrders(data || []); setLoading(false) })
-      .catch(() => setLoading(false))
+    runQuery(
+      supabase.from('orders')
+        .select('id, amount, currency, status, created_at, payment_provider, courses(id, slug, title, cover_image_url, type, categories(name))')
+        .eq('student_id', user.id)
+        .order('created_at', { ascending: false }),
+      'StudentStorePage: mis compras',
+    ).then(({ data, error }) => { setLoadErr(error); setOrders(data || []); setLoading(false) })
   }, [user])
 
 
@@ -311,6 +327,15 @@ function PurchasesTab({ user }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '.7rem' }}>
       {[1,2].map(i => <div key={i} style={{ height: 72, background: 'white', border: '1px solid var(--border)', borderRadius: 10 }} />)}
     </div>
+  )
+
+  if (loadErr) return (
+    <ErrorState
+      title="No pudimos cargar tus compras"
+      description="Falló la consulta. Si hiciste una solicitud de inscripción, sigue registrada — es esta lista la que no cargó."
+      error={loadErr}
+      onRetry={() => window.location.reload()}
+    />
   )
 
   if (!orders.length) return (
@@ -374,8 +399,10 @@ export default function StudentStorePage() {
 
   useEffect(() => {
     if (!user) return
-    supabase.from('wishlist_items').select('course_id').eq('student_id', user.id)
-      .then(({ data }) => setWishlistIds((data || []).map(r => r.course_id)))
+    runQuery(
+      supabase.from('wishlist_items').select('course_id').eq('student_id', user.id),
+      'StudentStorePage: ids de lista de deseos',
+    ).then(({ data }) => setWishlistIds((data || []).map(r => r.course_id)))
   }, [user])
 
   const toggleWishlist = useCallback((courseId) => {

@@ -4,6 +4,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import { calculateProgressByCourse } from '../../../utils/progress'
+import { runQuery } from '../../../lib/db'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const TABS = [
@@ -38,12 +39,15 @@ export default function StudentCoursesPage() {
     if (!user) return
 
     async function load() {
-      const { data: enrData } = await supabase
+      const { data: enrData } = await runQuery(
+        supabase
         .from('enrollments')
         .select('id, enrolled_at, completed_at, course_id, courses!inner(id, title, cover_image_url, level, categories(name), profiles!instructor_id(full_name))')
         .eq('student_id', user.id)
         .eq('courses.type', 'course')
-        .order('enrolled_at', { ascending: false })
+        .order('enrolled_at', { ascending: false }),
+        'StudentCoursesPage: consulta 1',
+      )
 
       const enrollments = enrData || []
       setEnrollments(enrollments)

@@ -6,6 +6,7 @@ import { Toast, Field } from '../../../components/ui/index'
 import { supabase } from '../../../lib/supabase'
 import { validateImageFile, resizeImage } from '../../../lib/imageProcessing'
 import { COUNTRIES } from '../../../lib/countries'
+import { runQuery } from '../../../lib/db'
 
 const EXP_OPTIONS = [{ value: 2, label: '1-2 años' }, { value: 5, label: '3-5 años' }, { value: 10, label: '6-10 años' }, { value: 15, label: '10+ años' }]
 
@@ -62,7 +63,10 @@ export default function InstructorProfilePage() {
       .then(async ({ data: courses }) => {
         if (!courses?.length) { setStudentCount(0); return }
         const ids = courses.map(c => c.id)
-        const { data: enrollments } = await supabase.from('enrollments').select('student_id').in('course_id', ids)
+        const { data: enrollments } = await runQuery(
+          supabase.from('enrollments').select('student_id').in('course_id', ids),
+          'InstructorProfilePage: consulta 1',
+        )
         setStudentCount(new Set((enrollments || []).map(e => e.student_id)).size)
       }).catch(() => setStudentCount(0))
   }, [profile?.id])

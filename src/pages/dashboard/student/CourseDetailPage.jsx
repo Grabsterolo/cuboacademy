@@ -9,6 +9,7 @@ import { fetchCourseSyllabus } from '../../../lib/courseSyllabus'
 import { CourseReviews } from '../../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../../components/payment/PaymentInstructions'
 import { Avatar } from '../../../components/ui'
+import { runQuery } from '../../../lib/db'
 
 const LEVEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
@@ -57,19 +58,25 @@ export default function CourseDetailPage() {
     if (mods.length > 0) setExpandedMods(new Set([mods[0].id]))
 
     // Check existing enrollment
-    const { data: enrData } = await supabase.from('enrollments')
+    const { data: enrData } = await runQuery(
+      supabase.from('enrollments')
       .select('id, enrolled_at, completed_at')
-      .eq('student_id', user.id).eq('course_id', courseData.id).maybeSingle()
+      .eq('student_id', user.id).eq('course_id', courseData.id).maybeSingle(),
+      'CourseDetailPage: consulta 1',
+    )
     setEnrollment(enrData || null)
 
     // If not enrolled, check for a pending order
     if (!enrData) {
-      const { data: orderData } = await supabase.from('orders')
+      const { data: orderData } = await runQuery(
+        supabase.from('orders')
         .select('id, amount, currency')
         .eq('student_id', user.id)
         .eq('course_id', courseData.id)
         .eq('status', 'pending')
-        .maybeSingle()
+        .maybeSingle(),
+        'CourseDetailPage: consulta 2',
+      )
       setPendingOrder(orderData || null)
     }
 

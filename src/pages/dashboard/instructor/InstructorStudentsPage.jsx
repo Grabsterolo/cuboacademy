@@ -4,6 +4,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { Avatar } from '../../../components/ui'
 import { formatDateShort } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
 
 const USERS = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 
@@ -26,21 +27,27 @@ export default function InstructorStudentsPage() {
         const ids = cList.map(c => c.id)
 
         // enrollments
-        const { data: enr } = await supabase
+        const { data: enr } = await runQuery(
+          supabase
           .from('enrollments')
           .select('id, enrolled_at, completed_at, course_id, student_id')
           .in('course_id', ids)
           .order('enrolled_at', { ascending: false })
-          .limit(1000)
+          .limit(1000),
+          'InstructorStudentsPage: consulta 1',
+        )
 
         if (!enr?.length) { setLoading(false); return }
 
         // student profiles
         const studentIds = [...new Set(enr.map(e => e.student_id))]
-        const { data: pData } = await supabase
+        const { data: pData } = await runQuery(
+          supabase
           .from('profiles')
           .select('id, full_name, email, avatar_url')
-          .in('id', studentIds)
+          .in('id', studentIds),
+          'InstructorStudentsPage: consulta 2',
+        )
 
         const profileMap = Object.fromEntries((pData || []).map(p => [p.id, p]))
         const courseMap  = Object.fromEntries(cList.map(c => [c.id, c.title]))

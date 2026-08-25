@@ -4,6 +4,7 @@ import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { formatEventDateTime } from '../../lib/formatDate'
 import { runQuery } from '../../lib/db'
+import { ErrorState } from '../../components/ui/ErrorState'
 
 const TRACK_STYLES = [
   { bg: 'linear-gradient(150deg, #0B3436 0%, #167D78 130%)', icon: 'layers' },
@@ -181,8 +182,10 @@ export default function HomePage() {
   const [tracks, setTracks] = useState(null)
   const [courses, setCourses] = useState([])
   const [coursesLoading, setCoursesLoading] = useState(true)
+  const [coursesErr, setCoursesErr] = useState(null)
   const [events, setEvents] = useState([])
   const [eventsLoading, setEventsLoading] = useState(true)
+  const [eventsErr, setEventsErr] = useState(null)
   const [instructors, setInstructors] = useState(null)
   const [saveData, setSaveData] = useState(false)
   const [stats, setStats] = useState({ courses: null, students: null, instructors: null })
@@ -209,7 +212,7 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    supabase
+    const coursesQuery = supabase
       .from('courses')
       .select('id, title, slug, cover_image_url, price, level, duration_hours, categories(name), profiles!instructor_id(full_name, avatar_url)')
       .eq('type', 'course')
@@ -217,14 +220,15 @@ export default function HomePage() {
       .eq('visibility', 'public')
       .order('created_at', { ascending: false })
       .limit(6)
-      .then(({ data }) => {
-        setCourses(data || [])
-        setCoursesLoading(false)
-      })
+    runQuery(coursesQuery, 'HomePage: cursos destacados').then(({ data, error }) => {
+      setCoursesErr(error)
+      setCourses(data || [])
+      setCoursesLoading(false)
+    })
   }, [])
 
   useEffect(() => {
-    supabase
+    const eventsQuery = supabase
       .from('courses')
       .select('id, title, slug, cover_image_url, price, modality, event_start_at, categories(name), profiles!instructor_id(full_name, avatar_url)')
       .eq('type', 'event')
@@ -233,28 +237,29 @@ export default function HomePage() {
       .gte('event_start_at', new Date().toISOString())
       .order('event_start_at', { ascending: true })
       .limit(6)
-      .then(({ data }) => {
-        setEvents(data || [])
-        setEventsLoading(false)
-      })
+    runQuery(eventsQuery, 'HomePage: próximos eventos').then(({ data, error }) => {
+      setEventsErr(error)
+      setEvents(data || [])
+      setEventsLoading(false)
+    })
   }, [])
 
   useEffect(() => {
-    supabase
+    const instructorsQuery = supabase
       .from('profiles')
       .select('id, full_name, avatar_url, bio, profession, specialty')
       .eq('role', 'instructor')
       .eq('is_active', true)
       .order('created_at', { ascending: false })
       .limit(4)
-      .then(({ data }) => setInstructors(data || []))
+    runQuery(instructorsQuery, 'HomePage: instructores').then(({ data }) => setInstructors(data || []))
   }, [])
 
   // Counting profiles directly returns 0 students for signed-out visitors —
   // RLS deliberately hides student rows from anon. public_platform_stats() is a
   // SECURITY DEFINER function that returns only aggregates, no personal data.
   useEffect(() => {
-    supabase.rpc('public_platform_stats').then(({ data }) => {
+    runQuery(supabase.rpc('public_platform_stats'), 'HomePage: métricas públicas').then(({ data }) => {
       const s = data?.[0]
       setStats({ courses: s?.courses ?? 0, students: s?.students ?? 0, instructors: s?.instructors ?? 0 })
     })
@@ -614,6 +619,14 @@ export default function HomePage() {
                   </div>
                 </div>
               ))
+            ) : coursesErr ? (
+              <ErrorState
+                title="No pudimos cargar los cursos"
+                description="Falló la consulta al servidor. Vuelve a intentarlo — sí hay cursos disponibles."
+                error={coursesErr}
+                onRetry={() => window.location.reload()}
+                compact
+              />
             ) : courses.length === 0 ? (
               <div style={{ gridColumn: '1/-1', padding: '3.5rem 2rem', textAlign: 'center', background: 'white', border: '1px solid var(--border)', borderRadius: 12 }}>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.35rem' }}>Próximamente nuevos cursos</p>
@@ -708,6 +721,14 @@ export default function HomePage() {
                   </div>
                 </div>
               ))
+            ) : eventsErr ? (
+              <ErrorState
+                title="No pudimos cargar los eventos"
+                description="Falló la consulta al servidor. Vuelve a intentarlo — puede haber eventos próximos."
+                error={eventsErr}
+                onRetry={() => window.location.reload()}
+                compact
+              />
             ) : events.length === 0 ? (
               <div style={{ gridColumn: '1/-1', padding: '3.5rem 2rem', textAlign: 'center', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 12 }}>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.35rem' }}>Próximamente nuevos eventos</p>

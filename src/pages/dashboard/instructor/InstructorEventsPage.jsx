@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
 import { STATUS_TONE, IconBtn } from '../../../components/ui'
 import { formatEventDateTime } from '../../../lib/formatDate'
+import { runQuery } from '../../../lib/db'
 
 const STATUS = {
   published: { label: 'Publicado',   ...STATUS_TONE.success },
@@ -46,7 +47,10 @@ export default function InstructorEventsPage() {
         setEvents(list)
         if (list.length > 0) {
           const ids = list.map(e => e.id)
-          const { data: enr } = await supabase.from('enrollments').select('course_id, student_id').in('course_id', ids)
+          const { data: enr } = await runQuery(
+            supabase.from('enrollments').select('course_id, student_id').in('course_id', ids),
+            'InstructorEventsPage: consulta 1',
+          )
           const map = {}
           ;(enr || []).forEach(r => { map[r.course_id] = (map[r.course_id] || 0) + 1 })
           setCounts(map)

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { runQuery } from '../lib/db'
 
 const AuthContext = createContext(null)
 
@@ -24,11 +25,14 @@ export function AuthProvider({ children }) {
       return { blocked: false }
     }
 
-    const { data: profileRow } = await supabase
+    const { data: profileRow } = await runQuery(
+      supabase
       .from('profiles')
       .select('*')
       .eq('id', session.user.id)
-      .single()
+      .single(),
+      'AuthContext: consulta 1',
+    )
 
     if (profileRow?.is_active === false) {
       await supabase.auth.signOut()

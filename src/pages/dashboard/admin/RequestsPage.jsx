@@ -108,8 +108,11 @@ export default function RequestsPage() {
     const emails = rows.map(a => a.email).filter(Boolean)
     if (emails.length) {
       const variants = [...new Set([...emails, ...emails.map(e => e.toLowerCase())])]
-      const { data: profs } = await supabase
-        .from('profiles').select('id, email').in('email', variants)
+      const { data: profs } = await runQuery(
+        supabase
+        .from('profiles').select('id, email').in('email', variants),
+        'RequestsPage: consulta 1',
+      )
       setProfileByEmail(Object.fromEntries(
         (profs || []).map(p => [(p.email || '').toLowerCase(), p.id]),
       ))
