@@ -23,6 +23,10 @@ const DEFAULTS = {
   sinpe_number: '',
   bank_account: '',
   payment_note: '',
+  contact_whatsapp: '',
+  legal_terms: '',
+  legal_privacy: '',
+  legal_refund: '',
 }
 
 const CHECK = (
@@ -103,6 +107,7 @@ export default function SettingsPage() {
   const [s2, setS2] = useState({ saving: false, ok: false, err: '' })
   const [s3, setS3] = useState({ saving: false, ok: false, err: '' })
   const [s4, setS4] = useState({ saving: false, ok: false, err: '' })
+  const [s5, setS5] = useState({ saving: false, ok: false, err: '' })
 
   const [heroVideoUploading, setHeroVideoUploading] = useState(false)
   const [heroVideoErr, setHeroVideoErr] = useState('')
@@ -179,10 +184,10 @@ export default function SettingsPage() {
       const { data: { publicUrl } } = supabase.storage.from('hero-video').getPublicUrl('hero.mp4')
       setPendingHeroVideoPath('')
       setPendingHeroVideoUrl('')
-      await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email'], setS2, { hero_video_url: `${publicUrl}?v=${Date.now()}` })
+      await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email', 'contact_whatsapp'], setS2, { hero_video_url: `${publicUrl}?v=${Date.now()}` })
       return
     }
-    await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email'], setS2)
+    await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email', 'contact_whatsapp'], setS2)
   }
 
   async function handleSaveSocial(e) {
@@ -193,6 +198,11 @@ export default function SettingsPage() {
   async function handleSavePayment(e) {
     e.preventDefault()
     await saveKeys(['sinpe_number', 'bank_account', 'payment_instructions', 'payment_note'], setS4)
+  }
+
+  async function handleSaveLegal(e) {
+    e.preventDefault()
+    await saveKeys(['legal_terms', 'legal_privacy', 'legal_refund'], setS5)
   }
 
   async function handleToggle(key, checked) {
@@ -342,6 +352,10 @@ export default function SettingsPage() {
                   <input className="sett-inp" style={inp} type="email" value={settings.contact_email}
                     onChange={e => set('contact_email', e.target.value)} placeholder="contacto@cuboacademy.com" />
                 </Field>
+                <Field label="WhatsApp de contacto" hint="se muestra en el pie y junto al botón de compra" id="setting-contact-whatsapp">
+                  <input className="sett-inp" style={inp} type="text" value={settings.contact_whatsapp}
+                    onChange={e => set('contact_whatsapp', e.target.value)} placeholder="+506 8888 8888" onFocus={fi} onBlur={fb} />
+                </Field>
                 <SaveRow loading={s2.saving} success={s2.ok} error={s2.err} />
               </form>
             )}
@@ -408,6 +422,34 @@ export default function SettingsPage() {
             )}
           </Card>
 
+
+          {/* ── 6. Textos legales ── */}
+          <Card title="Textos legales" desc="Se publican en el pie del sitio. Mientras estén vacíos, la página pública dice que el documento está en preparación y ofrece el contacto — nunca mostramos condiciones inventadas.">
+            {loadingInit ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+                {skel(200, 80)} {skel(200, 80)} {skel(200, 80)}
+              </div>
+            ) : (
+              <form onSubmit={handleSaveLegal} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                <p style={{ fontSize: '.78rem', color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 8, padding: '.7rem .9rem', margin: 0, lineHeight: 1.55 }}>
+                  Estos documentos tienen efectos legales. Conviene que los revise un abogado antes de publicarlos, sobre todo los plazos y condiciones de reembolso.
+                </p>
+                <Field label="Términos y condiciones" id="setting-legal-terms">
+                  <textarea className="sett-inp" style={{ ...inp, minHeight: 160, resize: 'vertical', lineHeight: 1.6 }} value={settings.legal_terms}
+                    onChange={e => set('legal_terms', e.target.value)} placeholder="Texto completo de los términos y condiciones…" />
+                </Field>
+                <Field label="Política de privacidad" id="setting-legal-privacy">
+                  <textarea className="sett-inp" style={{ ...inp, minHeight: 160, resize: 'vertical', lineHeight: 1.6 }} value={settings.legal_privacy}
+                    onChange={e => set('legal_privacy', e.target.value)} placeholder="Qué datos se recogen, para qué y cómo ejercer derechos…" />
+                </Field>
+                <Field label="Política de reembolso" id="setting-legal-refund">
+                  <textarea className="sett-inp" style={{ ...inp, minHeight: 160, resize: 'vertical', lineHeight: 1.6 }} value={settings.legal_refund}
+                    onChange={e => set('legal_refund', e.target.value)} placeholder="En qué casos se reembolsa, en qué plazo y cómo solicitarlo…" />
+                </Field>
+                <SaveRow loading={s5.saving} success={s5.ok} error={s5.err} />
+              </form>
+            )}
+          </Card>
         </div>
       </div>
     </DashboardLayout>

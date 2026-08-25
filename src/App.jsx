@@ -17,6 +17,7 @@ const ForgotPasswordScreen = lazy(() => import('./pages/public/ForgotPasswordScr
 const ResetPasswordScreen = lazy(() => import('./pages/public/ResetPasswordScreen'))
 const InstructorApplicationPage = lazy(() => import('./pages/public/InstructorApplicationPage'))
 const CourseCatalogPage = lazy(() => import('./pages/public/CourseCatalogPage'))
+const LegalPage = lazy(() => import('./pages/public/LegalPage'))
 const CourseDetailPage = lazy(() => import('./pages/public/CourseDetailPage'))
 const EventCatalogPage = lazy(() => import('./pages/public/EventCatalogPage'))
 const EventDetailPage = lazy(() => import('./pages/public/EventDetailPage'))
@@ -80,17 +81,22 @@ function AppShell() {
       case 'events':           return <EventCatalogPage />
       case 'event-detail':     return <EventDetailPage />
       case 'instructor-apply': return <InstructorApplicationPage />
+      case 'terminos':
+      case 'privacidad':
+      case 'reembolsos':       return <LegalPage />
       default:                 return <HomePage />
     }
   })()
-
-  const hasFooter = screen === 'landing' || screen === 'courses' || screen === 'events'
 
   return (
     <div style={{ paddingTop: 66 }}>
       <Navbar />
       <Suspense fallback={<LoadingSection />}>{publicContent}</Suspense>
-      {hasFooter && <Footer />}
+      {/* El pie va en TODA pantalla pública. Antes solo aparecía en la portada
+          y los dos catálogos, así que las fichas de curso y evento —donde se
+          decide gastar el dinero— no tenían contacto, condiciones ni política
+          de reembolso a la vista. */}
+      <Footer />
     </div>
   )
 }

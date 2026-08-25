@@ -10,6 +10,7 @@ import { formatEventDateTime } from '../../lib/formatDate'
 import { googleCalendarUrl } from '../../lib/googleCalendar'
 import { formatEventLocation } from '../../lib/eventLocation'
 import { runQuery } from '../../lib/db'
+import { ContactBeforeBuy } from '../../components/shared/ContactBeforeBuy'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
@@ -223,6 +224,7 @@ export default function EventDetailPage() {
                     </button>
                   </>
                 )}
+                {!enrolled && <ContactBeforeBuy subject={event.title} />}
               </div>
 
               {/* Details list */}

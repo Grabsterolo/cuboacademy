@@ -8,6 +8,7 @@ import { fetchCourseSyllabus } from '../../lib/courseSyllabus'
 import { CourseReviews } from '../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../components/payment/PaymentInstructions'
 import { runQuery } from '../../lib/db'
+import { ContactBeforeBuy } from '../../components/shared/ContactBeforeBuy'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 
@@ -274,6 +275,9 @@ export default function CourseDetailPage() {
                     </button>
                   </>
                 )}
+                {/* Junto al CTA, no al final de la página: la duda aparece
+                    justo aquí, mirando el precio. */}
+                {!enrolled && <ContactBeforeBuy subject={course.title} />}
               </div>
 
               {/* Details list */}

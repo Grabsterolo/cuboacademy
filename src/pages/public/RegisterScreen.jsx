@@ -156,8 +156,18 @@ export default function RegisterScreen() {
                 {loading ? 'Creando cuenta…' : 'Crear mi cuenta'}
               </button>
 
-              <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '.76rem', color: 'rgba(255,255,255,.35)' }}>
-                Al registrarte aceptas nuestros términos y condiciones.
+              {/* Antes era texto suelto: se le pedía aceptar unas condiciones
+                  que no podía leer desde ninguna parte. */}
+              <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '.76rem', color: 'rgba(255,255,255,.35)', lineHeight: 1.6 }}>
+                Al registrarte aceptas nuestros{' '}
+                <button type="button" onClick={() => navigate('terminos')}
+                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--jade-light)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 'inherit', textDecoration: 'underline' }}>
+                  términos y condiciones
+                </button>{' '}y nuestra{' '}
+                <button type="button" onClick={() => navigate('privacidad')}
+                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--jade-light)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 'inherit', textDecoration: 'underline' }}>
+                  política de privacidad
+                </button>.
               </p>
             </form>
           )}
