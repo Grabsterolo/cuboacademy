@@ -9,6 +9,7 @@ import { formatDateLong, formatEventDateTime } from '../../../lib/formatDate'
 import { PaymentInstructions } from '../../../components/payment/PaymentInstructions'
 import { orderReference, paymentProviderLabel } from '../../../lib/paymentInfo'
 import { runQuery } from '../../../lib/db'
+import { useOwnedCourses } from '../../../lib/useOwnedCourses'
 import { ErrorState } from '../../../components/ui/ErrorState'
 
 const LEVEL_LABEL = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
@@ -26,7 +27,7 @@ const ORDER_STATUS_STYLE = {
   failed:    { label: 'Rechazada',   hint: null, ...STATUS_TONE.danger },
 }
 
-function CourseCard({ course, wishlistIds, onToggleWishlist, rating }) {
+function CourseCard({ course, wishlistIds, onToggleWishlist, rating, owned, pending }) {
   const { navigate } = useNavigation()
   const isEvent = course.type === 'event'
   const cover = course.cover_image_url
@@ -82,10 +83,89 @@ function CourseCard({ course, wishlistIds, onToggleWishlist, rating }) {
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{instructor}</span>
           </div>
-          <span style={{ fontSize: '.78rem', fontWeight: 700, color: isGratis ? 'var(--jade)' : 'var(--carbon)', flexShrink: 0 }}>{price}</span>
+          {/* El precio solo tiene sentido si todavía se puede comprar. A quien
+              ya lo pagó, verlo otra vez con etiqueta de precio es desconcertante
+              — y con una solicitud en revisión, invita a duplicarla. */}
+          {owned ? (
+            <span style={{ fontSize: '.68rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid rgba(22,125,120,.25)', padding: '2px 8px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap' }}>
+              Ya lo tienes
+            </span>
+          ) : pending ? (
+            <span style={{ fontSize: '.68rem', fontWeight: 700, color: '#B45309', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap' }}>
+              En revisión
+            </span>
+          ) : (
+            <span style={{ fontSize: '.78rem', fontWeight: 700, color: isGratis ? 'var(--jade)' : 'var(--carbon)', flexShrink: 0 }}>{price}</span>
+          )}
         </div>
+
+        {owned && (
+          <button
+            onClick={e => {
+              e.stopPropagation()
+              // Un curso se retoma en el reproductor; un evento no tiene
+              // lecciones, así que su sitio es la ficha con fecha y ubicación.
+              if (isEvent) navigate('evento-detalle', { slug: course.slug })
+              else navigate('aprender', { courseId: course.id })
+            }}
+            style={{ marginTop: '.6rem', width: '100%', padding: '.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+            {isEvent ? 'Ver evento' : 'Ir al curso'}
+          </button>
+        )}
+        {pending && (
+          <button
+            onClick={e => { e.stopPropagation(); navigate('tienda', { tab: 'purchases' }) }}
+            style={{ marginTop: '.6rem', width: '100%', padding: '.5rem', background: 'white', color: '#92400E', border: '1px solid #FDE68A', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+            Ver mi solicitud
+          </button>
+        )}
       </div>
     </div>
+  )
+}
+
+/**
+ * Separa lo que el estudiante puede comprar de lo que ya tiene.
+ *
+ * Lo adquirido no se oculta —sigue siendo útil llegar a ello desde aquí— pero
+ * baja a su propia sección, para que el catálogo de arriba sea de verdad «lo
+ * que puedes comprar» y no una mezcla donde hay que leer cada tarjeta.
+ */
+function StoreGrid({ items, owned, pending, wishlistIds, onToggleWishlist, ratings, emptyText }) {
+  const available = items.filter(c => !owned.has(c.id))
+  const inLibrary = items.filter(c => owned.has(c.id))
+
+  if (items.length === 0) {
+    return <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-2)', fontSize: '.9rem' }}>{emptyText}</div>
+  }
+
+  const card = c => (
+    <CourseCard key={c.id} course={c} wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist}
+      rating={ratings[c.id]} owned={owned.has(c.id)} pending={pending.has(c.id)} />
+  )
+
+  return (
+    <>
+      {available.length > 0 && <div className="st-grid">{available.map(card)}</div>}
+
+      {inLibrary.length > 0 && (
+        <div style={{ marginTop: available.length > 0 ? '2.25rem' : 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '1rem' }}>
+            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Tu biblioteca</h2>
+            <span style={{ fontSize: '.72rem', color: 'var(--text-2)' }}>
+              {inLibrary.length} {inLibrary.length === 1 ? 'ya adquirido' : 'ya adquiridos'}
+            </span>
+          </div>
+          <div className="st-grid">{inLibrary.map(card)}</div>
+        </div>
+      )}
+
+      {available.length === 0 && inLibrary.length > 0 && (
+        <p style={{ fontSize: '.82rem', color: 'var(--text-2)', textAlign: 'center', marginTop: '1.5rem' }}>
+          No hay nada nuevo para ti con estos filtros — ya tienes todo lo que coincide.
+        </p>
+      )}
+    </>
   )
 }
 
@@ -103,7 +183,7 @@ function SkeletonCard() {
 }
 
 // ─── Catalog tab ──────────────────────────────────────────────────────────────
-function CatalogTab({ wishlistIds, onToggleWishlist }) {
+function CatalogTab({ wishlistIds, onToggleWishlist, owned, pending }) {
   const [courses, setCourses] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -167,21 +247,17 @@ function CatalogTab({ wishlistIds, onToggleWishlist }) {
 
       {loading ? (
         <div className="st-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-2)', fontSize: '.9rem' }}>
-          No se encontraron cursos con esos filtros.
-        </div>
       ) : (
-        <div className="st-grid">
-          {filtered.map(c => <CourseCard key={c.id} course={c} wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} rating={ratings[c.id]} />)}
-        </div>
+        <StoreGrid items={filtered} owned={owned} pending={pending}
+          wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} ratings={ratings}
+          emptyText="No se encontraron cursos con esos filtros." />
       )}
     </div>
   )
 }
 
 // ─── Events tab ───────────────────────────────────────────────────────────────
-function EventsTab({ wishlistIds, onToggleWishlist }) {
+function EventsTab({ wishlistIds, onToggleWishlist, owned, pending }) {
   const [events, setEvents] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -245,21 +321,17 @@ function EventsTab({ wishlistIds, onToggleWishlist }) {
 
       {loading ? (
         <div className="st-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-2)', fontSize: '.9rem' }}>
-          No se encontraron eventos con esos filtros.
-        </div>
       ) : (
-        <div className="st-grid">
-          {filtered.map(e => <CourseCard key={e.id} course={e} wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} rating={ratings[e.id]} />)}
-        </div>
+        <StoreGrid items={filtered} owned={owned} pending={pending}
+          wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} ratings={ratings}
+          emptyText="No se encontraron eventos con esos filtros." />
       )}
     </div>
   )
 }
 
 // ─── Wishlist tab ─────────────────────────────────────────────────────────────
-function WishlistTab({ wishlistIds, onToggleWishlist }) {
+function WishlistTab({ wishlistIds, onToggleWishlist, owned, pending }) {
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadErr, setLoadErr] = useState(null)
@@ -298,9 +370,9 @@ function WishlistTab({ wishlistIds, onToggleWishlist }) {
   if (loading) return <div className="st-grid"><SkeletonCard /><SkeletonCard /></div>
 
   return (
-    <div className="st-grid">
-      {courses.map(c => <CourseCard key={c.id} course={c} wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} />)}
-    </div>
+    <StoreGrid items={courses} owned={owned} pending={pending}
+      wishlistIds={wishlistIds} onToggleWishlist={onToggleWishlist} ratings={{}}
+      emptyText="Tu lista de deseos está vacía." />
   )
 }
 
@@ -402,6 +474,9 @@ function PurchasesTab({ user }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function StudentStorePage() {
   const { user } = useAuth()
+  // Cruce con lo que el estudiante ya tiene: sin esto la tienda le ofrece
+  // comprar de nuevo un curso que ya pagó y completó.
+  const { owned, pending } = useOwnedCourses(user)
   const { params } = useNavigation()
   const [tab, setTab] = useState(params?.tab || 'catalog')
   const [wishlistIds, setWishlistIds] = useState([])
@@ -464,9 +539,9 @@ export default function StudentStorePage() {
         </div>
 
         {/* Tab content */}
-        {tab === 'catalog' && <CatalogTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} />}
-        {tab === 'events' && <EventsTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} />}
-        {tab === 'wishlist' && <WishlistTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} />}
+        {tab === 'catalog' && <CatalogTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} owned={owned} pending={pending} />}
+        {tab === 'events' && <EventsTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} owned={owned} pending={pending} />}
+        {tab === 'wishlist' && <WishlistTab wishlistIds={wishlistIds} onToggleWishlist={toggleWishlist} owned={owned} pending={pending} />}
         {tab === 'purchases' && <PurchasesTab user={user} />}
       </div>
     </DashboardLayout>
