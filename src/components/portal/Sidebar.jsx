@@ -243,7 +243,7 @@ export default function Sidebar({ drawerOpen, onCloseDrawer }) {
         <div onClick={onCloseDrawer}
           style={{ display: drawerOpen ? 'block' : 'none', position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(4px)' }} />
         {/* Drawer */}
-        <aside ref={drawerRef} className="on-dark"
+        <aside ref={drawerRef} id="menu-portal" className="on-dark"
           role="dialog" aria-modal="true" aria-label="Menú del portal"
           aria-hidden={drawerOpen ? undefined : true}
           style={{

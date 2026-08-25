@@ -173,6 +173,7 @@ export default function Portal() {
           {isMobile && (
             <header style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'white', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem' }}>
               <button onClick={() => setDrawerOpen(true)}
+                aria-label="Abrir menú" aria-expanded={drawerOpen} aria-controls="menu-portal"
                 style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 7, padding: '7px 9px', cursor: 'pointer', color: 'var(--carbon)', display: 'flex', alignItems: 'center' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                   <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>

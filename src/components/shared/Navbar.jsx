@@ -223,7 +223,8 @@ export default function Navbar() {
         </div>
 
         {/* Hamburger */}
-        <button className="nav-hamburger" onClick={() => setMenuOpen(m => !m)} aria-label="Menú">
+        <button className="nav-hamburger" onClick={() => setMenuOpen(m => !m)}
+          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={menuOpen} aria-controls="menu-navegacion">
           {menuOpen
             ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -234,7 +235,7 @@ export default function Navbar() {
       {/* Mobile drawer */}
       {/* aria-hidden y el trap van de la mano: mientras está abierto, el
           contenido de debajo no debe recibir el foco ni anunciarse. */}
-      <div ref={drawerRef} className={`nav-mobile-drawer${menuOpen ? ' open' : ''}`}
+      <div ref={drawerRef} id="menu-navegacion" className={`nav-mobile-drawer${menuOpen ? ' open' : ''}`}
         role="dialog" aria-modal="true" aria-label="Menú de navegación"
         aria-hidden={menuOpen ? undefined : true}>
         <nav>
