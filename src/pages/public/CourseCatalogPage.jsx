@@ -30,7 +30,7 @@ function CourseCard({ course, rating }) {
       </div>
       <div style={{ padding: '1rem 1.1rem 1.2rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.5rem' }}>
-          {level && <span style={{ fontSize: '.64rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', padding: '3px 8px', borderRadius: 20 }}>{level}</span>}
+          {level && <span style={{ fontSize: '.64rem', fontWeight: 700, color: 'var(--jade-ink)', background: 'var(--jade-soft)', padding: '3px 8px', borderRadius: 20 }}>{level}</span>}
           {course.duration_hours && (
             <span style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -116,7 +116,7 @@ export default function CourseCatalogPage() {
         .cat-pill { border: 1px solid var(--border); border-radius: 20px; padding: .35rem .9rem; font-size: .78rem; font-weight: 500; cursor: pointer; transition: all .18s; white-space: nowrap; font-family: var(--sans); }
         .cat-pill.active { background: var(--jade); color: white; border-color: var(--jade); }
         .cat-pill:not(.active) { background: white; color: var(--carbon); }
-        .cat-pill:not(.active):hover { background: var(--jade-soft); border-color: var(--jade-light); color: var(--jade); }
+        .cat-pill:not(.active):hover { background: var(--jade-soft); border-color: var(--jade-light); color: var(--jade-ink); }
         .srch-inp:focus { border-color: var(--jade) !important; outline: none; }
         @media (max-width: 1100px) { .cat-grid { grid-template-columns: repeat(3,1fr) !important; } }
         @media (max-width: 900px) { .cat-grid { grid-template-columns: repeat(2,1fr) !important; } }
@@ -185,7 +185,7 @@ export default function CourseCatalogPage() {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>No encontramos cursos</h3>
-            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.25rem', fontWeight: 300 }}>Prueba con otros términos o quita algún filtro.</p>
+            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.25rem', fontWeight: 400 }}>Prueba con otros términos o quita algún filtro.</p>
             <button onClick={clearFilters}
               style={{ padding: '.6rem 1.4rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
               Ver todos los cursos

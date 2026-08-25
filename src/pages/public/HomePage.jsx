@@ -8,11 +8,11 @@ import { ErrorState } from '../../components/ui/ErrorState'
 
 const TRACK_STYLES = [
   { bg: 'linear-gradient(150deg, #0B3436 0%, #167D78 130%)', icon: 'layers' },
-  { bg: 'linear-gradient(150deg, #7A3520 0%, #C96E4B 130%)', icon: 'chart' },
-  { bg: 'linear-gradient(150deg, #104447 0%, #5ABFBA 145%)', icon: 'users' },
+  { bg: 'linear-gradient(150deg, #7A3520 0%, #A95C3F 130%)', icon: 'chart' },
+  { bg: 'linear-gradient(150deg, #104447 0%, #3F8682 145%)', icon: 'users' },
   { bg: 'linear-gradient(150deg, #16201F 0%, #104447 145%)', icon: 'megaphone' },
   { bg: 'linear-gradient(150deg, #0B3436 0%, #C96E4B 160%)', icon: 'briefcase' },
-  { bg: 'linear-gradient(150deg, #5C2814 0%, #D9855E 130%)', icon: 'cpu' },
+  { bg: 'linear-gradient(150deg, #5C2814 0%, #A76648 130%)', icon: 'cpu' },
 ]
 
 function TrackIcon({ name }) {
@@ -131,7 +131,7 @@ const HOW_STEPS = [
   { num: '4', title: 'Aprende y certifícate', desc: 'Video, recursos y ejercicios a tu ritmo. Certificado digital al terminar.' },
 ]
 
-const INST_COLORS = ['var(--jade)', '#C96E4B', 'var(--jade-dark)', '#104447']
+const INST_COLORS = ['var(--jade)', 'var(--terra-deep)', 'var(--jade-dark)', '#104447']
 
 const LEVEL_LABELS = { beginner: 'Básico', intermediate: 'Intermedio', advanced: 'Avanzado' }
 const MODALITY_LABELS = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
@@ -314,10 +314,10 @@ export default function HomePage() {
         .track-card:hover { transform: translateY(-8px); box-shadow: 0 22px 50px rgba(11,52,54,.28); }
         .track-card-icon { position: absolute; top: 1.2rem; right: -1.2rem; opacity: .16; color: white; pointer-events: none; transition: transform .5s cubic-bezier(.16,1,.3,1), opacity .4s; }
         .track-card:hover .track-card-icon { transform: scale(1.08) rotate(-4deg); opacity: .22; }
-        .track-card-num { position: absolute; top: 1.75rem; left: 2rem; font-family: var(--serif); font-size: .75rem; font-weight: 700; letter-spacing: .12em; color: rgba(255,255,255,.5); }
+        .track-card-num { position: absolute; top: 1.75rem; left: 2rem; font-family: var(--serif); font-size: .75rem; font-weight: 700; letter-spacing: .12em; color: rgba(255,255,255,.92); }
         .track-card-body { position: relative; z-index: 1; }
         .track-card-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 700; line-height: 1.18; margin-bottom: .65rem; }
-        .track-card-desc { font-size: .85rem; color: rgba(255,255,255,.72); line-height: 1.65; font-weight: 300; margin-bottom: 1.5rem; }
+        .track-card-desc { font-size: .85rem; color: rgba(255,255,255,.92); line-height: 1.65; font-weight: 300; margin-bottom: 1.5rem; }
         .track-card-btn { display: inline-flex; align-items: center; gap: .4rem; background: white; color: var(--carbon); border: none; border-radius: 24px; padding: .65rem 1.15rem; font-family: var(--serif); font-size: .82rem; font-weight: 600; cursor: pointer; transition: gap .2s, background .2s; }
         .track-card-btn:hover { gap: .65rem; background: var(--cream); }
         .track-card-btn svg { transition: transform .2s; }
@@ -428,7 +428,7 @@ export default function HomePage() {
         )}
         <div className="hero-grid" style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '4rem', alignItems: 'center', width: '100%', maxWidth: 1200, margin: '0 auto' }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(90,191,186,.75)', marginBottom: '1.4rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.5rem', fontSize: '.7rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(90,191,186,.95)', marginBottom: '1.4rem' }}>
               <span style={{ width: 16, height: 1, background: 'rgba(232,243,242,.4)', display: 'inline-block' }} />
               Formación diseñada por consultores
             </div>
@@ -459,10 +459,10 @@ export default function HomePage() {
               { val: formatCount(stats.instructors), accent: true, label: 'Instructores', desc: 'Consultores activos en el campo' },
             ].map((m) => (
               <div key={m.label} className="metric-card" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 12, padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', backdropFilter: 'blur(6px)' }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '2.4rem', fontWeight: 700, lineHeight: 1, color: m.accent ? 'var(--terra)' : 'white', minWidth: 70 }}>{m.val}</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '2.4rem', fontWeight: 700, lineHeight: 1, color: m.accent ? 'var(--terra-light)' : 'white', minWidth: 70 }}>{m.val}</div>
                 <div style={{ width: 1, height: 40, background: 'rgba(255,255,255,.12)', flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: '.72rem', color: 'rgba(248,246,241,.45)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '.2rem' }}>{m.label}</div>
+                  <div style={{ fontSize: '.72rem', color: 'rgba(248,246,241,.7)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '.2rem' }}>{m.label}</div>
                   <div style={{ fontSize: '.85rem', color: 'rgba(248,246,241,.75)', lineHeight: 1.4 }}>{m.desc}</div>
                 </div>
               </div>
@@ -548,7 +548,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <strong style={{ fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 600, color: 'var(--carbon)', display: 'block', marginBottom: '.25rem' }}>{item.title}</strong>
-                    <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.65 }}>{item.desc}</p>
+                    <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 400, lineHeight: 1.65 }}>{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -556,12 +556,12 @@ export default function HomePage() {
           </div>
           <div className="reveal" style={{ transitionDelay: '140ms', background: 'var(--jade-dark)', borderRadius: 16, padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(22,125,120,.18)' }} />
-            <div style={{ fontSize: '.66rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(248,246,241,.4)' }}>Ejemplo ilustrativo</div>
+            <div style={{ fontSize: '.66rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(248,246,241,.7)' }}>Ejemplo ilustrativo</div>
             <div style={{ display: 'flex', gap: '1rem' }}>
               {[{ val: '94%', label: 'Tasa de compleción', accent: false }, { val: '4.8', label: 'Calificación promedio', accent: true }].map((s) => (
                 <div key={s.label} style={{ flex: 1, background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10, padding: '1.1rem 1.2rem' }}>
-                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.9rem', fontWeight: 700, color: s.accent ? 'var(--terra)' : 'white', lineHeight: 1 }}>{s.val}</div>
-                  <div style={{ fontSize: '.7rem', color: 'rgba(248,246,241,.5)', letterSpacing: '.05em', textTransform: 'uppercase', marginTop: '.25rem' }}>{s.label}</div>
+                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.9rem', fontWeight: 700, color: s.accent ? 'var(--terra-light)' : 'white', lineHeight: 1 }}>{s.val}</div>
+                  <div style={{ fontSize: '.7rem', color: 'rgba(248,246,241,.7)', letterSpacing: '.05em', textTransform: 'uppercase', marginTop: '.25rem' }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -574,7 +574,7 @@ export default function HomePage() {
                 <div style={{ height: 6, background: 'rgba(255,255,255,.1)', borderRadius: 3, overflow: 'hidden', marginBottom: '.5rem' }}>
                   <div className="progress-fill" style={{ height: '100%', borderRadius: 3, background: 'var(--jade)', width: p.pct }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.7rem', color: 'rgba(248,246,241,.4)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.7rem', color: 'rgba(248,246,241,.7)' }}>
                   <span>{p.meta[0]}</span><span>{p.meta[1]}</span>
                 </div>
               </div>
@@ -586,8 +586,8 @@ export default function HomePage() {
                 </svg>
               </div>
               <div>
-                <strong style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--terra)', display: 'block', marginBottom: '.1rem' }}>Certificado digital avalado</strong>
-                <span style={{ fontSize: '.75rem', color: 'rgba(248,246,241,.5)' }}>Grupo Cubo 130 · Válido para perfil profesional</span>
+                <strong style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--terra-light)', display: 'block', marginBottom: '.1rem' }}>Certificado digital avalado</strong>
+                <span style={{ fontSize: '.75rem', color: 'rgba(248,246,241,.7)' }}>Grupo Cubo 130 · Válido para perfil profesional</span>
               </div>
             </div>
           </div>
@@ -630,7 +630,7 @@ export default function HomePage() {
             ) : courses.length === 0 ? (
               <div style={{ gridColumn: '1/-1', padding: '3.5rem 2rem', textAlign: 'center', background: 'white', border: '1px solid var(--border)', borderRadius: 12 }}>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.35rem' }}>Próximamente nuevos cursos</p>
-                <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 300 }}>Estamos preparando contenido de alto impacto. Vuelve pronto.</p>
+                <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 400 }}>Estamos preparando contenido de alto impacto. Vuelve pronto.</p>
               </div>
             ) : (
               courses.map((c, i) => {
@@ -654,7 +654,7 @@ export default function HomePage() {
                         )
                       }
                       {c.categories?.name && (
-                        <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.62rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', padding: '4px 9px', borderRadius: 4, background: 'rgba(22,125,120,.18)', color: 'var(--jade)' }}>
+                        <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.62rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', padding: '4px 9px', borderRadius: 4, background: 'rgba(22,125,120,.18)', color: 'var(--jade-light)' }}>
                           {c.categories.name}
                         </span>
                       )}
@@ -663,10 +663,10 @@ export default function HomePage() {
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, marginBottom: '.65rem', lineHeight: 1.3, color: 'var(--carbon)' }}>{c.title}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                         {c.duration_hours != null && (
-                          <span style={{ fontSize: '.72rem', color: '#9B9894' }}>{c.duration_hours}h</span>
+                          <span style={{ fontSize: '.72rem', color: 'var(--text-3)' }}>{c.duration_hours}h</span>
                         )}
                         {c.level && (
-                          <span style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', padding: '2px 7px', borderRadius: 10 }}>
+                          <span style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--jade-ink)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', padding: '2px 7px', borderRadius: 10 }}>
                             {LEVEL_LABELS[c.level] || c.level}
                           </span>
                         )}
@@ -732,7 +732,7 @@ export default function HomePage() {
             ) : events.length === 0 ? (
               <div style={{ gridColumn: '1/-1', padding: '3.5rem 2rem', textAlign: 'center', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 12 }}>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.35rem' }}>Próximamente nuevos eventos</p>
-                <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 300 }}>Estamos preparando talleres y charlas en vivo. Vuelve pronto.</p>
+                <p style={{ fontSize: '.85rem', color: 'var(--text-2)', fontWeight: 400 }}>Estamos preparando talleres y charlas en vivo. Vuelve pronto.</p>
               </div>
             ) : (
               events.map((e, i) => {
@@ -756,7 +756,7 @@ export default function HomePage() {
                         )
                       }
                       {e.categories?.name && (
-                        <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.62rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', padding: '4px 9px', borderRadius: 4, background: 'rgba(22,125,120,.18)', color: 'var(--jade)' }}>
+                        <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '.62rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', padding: '4px 9px', borderRadius: 4, background: 'rgba(22,125,120,.18)', color: 'var(--jade-light)' }}>
                           {e.categories.name}
                         </span>
                       )}
@@ -765,10 +765,10 @@ export default function HomePage() {
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, marginBottom: '.65rem', lineHeight: 1.3, color: 'var(--carbon)' }}>{e.title}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                         {e.event_start_at && (
-                          <span style={{ fontSize: '.72rem', color: '#9B9894' }}>{formatEventDateTime(e.event_start_at)}</span>
+                          <span style={{ fontSize: '.72rem', color: 'var(--text-3)' }}>{formatEventDateTime(e.event_start_at)}</span>
                         )}
                         {e.modality && (
-                          <span style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', padding: '2px 7px', borderRadius: 10 }}>
+                          <span style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--jade-ink)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', padding: '2px 7px', borderRadius: 10 }}>
                             {MODALITY_LABELS[e.modality] || e.modality}
                           </span>
                         )}
@@ -811,7 +811,7 @@ export default function HomePage() {
               <div key={s.num} className="reveal" style={{ transitionDelay: `${i * 100}ms`, textAlign: 'center', padding: '0 1.25rem' }}>
                 <div style={{ width: 50, height: 50, border: '1.5px solid var(--border)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--jade)', margin: '0 auto 1.2rem', background: 'white', position: 'relative', zIndex: 1 }}>{s.num}</div>
                 <div style={{ fontFamily: 'var(--serif)', fontSize: '.93rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.35rem' }}>{s.title}</div>
-                <div style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.6 }}>{s.desc}</div>
+                <div style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 400, lineHeight: 1.6 }}>{s.desc}</div>
               </div>
             ))}
           </div>
@@ -853,7 +853,7 @@ export default function HomePage() {
                     )}
                     <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.2rem' }}>{inst.full_name}</div>
                     <div style={{ fontSize: '.72rem', color: 'var(--jade)', fontWeight: 500, marginBottom: '.5rem', letterSpacing: '.02em' }}>{role}</div>
-                    {inst.bio && <div style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.6 }}>{inst.bio}</div>}
+                    {inst.bio && <div style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 400, lineHeight: 1.6 }}>{inst.bio}</div>}
                   </div>
                 )
               })}
@@ -868,7 +868,7 @@ export default function HomePage() {
         <div style={{ position: 'absolute', bottom: -60, left: '5%', width: 240, height: 240, borderRadius: '50%', background: 'rgba(201,110,75,.1)', filter: 'blur(10px)', animation: 'orb3 24s ease-in-out infinite', pointerEvents: 'none' }} />
         <div className="reveal cta-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '3rem', position: 'relative', zIndex: 1 }}>
           <div>
-            <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(232,243,242,.5)', marginBottom: '.7rem' }}>Empieza hoy</div>
+            <div style={{ fontSize: '.68rem', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(232,243,242,.7)', marginBottom: '.7rem' }}>Empieza hoy</div>
             <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-.02em', color: 'white', marginBottom: '.85rem' }}>
               ¿Listo para aprender<br />desde <em style={{ fontStyle: 'normal', color: 'var(--jade-light)' }}>adentro</em>?
             </h2>

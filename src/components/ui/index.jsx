@@ -7,7 +7,7 @@ export { INP, SEL, fi, fb, STATUS_TONE } from './tokens'
 // Simple label used by CategoriesPage and UsersPage forms.
 export function FieldLabel({ children, htmlFor }) {
   return (
-    <label htmlFor={htmlFor} style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
+    <label htmlFor={htmlFor} style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'var(--text-3)', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
       {children}
     </label>
   )
@@ -24,7 +24,7 @@ export function Field({ label, children, hint, id }) {
     : children
   return (
     <div style={{ marginBottom: '1.1rem' }}>
-      <label htmlFor={id} style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>{label}</label>
+      <label htmlFor={id} style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'var(--text-3)', marginBottom: '.4rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>{label}</label>
       {hint && <p style={{ fontSize: '.72rem', color: 'var(--text-2)', marginTop: '-.2rem', marginBottom: '.4rem' }}>{hint}</p>}
       {input}
     </div>
@@ -106,7 +106,7 @@ export function ConfirmModal({ title, description, onConfirm, onCancel, loading,
           )}
         </div>
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.45rem' }}>{title}</h3>
-        {description && <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.5rem', fontWeight: 300 }}>{description}</p>}
+        {description && <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.5rem', fontWeight: 400 }}>{description}</p>}
         <div style={{ display: 'flex', gap: '.75rem' }}>
           <button onClick={onCancel}
             style={{ flex: 1, padding: '.75rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.875rem', fontWeight: 600, color: 'var(--carbon)', cursor: 'pointer', fontFamily: 'var(--sans)' }}>

@@ -91,7 +91,7 @@ export default function RegisterScreen() {
             <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>
               Cubo <span style={{ color: 'var(--jade-light)' }}>Campus</span>
             </div>
-            <p style={{ marginTop: '.5rem', fontSize: '.82rem', color: 'rgba(255,255,255,.5)', fontWeight: 300 }}>Crea tu cuenta gratis</p>
+            <p style={{ marginTop: '.5rem', fontSize: '.82rem', color: 'rgba(255,255,255,.5)', fontWeight: 400 }}>Crea tu cuenta gratis</p>
           </div>
 
           {done ? (
@@ -131,7 +131,7 @@ export default function RegisterScreen() {
                 <div style={{ position: 'relative' }}>
                   <input id="register-password" style={{ ...INP_STYLE, paddingRight: '2.8rem' }} type={showPass ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" onFocus={focusIn} onBlur={focusOut} />
                   <button type="button" onClick={() => setShowPass(v => !v)} tabIndex={-1}
-                    style={{ position: 'absolute', right: '.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.4)', padding: 0, display: 'flex' }}>
+                    style={{ position: 'absolute', right: '.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.68)', padding: 0, display: 'flex' }}>
                     {showPass
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                       : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -158,7 +158,7 @@ export default function RegisterScreen() {
 
               {/* Antes era texto suelto: se le pedía aceptar unas condiciones
                   que no podía leer desde ninguna parte. */}
-              <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '.76rem', color: 'rgba(255,255,255,.35)', lineHeight: 1.6 }}>
+              <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '.76rem', color: 'rgba(255,255,255,.68)', lineHeight: 1.6 }}>
                 Al registrarte aceptas nuestros{' '}
                 <button type="button" onClick={() => navigate('terminos')}
                   style={{ background: 'none', border: 'none', padding: 0, color: 'var(--jade-light)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 'inherit', textDecoration: 'underline' }}>

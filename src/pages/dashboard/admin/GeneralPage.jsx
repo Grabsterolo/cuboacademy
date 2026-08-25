@@ -144,7 +144,7 @@ export default function GeneralPage() {
                         <div style={{ fontSize: '.86rem', fontWeight: 500, color: 'var(--carbon)', fontFamily: 'var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {u.full_name || '—'}
                         </div>
-                        <div style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.1rem' }}>
+                        <div style={{ fontSize: '.72rem', color: 'var(--text-3)', marginTop: '.1rem' }}>
                           {u.created_at ? formatDateShort(u.created_at) : '—'}
                         </div>
                       </div>
@@ -176,7 +176,7 @@ export default function GeneralPage() {
                   {stats.comunicados_recientes.map((a, i) => (
                     <div key={a.id} style={{ padding: '.6rem 0', borderBottom: i < stats.comunicados_recientes.length - 1 ? '1px solid var(--border)' : 'none' }}>
                       <div style={{ fontSize: '.86rem', fontWeight: 500, color: 'var(--carbon)', fontFamily: 'var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</div>
-                      <div style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.1rem' }}>{formatDateShort(a.created_at)}</div>
+                      <div style={{ fontSize: '.72rem', color: 'var(--text-3)', marginTop: '.1rem' }}>{formatDateShort(a.created_at)}</div>
                     </div>
                   ))}
                 </div>

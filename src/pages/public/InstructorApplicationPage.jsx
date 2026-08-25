@@ -18,10 +18,10 @@ function StepBar({ current }) {
         return (
           <div key={i} style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.35rem', width: 80 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: done || active ? 'var(--jade)' : '#E8E6E0', color: done || active ? 'white' : '#B5B2AB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.78rem', fontWeight: 700, flexShrink: 0, transition: 'background .3s' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: done || active ? 'var(--jade)' : '#E8E6E0', color: done || active ? 'white' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.78rem', fontWeight: 700, flexShrink: 0, transition: 'background .3s' }}>
                 {done ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> : n}
               </div>
-              <span style={{ fontSize: '.68rem', color: active ? 'var(--jade)' : done ? 'var(--jade)' : '#B5B2AB', fontWeight: active ? 600 : 400, textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
+              <span style={{ fontSize: '.68rem', color: active ? 'var(--jade)' : done ? 'var(--jade)' : 'var(--text-3)', fontWeight: active ? 600 : 400, textAlign: 'center', lineHeight: 1.3 }}>{label}</span>
             </div>
             {i < STEPS.length - 1 && (
               <div style={{ width: 48, height: 2, background: done ? 'var(--jade)' : '#E8E6E0', marginTop: 15, flexShrink: 0, transition: 'background .3s' }} />
@@ -34,7 +34,7 @@ function StepBar({ current }) {
 }
 
 const INP_STYLE = { width: '100%', padding: '.72rem 1rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--carbon)', fontSize: '15px', outline: 'none', fontFamily: 'var(--sans)', boxSizing: 'border-box', transition: 'border-color .2s, background .2s' }
-const LBL_STYLE = { display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }
+const LBL_STYLE = { display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'var(--text-3)', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }
 const FIELD_STYLE = { marginBottom: '.95rem' }
 
 const FORM_TAGS = ['input', 'textarea', 'select']
@@ -216,7 +216,7 @@ export default function InstructorApplicationPage() {
 
       {/* Hero */}
       <div style={{ background: 'var(--carbon)', padding: '2rem 5% 1.75rem', textAlign: 'center' }}>
-        <p style={{ fontSize: '.73rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.5rem' }}>Comparte tu expertise</p>
+        <p style={{ fontSize: '.73rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade-light)', marginBottom: '.5rem' }}>Comparte tu expertise</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.8rem,4vw,2.6rem)', fontWeight: 700, color: 'white', lineHeight: 1.15, marginBottom: '.9rem', maxWidth: 620, margin: '0 auto .9rem' }}>
           Conviértete en instructor de Cubo Campus
         </h1>
@@ -304,13 +304,13 @@ export default function InstructorApplicationPage() {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
-                    <span style={{ fontSize: '.88rem', color: cvFile ? 'var(--carbon)' : '#9B9894' }}>
+                    <span style={{ fontSize: '.88rem', color: cvFile ? 'var(--carbon)' : 'var(--text-3)' }}>
                       {cvFile ? cvFile.name : 'Selecciona un archivo PDF…'}
                     </span>
                   </label>
                   <input id="cv-upload" type="file" accept="application/pdf" onChange={e => handleCvSelect(e.target.files?.[0])} style={{ display: 'none' }} />
                   {cvErr && <p style={{ fontSize: '.75rem', color: '#c0392b', marginTop: '.4rem' }}>{cvErr}</p>}
-                  <p style={{ fontSize: '.75rem', color: '#B5B2AB', marginTop: '.4rem', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '.75rem', color: 'var(--text-3)', marginTop: '.4rem', lineHeight: 1.5 }}>
                     Tu documento quedará disponible para que el equipo de Cubo Campus lo revise junto con tu solicitud.
                   </p>
                 </Fld>

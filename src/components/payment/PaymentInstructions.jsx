@@ -112,13 +112,13 @@ export function PaymentInstructionsModal({ order, courseTitle, onClose }) {
   return (
     <ModalOverlay onClose={onClose}>
       <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '1.75rem', width: '100%', maxWidth: 460, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 24px 60px rgba(23,26,28,.18)' }}>
-        <div style={{ width: 46, height: 46, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .9rem', color: 'var(--jade)' }}>
+        <div style={{ width: 46, height: 46, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .9rem', color: 'var(--jade-ink)' }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', textAlign: 'center', marginBottom: '.35rem' }}>
           Solicitud registrada
         </h3>
-        <p style={{ fontSize: '.82rem', color: 'var(--text-2)', textAlign: 'center', lineHeight: 1.6, fontWeight: 300, marginBottom: '1.15rem' }}>
+        <p style={{ fontSize: '.82rem', color: 'var(--text-2)', textAlign: 'center', lineHeight: 1.6, fontWeight: 400, marginBottom: '1.15rem' }}>
           Tu lugar aún no está confirmado. Sigue estos pasos para completar el pago — también te enviamos esta información por correo.
         </p>
 
@@ -128,7 +128,7 @@ export function PaymentInstructionsModal({ order, courseTitle, onClose }) {
           style={{ width: '100%', marginTop: '1.15rem', padding: '.8rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 9, fontSize: '.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
           Entendido
         </button>
-        <p style={{ fontSize: '.72rem', color: '#B5B2AB', textAlign: 'center', margin: '.7rem 0 0', lineHeight: 1.5 }}>
+        <p style={{ fontSize: '.72rem', color: 'var(--text-3)', textAlign: 'center', margin: '.7rem 0 0', lineHeight: 1.5 }}>
           Puedes volver a ver estas instrucciones en <strong>Mis compras</strong>.
         </p>
       </div>

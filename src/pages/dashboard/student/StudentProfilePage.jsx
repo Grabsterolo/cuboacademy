@@ -16,8 +16,8 @@ function ReadOnlySection({ icon, title, text, onCtaClick, cta }) {
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.93rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{title}</h3>
       </div>
       <div style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
-        <div style={{ width: 40, height: 40, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .75rem', color: 'var(--jade)' }}>{icon}</div>
-        <p style={{ fontSize: '.8rem', color: 'var(--text-2)', marginBottom: cta ? '.9rem' : 0, lineHeight: 1.55, fontWeight: 300 }}>{text}</p>
+        <div style={{ width: 40, height: 40, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .75rem', color: 'var(--jade-ink)' }}>{icon}</div>
+        <p style={{ fontSize: '.8rem', color: 'var(--text-2)', marginBottom: cta ? '.9rem' : 0, lineHeight: 1.55, fontWeight: 400 }}>{text}</p>
         {cta && <button onClick={onCtaClick} style={{ fontSize: '.78rem', fontWeight: 600, color: 'var(--jade)', background: 'transparent', border: '1px solid rgba(22,125,120,.3)', padding: '.4rem .9rem', borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--sans)' }}>{cta}</button>}
       </div>
     </div>
@@ -176,7 +176,7 @@ export default function StudentProfilePage() {
                       disabled={avatarUploading}>
                       {avatarUploading ? 'Subiendo…' : 'Cambiar foto'}
                     </button>
-                    <p style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.35rem' }}>JPG, PNG o GIF. Máx 2 MB.</p>
+                    <p style={{ fontSize: '.72rem', color: 'var(--text-3)', marginTop: '.35rem' }}>JPG, PNG o GIF. Máx 2 MB.</p>
                   </div>
                 </div>
 
@@ -190,13 +190,13 @@ export default function StudentProfilePage() {
                 </div>
 
                 <Field label="Correo electrónico" id="prf-email">
-                  <input style={{ ...INP, background: '#F5F5F0', color: '#9B9894', cursor: 'not-allowed' }} type="email" value={user?.email || ''} readOnly />
+                  <input style={{ ...INP, background: '#F5F5F0', color: 'var(--text-3)', cursor: 'not-allowed' }} type="email" value={user?.email || ''} readOnly />
                 </Field>
 
                 <Field label="Biografía" hint="Cuéntanos quién eres (máx. 300 caracteres)" id="prf-bio">
                   <textarea id="prf-bio" className="prf-ta" style={{ ...INP, resize: 'vertical', minHeight: 90 }} maxLength={300}
                     value={bio} onChange={e => setBio(e.target.value)} placeholder="Soy profesional en..." />
-                  <div style={{ fontSize: '.68rem', color: '#B5B2AB', textAlign: 'right', marginTop: '.2rem' }}>{bio.length}/300</div>
+                  <div style={{ fontSize: '.68rem', color: 'var(--text-3)', textAlign: 'right', marginTop: '.2rem' }}>{bio.length}/300</div>
                 </Field>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
@@ -232,11 +232,11 @@ export default function StudentProfilePage() {
                   <input className="prf-inp" style={{ ...INP, flex: 1 }} type="text" placeholder="Agrega un interés y presiona Enter…"
                     value={interestInput} onChange={e => setInterestInput(e.target.value)} onKeyDown={handleInterestKey} />
                   <button type="button" onClick={addInterest}
-                    style={{ padding: '.7rem 1rem', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', borderRadius: 8, fontSize: '.82rem', fontWeight: 600, color: 'var(--jade)', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'var(--sans)' }}>
+                    style={{ padding: '.7rem 1rem', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', borderRadius: 8, fontSize: '.82rem', fontWeight: 600, color: 'var(--jade-ink)', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'var(--sans)' }}>
                     + Agregar
                   </button>
                 </div>
-                <p style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.4rem' }}>Ej: Análisis de datos, Gestión de procesos, Liderazgo</p>
+                <p style={{ fontSize: '.72rem', color: 'var(--text-3)', marginTop: '.4rem' }}>Ej: Análisis de datos, Gestión de procesos, Liderazgo</p>
               </div>
 
               {/* Perfil profesional */}

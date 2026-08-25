@@ -11,5 +11,5 @@ export const STATUS_TONE = {
   success: { bg: 'var(--jade-soft)', color: 'var(--jade-dark)', border: '1px solid var(--jade-light)' },
   warning: { bg: '#FFFBEB', color: '#A16207', border: '1px solid #FDE68A' },
   danger:  { bg: '#FEF2F2', color: '#B91C1C', border: '1px solid #FECACA' },
-  neutral: { bg: '#F5F5F0', color: '#9B9894', border: '1px solid var(--border)' },
+  neutral: { bg: '#F5F5F0', color: 'var(--text-3)', border: '1px solid var(--border)' },
 }

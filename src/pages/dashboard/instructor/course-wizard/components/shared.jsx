@@ -83,7 +83,7 @@ export function Field({ label, req, hint, children, id }) {
   return (
     <div style={{ marginBottom: '1.1rem' }}>
       {label && (
-        <label htmlFor={id} style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: '#9B9894', marginBottom: '.35rem' }}>
+        <label htmlFor={id} style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '.35rem' }}>
           {label}{req && <span style={{ color: 'var(--jade)', marginLeft: 3 }}>*</span>}
         </label>
       )}

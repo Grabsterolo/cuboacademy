@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useSettings } from '../../../context/SettingsContext'
 import { runQuery } from '../../../lib/db'
+import { evaluateAccent, formatRatio, AA_MIN } from '../../../lib/contrast'
 
 const DEFAULTS = {
   platform_name: 'Cubo Campus',
@@ -40,7 +41,7 @@ function Card({ title, desc, children }) {
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '1.4rem 1.75rem', borderBottom: '1px solid var(--border)' }}>
         <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{title}</h2>
-        {desc && <p style={{ fontSize: '.79rem', color: 'var(--text-2)', margin: '.25rem 0 0', fontWeight: 300, lineHeight: 1.5 }}>{desc}</p>}
+        {desc && <p style={{ fontSize: '.79rem', color: 'var(--text-2)', margin: '.25rem 0 0', fontWeight: 400, lineHeight: 1.5 }}>{desc}</p>}
       </div>
       <div style={{ padding: '1.5rem 1.75rem', flex: 1 }}>{children}</div>
     </div>
@@ -81,11 +82,42 @@ function Field({ label, hint, children, id }) {
   )
 }
 
-function SaveRow({ loading, success, error }) {
+/**
+ * Ratio del color de acento contra los fondos reales de la app.
+ *
+ * Se enseñan los dos números en vez de un simple «no válido»: si el admin
+ * quiere acercarse al color de marca, necesita ver cuánto le falta.
+ */
+function ContrastReadout({ accent }) {
+  if (!accent.valid) return null
+  const bad = !accent.passes
+  return (
+    <div style={{ marginTop: '.55rem', display: 'flex', alignItems: 'center', gap: '.75rem', flexWrap: 'wrap' }}>
+      {accent.results.map(r => (
+        <span key={r.label} style={{ fontSize: '.74rem', color: r.ratio >= AA_MIN ? 'var(--text-2)' : '#b3541e', fontWeight: 500 }}>
+          {formatRatio(r.ratio)} sobre {r.label}
+        </span>
+      ))}
+      <span style={{ fontSize: '.74rem', fontWeight: 600, color: bad ? '#b3541e' : 'var(--jade)' }}>
+        {bad ? `Por debajo del mínimo de ${AA_MIN}:1` : `Cumple el mínimo de ${AA_MIN}:1`}
+      </span>
+      {bad && (
+        <p style={{ width: '100%', margin: '.15rem 0 0', fontSize: '.74rem', color: '#b3541e', lineHeight: 1.5 }}>
+          Este color se usa también para texto (enlaces, precios, etiquetas). Con
+          este tono no se lee bien sobre el fondo de la web, así que no se puede
+          guardar: prueba uno más oscuro.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function SaveRow({ loading, success, error, blocked }) {
+  const off = loading || blocked
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingTop: '.75rem', borderTop: '1px solid var(--border)', marginTop: '.25rem' }}>
-      <button type="submit" disabled={loading}
-        style={{ padding: '.6rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.855rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: loading ? .7 : 1, transition: 'opacity .2s' }}>
+      <button type="submit" disabled={off}
+        style={{ padding: '.6rem 1.5rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.855rem', fontWeight: 600, cursor: off ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: off ? .7 : 1, transition: 'opacity .2s' }}>
         {loading ? 'Guardando…' : 'Guardar cambios'}
       </button>
       {success && (
@@ -142,6 +174,19 @@ export default function SettingsPage() {
 
   async function handleSavePlatform(e) {
     e.preventDefault()
+    // El color de acento sobrescribe --jade en toda la app, y --jade no es solo
+    // relleno: es color de texto en enlaces, precios y etiquetas. Un tono claro
+    // deja ilegibles decenas de nodos de una sola vez, así que aquí se para el
+    // guardado en lugar de dejarlo pasar con un aviso que se puede ignorar.
+    const check = evaluateAccent(settings.primary_color)
+    if (!check.valid) {
+      setS1({ saving: false, ok: false, err: 'El color principal debe ser un hex de 6 dígitos, por ejemplo #167D78.' })
+      return
+    }
+    if (!check.passes) {
+      setS1({ saving: false, ok: false, err: `El color principal no se guardó: ${formatRatio(check.worst.ratio)} sobre ${check.worst.label}, por debajo del mínimo de ${AA_MIN}:1. Elige un tono más oscuro.` })
+      return
+    }
     await saveKeys(['platform_name', 'platform_description', 'logo_url', 'primary_color'], setS1)
     if (settings.primary_color) document.documentElement.style.setProperty('--jade', settings.primary_color)
     if (settings.platform_name) document.title = settings.platform_name
@@ -228,6 +273,11 @@ export default function SettingsPage() {
     <div style={{ height: h, background: 'var(--border)', borderRadius: 7, width: w, opacity: .55 }} />
   )
 
+
+  // Se recalcula en cada tecleo: el admin ve el ratio mientras elige, no
+  // después de guardar.
+  const accent = evaluateAccent(settings.primary_color)
+
   return (
     <DashboardLayout>
       <style>{`
@@ -278,8 +328,9 @@ export default function SettingsPage() {
                       onChange={e => set('primary_color', e.target.value)}
                       placeholder="#167D78" maxLength={7} />
                   </div>
+                  <ContrastReadout accent={accent} />
                 </Field>
-                <SaveRow loading={s1.saving} success={s1.ok} error={s1.err} />
+                <SaveRow loading={s1.saving} success={s1.ok} error={s1.err} blocked={!accent.passes} />
               </form>
             )}
           </Card>

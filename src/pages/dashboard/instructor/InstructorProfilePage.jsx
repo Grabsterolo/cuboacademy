@@ -169,7 +169,7 @@ export default function InstructorProfilePage() {
                       disabled={avatarUploading}>
                       {avatarUploading ? 'Subiendo…' : 'Cambiar foto'}
                     </button>
-                    <p style={{ fontSize: '.72rem', color: '#B5B2AB', marginTop: '.35rem' }}>JPG, PNG o GIF. Máx 2 MB.</p>
+                    <p style={{ fontSize: '.72rem', color: 'var(--text-3)', marginTop: '.35rem' }}>JPG, PNG o GIF. Máx 2 MB.</p>
                   </div>
                 </div>
 
@@ -183,14 +183,14 @@ export default function InstructorProfilePage() {
                 </div>
 
                 <Field label="Correo electrónico" id="ipr-email">
-                  <input style={{ ...INP, background: '#F5F5F0', color: '#9B9894', cursor: 'not-allowed' }} type="email" value={user?.email || ''} readOnly />
+                  <input style={{ ...INP, background: '#F5F5F0', color: 'var(--text-3)', cursor: 'not-allowed' }} type="email" value={user?.email || ''} readOnly />
                 </Field>
 
                 <Field label="Biografía profesional" hint="Describe tu trayectoria y experiencia (máx. 300 caracteres)" id="ipr-bio">
                   <textarea id="ipr-bio" className="ipr-ta" style={{ ...INP, resize: 'vertical', minHeight: 100 }} maxLength={300}
                     value={bio} onChange={e => setBio(e.target.value)}
                     placeholder="Soy consultor con X años de experiencia en..." />
-                  <div style={{ fontSize: '.68rem', color: '#B5B2AB', textAlign: 'right', marginTop: '.2rem' }}>{bio.length}/300</div>
+                  <div style={{ fontSize: '.68rem', color: 'var(--text-3)', textAlign: 'right', marginTop: '.2rem' }}>{bio.length}/300</div>
                 </Field>
 
                 <div className="ipr-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.75rem' }}>
@@ -267,7 +267,7 @@ export default function InstructorProfilePage() {
                   }
                   <div style={{ fontFamily: 'var(--serif)', fontSize: '.93rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.2rem' }}>{displayName}</div>
                   {specialty && <div style={{ fontSize: '.72rem', color: 'var(--jade)', fontWeight: 500, marginBottom: '.5rem', letterSpacing: '.02em' }}>{specialty}</div>}
-                  {bio && <div style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.6, marginBottom: '.75rem' }}>{bio.slice(0, 90)}{bio.length > 90 ? '…' : ''}</div>}
+                  {bio && <div style={{ fontSize: '.78rem', color: 'var(--text-2)', fontWeight: 400, lineHeight: 1.6, marginBottom: '.75rem' }}>{bio.slice(0, 90)}{bio.length > 90 ? '…' : ''}</div>}
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '.5rem', flexWrap: 'wrap' }}>
                     {expLabel && <span style={{ fontSize: '.7rem', color: 'var(--text-2)', background: 'var(--cream)', padding: '3px 10px', borderRadius: 10 }}>{expLabel}</span>}
                     {country && <span style={{ fontSize: '.7rem', color: 'var(--text-2)', background: 'var(--cream)', padding: '3px 10px', borderRadius: 10 }}>{country}</span>}

@@ -139,7 +139,7 @@ export default function StudentCertificatesPage() {
         ) : certs.length === 0 && pendingCerts.length === 0 && rejectedCerts.length === 0 ? (
           <>
             <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '3rem 2.5rem', textAlign: 'center', marginBottom: '1.5rem' }}>
-              <div style={{ width: 64, height: 64, background: 'var(--jade-soft)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--jade)' }}>
+              <div style={{ width: 64, height: 64, background: 'var(--jade-soft)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: 'var(--jade-ink)' }}>
                 {CERT_ICON_BIG}
               </div>
               <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.3, marginBottom: '.75rem' }}>
@@ -162,10 +162,10 @@ export default function StudentCertificatesPage() {
               },
             ].map(f => (
               <div key={f.title} style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '.75rem' }}>
-                <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade)', flexShrink: 0 }}>{f.icon}</div>
+                <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade-ink)', flexShrink: 0 }}>{f.icon}</div>
                 <div>
                   <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.2rem' }}>{f.title}</div>
-                  <div style={{ fontSize: '.79rem', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 300 }}>{f.desc}</div>
+                  <div style={{ fontSize: '.79rem', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 400 }}>{f.desc}</div>
                 </div>
               </div>
             ))}
@@ -250,7 +250,7 @@ export default function StudentCertificatesPage() {
                           </>
                         ) : (
                           <span title="El PDF de este certificado todavía no está disponible"
-                            style={{ padding: '.55rem 1.1rem', background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', opacity: .65 }}>
+                            style={{ padding: '.55rem 1.1rem', background: 'var(--jade-soft)', color: 'var(--jade-ink)', border: '1px solid rgba(22,125,120,.25)', borderRadius: 8, fontSize: '.8rem', fontWeight: 700, fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', gap: '.4rem', opacity: .65 }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             PDF no disponible
                           </span>

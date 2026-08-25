@@ -89,7 +89,7 @@ function InstructorModal({ instructor, onClose }) {
                 ['twitter', profile.twitter_url],
               ].filter(([, url]) => url).map(([key, url]) => (
                 <a key={key} href={url} target="_blank" rel="noopener noreferrer"
-                  style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--jade-soft)', color: 'var(--jade)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                  style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--jade-soft)', color: 'var(--jade-ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
                   {SOCIAL_ICONS[key]}
                 </a>
               ))}
@@ -202,7 +202,7 @@ export default function StudentInstructorsPage() {
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{USERS_ICON}</div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.35rem' }}>Sin instructores aún</p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB', lineHeight: 1.6, fontWeight: 300 }}>Inscríbete en un curso para conocer a tu instructor.</p>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)', lineHeight: 1.6, fontWeight: 400 }}>Inscríbete en un curso para conocer a tu instructor.</p>
           </div>
         ) : (
           <>
@@ -229,7 +229,7 @@ export default function StudentInstructorsPage() {
                   </div>
 
                   {profile.bio && (
-                    <p style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.65, fontWeight: 300, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0 }}>
+                    <p style={{ fontSize: '.8rem', color: 'var(--text-2)', lineHeight: 1.65, fontWeight: 400, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0 }}>
                       {profile.bio}
                     </p>
                   )}

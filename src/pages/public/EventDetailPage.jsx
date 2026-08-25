@@ -175,7 +175,7 @@ export default function EventDetailPage() {
                   }
                   <div>
                     <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.3rem' }}>{instructor.full_name}</div>
-                    {instructor.bio && <p style={{ fontSize: '.82rem', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 300 }}>{instructor.bio}</p>}
+                    {instructor.bio && <p style={{ fontSize: '.82rem', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 400 }}>{instructor.bio}</p>}
                   </div>
                 </div>
               </div>
@@ -229,7 +229,7 @@ export default function EventDetailPage() {
 
               {/* Details list */}
               <div style={{ borderTop: '1px solid var(--border)', padding: '1.1rem 1.5rem' }}>
-                <p style={{ fontSize: '.72rem', fontWeight: 700, color: '#9B9894', letterSpacing: '.07em', textTransform: 'uppercase', marginBottom: '.75rem' }}>Este evento incluye</p>
+                <p style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.07em', textTransform: 'uppercase', marginBottom: '.75rem' }}>Este evento incluye</p>
                 {[
                   event.event_start_at && formatEventDateTime(event.event_start_at),
                   modality && `Modalidad ${modality.toLowerCase()}`,
@@ -237,7 +237,7 @@ export default function EventDetailPage() {
                   event.capacity && `Cupo limitado (${event.capacity} personas)`,
                   event.has_certificate && 'Certificado de participación',
                 ].filter(Boolean).map((item, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '.6rem', fontSize: '.82rem', color: 'var(--carbon)', marginBottom: '.45rem', fontWeight: 300 }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '.6rem', fontSize: '.82rem', color: 'var(--carbon)', marginBottom: '.45rem', fontWeight: 400 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                     {item}
                   </div>

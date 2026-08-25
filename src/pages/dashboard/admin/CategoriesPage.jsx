@@ -191,7 +191,7 @@ export default function CategoriesPage() {
               </svg>
             </div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>Sin categorías</h2>
-            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.4rem', fontWeight: 300 }}>Crea la primera categoría para organizar el catálogo de cursos.</p>
+            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.4rem', fontWeight: 400 }}>Crea la primera categoría para organizar el catálogo de cursos.</p>
             <button className="btn-create-cat" onClick={openCreate} style={{ margin: '0 auto' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -222,13 +222,13 @@ export default function CategoriesPage() {
                     </div>
                   </div>
                   {cat.description && (
-                    <p style={{ fontSize: '.83rem', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 300 }}>{cat.description}</p>
+                    <p style={{ fontSize: '.83rem', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 400 }}>{cat.description}</p>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '.25rem', flexWrap: 'wrap', gap: '.4rem' }}>
                     <span style={{ fontFamily: 'monospace', fontSize: '.72rem', background: 'var(--cream)', border: '1px solid var(--border)', color: 'var(--text-2)', borderRadius: 5, padding: '2px 8px' }}>
                       /{cat.slug}
                     </span>
-                    <span style={{ fontSize: '.72rem', color: '#B5B2AB' }}>
+                    <span style={{ fontSize: '.72rem', color: 'var(--text-3)' }}>
                       {cat.created_at ? formatDateShort(cat.created_at) : '—'}
                     </span>
                   </div>
@@ -335,7 +335,7 @@ export default function CategoriesPage() {
               </svg>
             </div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.45rem' }}>¿Eliminar categoría?</h3>
-            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.5rem', fontWeight: 300 }}>
+            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.5rem', fontWeight: 400 }}>
               Vas a eliminar <strong style={{ color: 'var(--carbon)', fontWeight: 600 }}>{deleteTarget.name}</strong>. Esta acción no se puede deshacer.
             </p>
             <div style={{ display: 'flex', gap: '.75rem' }}>

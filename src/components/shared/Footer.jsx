@@ -67,7 +67,7 @@ export default function Footer() {
             <span style={{ color: 'var(--jade)' }}>Campus</span>
           </span>
           {settings.platform_description && (
-            <p style={{ fontSize: '.78rem', color: 'var(--text-2)', lineHeight: 1.6, margin: '.5rem 0 0', maxWidth: 320, fontWeight: 300 }}>
+            <p style={{ fontSize: '.78rem', color: 'var(--text-2)', lineHeight: 1.6, margin: '.5rem 0 0', maxWidth: 320, fontWeight: 400 }}>
               {settings.platform_description}
             </p>
           )}
@@ -117,7 +117,7 @@ export default function Footer() {
       </div>
 
       <div className="footer-bottom" style={{ maxWidth: 1200, margin: '0 auto', paddingTop: '1.1rem', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.75rem' }}>
-        <span style={{ fontSize: '.74rem', color: '#B5B2AB' }}>© {year} Grupo Cubo 130 S.A.</span>
+        <span style={{ fontSize: '.74rem', color: 'var(--text-3)' }}>© {year} Grupo Cubo 130 S.A.</span>
       </div>
     </footer>
   )

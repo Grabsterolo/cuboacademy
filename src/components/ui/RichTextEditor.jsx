@@ -5,7 +5,7 @@ import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 
 const BTN = { width: 30, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: 'transparent', borderRadius: 6, cursor: 'pointer', color: 'var(--text-2)', flexShrink: 0 }
-const BTN_ACTIVE = { background: 'var(--jade-soft)', color: 'var(--jade)' }
+const BTN_ACTIVE = { background: 'var(--jade-soft)', color: 'var(--jade-ink)' }
 
 const RTE_IC = {
   bold:     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg>,
@@ -73,8 +73,8 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         .rte-content li p { margin: 0; }
         .rte-content a { color: var(--jade); }
         .rte-content h3 { font-family: var(--serif); font-size: 1.02rem; margin: 0 0 .4rem; }
-        .rte-content.is-empty:before { content: attr(data-placeholder); color: #B5B2AB; pointer-events: none; }
-        .rte-btn:hover:not(:disabled) { background: var(--jade-soft); color: var(--jade); }
+        .rte-content.is-empty:before { content: attr(data-placeholder); color: var(--text-3); pointer-events: none; }
+        .rte-btn:hover:not(:disabled) { background: var(--jade-soft); color: var(--jade-ink); }
         .rte-btn:focus-visible { outline: 2px solid var(--jade); outline-offset: 1px; }
         .rte-btn:disabled { opacity: .35; cursor: not-allowed; }
       `}</style>

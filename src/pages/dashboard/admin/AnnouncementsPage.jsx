@@ -242,7 +242,7 @@ export default function AnnouncementsPage() {
         .ann-inp:focus { border-color: var(--jade); background: white; }
         .ann-icon-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; min-width: 30px; min-height: 30px; }
         .ann-icon-btn:hover { background: rgba(220,38,38,.09); color: #dc2626; }
-        .ann-icon-btn-edit:hover { background: var(--jade-soft); color: var(--jade); }
+        .ann-icon-btn-edit:hover { background: var(--jade-soft); color: var(--jade-ink); }
         .ann-toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--carbon); color: white; padding: .65rem 1.25rem; border-radius: 8px; font-size: .84rem; font-family: var(--sans); font-weight: 500; z-index: 400; white-space: nowrap; box-shadow: 0 4px 20px rgba(23,26,28,.2); pointer-events: none; }
         .ann-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem 1.35rem; display: flex; align-items: flex-start; gap: 1rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
         .ann-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.07); border-color: rgba(22,125,120,.25); }
@@ -340,13 +340,13 @@ export default function AnnouncementsPage() {
           />
         ) : filtered.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center', maxWidth: 420 }}>
-            <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade)' }}>
+            <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade-ink)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.3rem' }}>
               {items.length === 0 ? 'Sin comunicados' : 'Sin resultados'}
             </p>
-            <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)' }}>
+            <p style={{ fontSize: '.8rem', color: 'var(--text-3)', fontFamily: 'var(--sans)' }}>
               {items.length === 0 ? 'Crea el primer comunicado para tus usuarios.' : 'Prueba con otros filtros o términos de búsqueda.'}
             </p>
           </div>
@@ -369,7 +369,7 @@ export default function AnnouncementsPage() {
                     </p>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.5rem', flexShrink: 0 }}>
-                    <span style={{ fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '.72rem', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
                       {formatDateShort(item.created_at)}
                     </span>
                     <div style={{ display: 'flex', gap: '.25rem' }}>
@@ -404,7 +404,7 @@ export default function AnnouncementsPage() {
             {/* Modal header */}
             <div style={{ padding: '1.75rem 2rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '18px 18px 0 0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-                <div style={{ width: 38, height: 38, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade)' }}>
+                <div style={{ width: 38, height: 38, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade-ink)' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 </div>
                 <div>
@@ -452,7 +452,7 @@ export default function AnnouncementsPage() {
               <div style={{ marginBottom: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.6rem' }}>
                   <p className="section-label" style={{ margin: 0 }}>Mensaje</p>
-                  <span style={{ fontSize: '.7rem', color: content.length > MAX_CHARS * 0.9 ? '#D97706' : '#B5B2AB', fontFamily: 'var(--sans)' }}>{content.length}/{MAX_CHARS}</span>
+                  <span style={{ fontSize: '.7rem', color: content.length > MAX_CHARS * 0.9 ? '#D97706' : 'var(--text-3)', fontFamily: 'var(--sans)' }}>{content.length}/{MAX_CHARS}</span>
                 </div>
                 <textarea className="ann-inp" placeholder="Escribe el contenido del comunicado aquí…" value={content} onChange={e => setContent(e.target.value.slice(0, MAX_CHARS))} required rows={6}
                   style={{ resize: 'vertical', minHeight: 130, lineHeight: 1.6 }} />

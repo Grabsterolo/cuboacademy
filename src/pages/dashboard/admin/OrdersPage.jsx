@@ -259,7 +259,7 @@ export default function OrdersPage() {
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.35rem' }}>
               {orders.length === 0 ? 'Sin órdenes aún' : 'Sin resultados'}
             </p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB' }}>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)' }}>
               {orders.length === 0 ? 'Las órdenes aparecerán aquí cuando los estudiantes compren cursos.' : 'Prueba con otros filtros.'}
             </p>
           </div>
@@ -291,9 +291,9 @@ export default function OrdersPage() {
                       {/* Misma referencia que el estudiante escribe en la
                           transferencia — sin esto no hay forma de casar un
                           comprobante con su orden. */}
-                      <span style={{ color: '#B5B2AB' }}> · Ref. {orderReference(order.id)}</span>
+                      <span style={{ color: 'var(--text-3)' }}> · Ref. {orderReference(order.id)}</span>
                       {order.status === 'completed' && (
-                        <span style={{ color: '#B5B2AB' }}>
+                        <span style={{ color: 'var(--text-3)' }}>
                           {' · '}{paymentProviderLabel(order.payment_provider)}
                           {order.provider_order_id ? ` · ${order.provider_order_id}` : ''}
                         </span>
@@ -326,7 +326,7 @@ export default function OrdersPage() {
                       ) : (
                         <>
                           <button onClick={() => setConfirmAction({ orderId: order.id, action: 'confirm' })} disabled={isActing}
-                            style={{ padding: '.38rem .85rem', background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)', borderRadius: 7, fontSize: '.77rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'background .15s', whiteSpace: 'nowrap' }}
+                            style={{ padding: '.38rem .85rem', background: 'var(--jade-soft)', color: 'var(--jade-ink)', border: '1px solid rgba(22,125,120,.25)', borderRadius: 7, fontSize: '.77rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'background .15s', whiteSpace: 'nowrap' }}
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(22,125,120,.18)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'var(--jade-soft)'}>
                             ✓ Confirmar pago

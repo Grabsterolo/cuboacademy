@@ -152,12 +152,12 @@ export default function EventDetailPage() {
                 </h1>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1rem' }}>
                   {event.categories?.name && (
-                    <div style={{ fontSize: '.68rem', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--jade)', background: 'var(--jade-soft)', padding: '4px 10px', borderRadius: 20 }}>
+                    <div style={{ fontSize: '.68rem', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--jade-ink)', background: 'var(--jade-soft)', padding: '4px 10px', borderRadius: 20 }}>
                       {event.categories.name}
                     </div>
                   )}
                   {modality && (
-                    <div style={{ fontSize: '.68rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', padding: '4px 10px', borderRadius: 20 }}>
+                    <div style={{ fontSize: '.68rem', fontWeight: 700, color: 'var(--jade-ink)', background: 'var(--jade-soft)', padding: '4px 10px', borderRadius: 20 }}>
                       {modality}
                     </div>
                   )}
@@ -198,7 +198,7 @@ export default function EventDetailPage() {
                         <div style={{ fontSize: '.78rem', color: 'var(--jade)', fontWeight: 600, marginBottom: '.35rem' }}>{event.profiles.profession}</div>
                       )}
                       {event.profiles.bio && (
-                        <p style={{ fontSize: '.82rem', color: 'var(--text-2)', lineHeight: 1.65, margin: 0, fontWeight: 300, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        <p style={{ fontSize: '.82rem', color: 'var(--text-2)', lineHeight: 1.65, margin: 0, fontWeight: 400, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                           {event.profiles.bio}
                         </p>
                       )}

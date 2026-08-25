@@ -199,7 +199,7 @@ export default function CourseDetailPage() {
                   }
                   <div>
                     <div style={{ fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.3rem' }}>{instructor.full_name}</div>
-                    {instructor.bio && <p style={{ fontSize: '.82rem', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 300 }}>{instructor.bio}</p>}
+                    {instructor.bio && <p style={{ fontSize: '.82rem', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 400 }}>{instructor.bio}</p>}
                   </div>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function CourseDetailPage() {
 
               {/* Details list */}
               <div style={{ borderTop: '1px solid var(--border)', padding: '1.1rem 1.5rem' }}>
-                <p style={{ fontSize: '.72rem', fontWeight: 700, color: '#9B9894', letterSpacing: '.07em', textTransform: 'uppercase', marginBottom: '.75rem' }}>Este curso incluye</p>
+                <p style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.07em', textTransform: 'uppercase', marginBottom: '.75rem' }}>Este curso incluye</p>
                 {[
                   course.duration_hours && `${course.duration_hours} horas de contenido en video`,
                   totalLessons > 0 && `${totalLessons} lección${totalLessons !== 1 ? 'es' : ''}`,
@@ -290,7 +290,7 @@ export default function CourseDetailPage() {
                   'Acceso de por vida',
                   'Certificado de finalización',
                 ].filter(Boolean).map((item, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '.6rem', fontSize: '.82rem', color: 'var(--carbon)', marginBottom: '.45rem', fontWeight: 300 }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '.6rem', fontSize: '.82rem', color: 'var(--carbon)', marginBottom: '.45rem', fontWeight: 400 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                     {item}
                   </div>

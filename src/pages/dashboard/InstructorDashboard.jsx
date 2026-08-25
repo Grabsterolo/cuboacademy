@@ -130,7 +130,7 @@ export default function InstructorDashboard() {
               </div>
             ) : courses.length === 0 ? (
               <div style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
-                <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--jade)' }}>{COURSE_ICON}</div>
+                <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--jade-ink)' }}>{COURSE_ICON}</div>
                 <p style={{ fontSize: '.86rem', color: 'var(--text-2)', lineHeight: 1.6, marginBottom: '1.25rem', fontWeight: 300, maxWidth: 300, margin: '0 auto 1.25rem' }}>
                   Comparte tu experiencia consultiva con profesionales que quieren aprender desde la práctica real.
                 </p>
@@ -178,8 +178,8 @@ export default function InstructorDashboard() {
               </div>
               {announcements.length === 0 ? (
                 <div style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
-                  <div style={{ color: 'var(--jade)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{BELL_ICON}</div>
-                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300 }}>Sin comunicados recientes</p>
+                  <div style={{ color: 'var(--jade-ink)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{BELL_ICON}</div>
+                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 400 }}>Sin comunicados recientes</p>
                 </div>
               ) : (
                 <div style={{ padding: '.75rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>

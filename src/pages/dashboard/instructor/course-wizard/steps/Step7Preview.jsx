@@ -38,7 +38,7 @@ export function Step7Preview({ info, modules, eval: ev, cert, pricing }) {
                   ${pricing.discount ? (parseFloat(pricing.price) * (1 - parseFloat(pricing.discount) / 100)).toFixed(2) : parseFloat(pricing.price).toFixed(2)}
                 </span>
               ) : (
-                <span style={{ fontSize: '.8rem', fontWeight: 700, color: 'var(--jade)', padding: '.2rem .6rem', background: 'var(--jade-soft)', borderRadius: 6 }}>Gratuito</span>
+                <span style={{ fontSize: '.8rem', fontWeight: 700, color: 'var(--jade-ink)', padding: '.2rem .6rem', background: 'var(--jade-soft)', borderRadius: 6 }}>Gratuito</span>
               )}
               {cert.hasCert && (
                 <span style={{ fontSize: '.75rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.25rem' }}>{IC.star} Certificado</span>
@@ -62,7 +62,7 @@ export function Step7Preview({ info, modules, eval: ev, cert, pricing }) {
               ))}
             </div>
             {ready && (
-              <div style={{ marginTop: '1rem', padding: '.7rem', background: 'var(--jade-soft)', borderRadius: 8, fontSize: '.8rem', color: 'var(--jade)', fontWeight: 600 }}>
+              <div style={{ marginTop: '1rem', padding: '.7rem', background: 'var(--jade-soft)', borderRadius: 8, fontSize: '.8rem', color: 'var(--jade-ink)', fontWeight: 600 }}>
                 ¡Tu curso está listo para publicar!
               </div>
             )}

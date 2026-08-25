@@ -294,7 +294,7 @@ export default function InstructorEvaluationsPage() {
                               </div>
                               {resp && (
                                 isGraded ? (
-                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', fontSize: '.78rem', color: '#16A34A', fontWeight: 600, background: '#F0FDF4', borderRadius: 7, padding: '3px 9px' }}>
+                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', fontSize: '.78rem', color: '#15803D', fontWeight: 600, background: '#F0FDF4', borderRadius: 7, padding: '3px 9px' }}>
                                     ✓ {inputVal} / {q.points} pts — calificado
                                   </div>
                                 ) : (
@@ -324,7 +324,7 @@ export default function InstructorEvaluationsPage() {
                                 <div key={opt.id} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.4rem .65rem', borderRadius: 6, border: `1px solid ${border}`, background: bg, fontSize: '.8rem', color: 'var(--carbon)' }}>
                                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: chosen ? (opt.is_correct ? '#16A34A' : '#DC2626') : 'transparent', border: chosen ? 'none' : '1.5px solid var(--border)', flexShrink: 0 }} />
                                   <span style={{ flex: 1 }}>{opt.text}</span>
-                                  {opt.is_correct && <span style={{ fontSize: '.66rem', fontWeight: 700, color: '#16A34A' }}>Correcta</span>}
+                                  {opt.is_correct && <span style={{ fontSize: '.66rem', fontWeight: 700, color: '#15803D' }}>Correcta</span>}
                                 </div>
                               )
                             })}
@@ -353,7 +353,7 @@ export default function InstructorEvaluationsPage() {
         .ev-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; transition: box-shadow .18s; }
         .ev-card:hover { box-shadow: 0 4px 16px rgba(23,26,28,.07); }
         .ev-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
-        .ev-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
+        .ev-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade-ink); }
         .ev-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999; display: flex; align-items: center; justify-content: center; }
         .ev-modal { background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
       `}</style>
@@ -402,13 +402,13 @@ export default function InstructorEvaluationsPage() {
           />
         ) : shown.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
-            <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade)' }}>
+            <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade-ink)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             </div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>
               {tab === 'pending' ? 'Sin solicitudes pendientes' : 'Sin evaluaciones revisadas'}
             </p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB' }}>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)' }}>
               {tab === 'pending'
                 ? 'Cuando los estudiantes completen sus lecciones y envíen su solicitud, aparecerán aquí.'
                 : 'Las evaluaciones aprobadas o rechazadas aparecerán aquí.'}
@@ -449,7 +449,7 @@ export default function InstructorEvaluationsPage() {
 
                     <button
                       onClick={() => toggleExpand(sub)}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', padding: '.45rem .8rem', background: isExpanded ? 'var(--jade-soft)' : 'white', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '.78rem', fontWeight: 600, color: 'var(--jade)', cursor: 'pointer', fontFamily: 'var(--sans)', flexShrink: 0 }}>
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', padding: '.45rem .8rem', background: isExpanded ? 'var(--jade-soft)' : 'white', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '.78rem', fontWeight: 600, color: 'var(--jade-ink)', cursor: 'pointer', fontFamily: 'var(--sans)', flexShrink: 0 }}>
                       {isExpanded ? 'Ocultar' : 'Ver evaluación'}
                     </button>
 

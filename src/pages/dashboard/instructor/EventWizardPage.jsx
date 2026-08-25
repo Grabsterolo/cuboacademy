@@ -92,7 +92,7 @@ export default function EventWizardPage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0 }}>
             {eventId && (
-              <span style={{ fontSize: '.72rem', color: 'var(--jade)', display: 'flex', alignItems: 'center', gap: '.35rem', background: 'var(--jade-soft)', padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(22,125,120,.2)' }}>
+              <span style={{ fontSize: '.72rem', color: 'var(--jade-ink)', display: 'flex', alignItems: 'center', gap: '.35rem', background: 'var(--jade-soft)', padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(22,125,120,.2)' }}>
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="var(--jade)"><circle cx="12" cy="12" r="10"/></svg>
                 Guardado
               </span>

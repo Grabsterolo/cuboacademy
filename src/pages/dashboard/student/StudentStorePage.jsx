@@ -62,7 +62,7 @@ function CourseCard({ course, wishlistIds, onToggleWishlist, rating, owned, pend
       {/* Body */}
       <div style={{ padding: '.9rem 1rem 1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.4rem' }}>
-          {level && <span style={{ fontSize: '.64rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', padding: '3px 8px', borderRadius: 20 }}>{level}</span>}
+          {level && <span style={{ fontSize: '.64rem', fontWeight: 700, color: 'var(--jade-ink)', background: 'var(--jade-soft)', padding: '3px 8px', borderRadius: 20 }}>{level}</span>}
           {isEvent ? (course.event_start_at && (
             <span style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -87,7 +87,7 @@ function CourseCard({ course, wishlistIds, onToggleWishlist, rating, owned, pend
               ya lo pagó, verlo otra vez con etiqueta de precio es desconcertante
               — y con una solicitud en revisión, invita a duplicarla. */}
           {owned ? (
-            <span style={{ fontSize: '.68rem', fontWeight: 700, color: 'var(--jade)', background: 'var(--jade-soft)', border: '1px solid rgba(22,125,120,.25)', padding: '2px 8px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '.68rem', fontWeight: 700, color: 'var(--jade-ink)', background: 'var(--jade-soft)', border: '1px solid rgba(22,125,120,.25)', padding: '2px 8px', borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap' }}>
               Ya lo tienes
             </span>
           ) : pending ? (
@@ -359,11 +359,11 @@ function WishlistTab({ wishlistIds, onToggleWishlist, owned, pending }) {
 
   if (!wishlistIds.length) return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
-      <div style={{ width: 48, height: 48, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--jade)' }}>
+      <div style={{ width: 48, height: 48, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--jade-ink)' }}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </div>
       <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>Tu lista de deseos está vacía</h2>
-      <p style={{ fontSize: '.84rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.6 }}>Guarda cursos que te interesen desde el catálogo usando el ícono ❤</p>
+      <p style={{ fontSize: '.84rem', color: 'var(--text-2)', fontWeight: 400, lineHeight: 1.6 }}>Guarda cursos que te interesen desde el catálogo usando el ícono ❤</p>
     </div>
   )
 
@@ -412,11 +412,11 @@ function PurchasesTab({ user }) {
 
   if (!orders.length) return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
-      <div style={{ width: 48, height: 48, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--jade)' }}>
+      <div style={{ width: 48, height: 48, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: 'var(--jade-ink)' }}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       </div>
       <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>Sin compras aún</h2>
-      <p style={{ fontSize: '.84rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.6 }}>Aquí aparecerá el historial de tus compras cuando realices tu primera inscripción.</p>
+      <p style={{ fontSize: '.84rem', color: 'var(--text-2)', fontWeight: 400, lineHeight: 1.6 }}>Aquí aparecerá el historial de tus compras cuando realices tu primera inscripción.</p>
     </div>
   )
 
@@ -521,7 +521,7 @@ export default function StudentStorePage() {
         .st-tab { padding: .55rem 1.1rem; border: none; border-radius: 7px; cursor: pointer; font-size: .84rem; font-weight: 600; font-family: var(--sans); transition: all .15s; white-space: nowrap; }
         .st-tab.active { background: var(--jade); color: white; }
         .st-tab:not(.active) { background: transparent; color: var(--text-2); }
-        .st-tab:not(.active):hover { background: var(--jade-soft); color: var(--jade); }
+        .st-tab:not(.active):hover { background: var(--jade-soft); color: var(--jade-ink); }
       `}</style>
 
       <div className="st-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>

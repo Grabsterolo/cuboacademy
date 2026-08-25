@@ -34,7 +34,7 @@ function DRow({ label, value, isLink }) {
   if (!value && value !== 0) return null
   return (
     <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.5rem', fontSize: '.84rem' }}>
-      <span style={{ color: '#9B9894', flexShrink: 0, width: 140 }}>{label}:</span>
+      <span style={{ color: 'var(--text-3)', flexShrink: 0, width: 140 }}>{label}:</span>
       {isLink
         ? <a href={value} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--jade)', wordBreak: 'break-all' }}>{value}</a>
         : <span style={{ color: 'var(--carbon)', fontWeight: 400, wordBreak: 'break-word' }}>{value}</span>
@@ -56,7 +56,7 @@ function CvRow({ path }) {
 
   return (
     <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.5rem', fontSize: '.84rem', alignItems: 'center' }}>
-      <span style={{ color: '#9B9894', flexShrink: 0, width: 140 }}>CV / Documento:</span>
+      <span style={{ color: 'var(--text-3)', flexShrink: 0, width: 140 }}>CV / Documento:</span>
       <button onClick={openCv} disabled={loading}
         style={{ background: 'none', border: '1px solid var(--jade-light)', color: 'var(--jade)', borderRadius: 6, padding: '.3rem .7rem', fontSize: '.8rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)' }}>
         {loading ? 'Abriendo…' : 'Ver documento PDF'}
@@ -342,7 +342,7 @@ export default function RequestsPage() {
         {/* Table */}
         <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
           {/* Column headers */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '.6rem 1rem', background: 'var(--cream)', borderBottom: '1px solid var(--border)', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', letterSpacing: '.05em', textTransform: 'uppercase' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '.6rem 1rem', background: 'var(--cream)', borderBottom: '1px solid var(--border)', fontSize: '.72rem', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '.05em', textTransform: 'uppercase' }}>
             <span style={{ flex: '0 0 36px' }}></span>
             <span style={{ flex: '1 1 200px', minWidth: 0 }}>Nombre</span>
             <span style={{ flex: '1 1 180px', minWidth: 0 }} className="rq-row-meta">Email</span>
@@ -379,7 +379,7 @@ export default function RequestsPage() {
             return (
               <div key={a.id}>
               <div className="rq-row" onClick={() => { setSelected(a); setNotes(a.reviewer_notes || '') }}>
-                <div style={{ flex: '0 0 36px', width: 36, height: 36, borderRadius: '50%', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700, color: 'var(--jade)', flexShrink: 0 }}>
+                <div style={{ flex: '0 0 36px', width: 36, height: 36, borderRadius: '50%', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 700, color: 'var(--jade-ink)', flexShrink: 0 }}>
                   {initials}
                 </div>
                 <div style={{ flex: '1 1 200px', minWidth: 0 }}>
@@ -468,7 +468,7 @@ export default function RequestsPage() {
               {selected.status === 'pending' && (
                 <Section title="Decisión">
                   <div style={{ marginBottom: '1rem' }}>
-                    <label htmlFor="req-reviewer-notes" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: '#9B9894', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
+                    <label htmlFor="req-reviewer-notes" style={{ display: 'block', fontSize: '.72rem', fontWeight: 600, color: 'var(--text-3)', marginBottom: '.35rem', letterSpacing: '.05em', textTransform: 'uppercase' }}>
                       Notas del revisor (opcional)
                     </label>
                     <textarea

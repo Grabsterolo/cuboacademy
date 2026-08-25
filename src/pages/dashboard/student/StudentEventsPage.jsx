@@ -63,7 +63,7 @@ export default function StudentEventsPage() {
         .se-card { background: white; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; gap: 1rem; padding: .9rem 1.25rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
         .se-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.08); border-color: rgba(22,125,120,.2); }
         .se-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
-        .se-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
+        .se-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade-ink); }
       `}</style>
 
       <div className="se-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -129,7 +129,7 @@ export default function StudentEventsPage() {
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>
               {tab === 'upcoming' ? 'Sin eventos próximos' : 'Sin eventos pasados'}
             </p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB', marginBottom: enrollments.length === 0 ? '1.5rem' : 0 }}>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)', marginBottom: enrollments.length === 0 ? '1.5rem' : 0 }}>
               {tab === 'upcoming' ? 'Explora el catálogo y reserva tu cupo.' : 'Aquí aparecerán los eventos a los que ya asististe.'}
             </p>
             {enrollments.length === 0 && (
@@ -167,7 +167,7 @@ export default function StudentEventsPage() {
                     {/* Right */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0, alignSelf: 'center' }}>
                       {enr.completed_at && (
-                        <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' }}>✓ Asististe</span>
+                        <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: 'var(--jade-soft)', color: 'var(--jade-ink)', border: '1px solid rgba(22,125,120,.25)' }}>✓ Asististe</span>
                       )}
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>

@@ -137,7 +137,7 @@ function QuestionCard({ q, idx, onToggle, onUpdate, onRemove, onAddAnswer, onUpd
           {Q_TYPES.find(t => t.value === q.type)?.label}
         </span>
         {isQuestionComplete(q) ? (
-          <span title="Pregunta completa" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: 'var(--jade-soft)', color: 'var(--jade)', flexShrink: 0 }}>{IC.check}</span>
+          <span title="Pregunta completa" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: 'var(--jade-soft)', color: 'var(--jade-ink)', flexShrink: 0 }}>{IC.check}</span>
         ) : (
           <span title="Falta texto o respuesta correcta" style={{ width: 8, height: 8, borderRadius: '50%', background: '#DC2626', flexShrink: 0 }} />
         )}
@@ -168,7 +168,7 @@ function QuestionCard({ q, idx, onToggle, onUpdate, onRemove, onAddAnswer, onUpd
 
           {showAnswers && (
             <div>
-              <div style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: '#9B9894', marginBottom: '.6rem' }}>
+              <div style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '.6rem' }}>
                 {isTrueFalse ? 'Opciones' : `Opciones de respuesta ${isMultiple ? '(marca todas las correctas)' : '(marca la correcta)'}`}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem', marginBottom: '.6rem' }}>

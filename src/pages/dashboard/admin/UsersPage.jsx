@@ -281,7 +281,7 @@ export default function UsersPage() {
         .btn-submit-u:disabled { opacity: .6; cursor: not-allowed; }
         .users-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(23,26,28,.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; min-width: 30px; min-height: 30px; }
-        .icon-btn:hover { background: var(--jade-soft); color: var(--jade); }
+        .icon-btn:hover { background: var(--jade-soft); color: var(--jade-ink); }
         .icon-btn-danger:hover { background: rgba(220,38,38,.09) !important; color: #dc2626 !important; }
         .toggle-track-u { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
         .toggle-track-u input { opacity: 0; width: 0; height: 0; position: absolute; }
@@ -387,7 +387,7 @@ export default function UsersPage() {
                     </div>
 
                     {/* Date — pushed to the right */}
-                    <div style={{ marginLeft: 'auto', fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    <div style={{ marginLeft: 'auto', fontSize: '.72rem', color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                       {u.created_at ? formatDateShort(u.created_at) : '—'}
                     </div>
 
@@ -497,7 +497,7 @@ export default function UsersPage() {
 
               {/* Correo — solo lectura */}
               <div style={{ marginBottom: '.85rem', padding: '.65rem .95rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 7 }}>
-                <div style={{ fontSize: '.68rem', fontWeight: 600, color: '#B5B2AB', letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '.2rem' }}>Correo</div>
+                <div style={{ fontSize: '.68rem', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '.2rem' }}>Correo</div>
                 <div style={{ fontSize: '.9rem', color: 'var(--text-2)', fontFamily: 'var(--sans)' }}>{editTarget.email}</div>
               </div>
 

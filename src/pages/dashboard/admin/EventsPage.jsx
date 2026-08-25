@@ -123,7 +123,7 @@ export default function EventsPage() {
         .ep-card { background: white; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; gap: 1rem; padding: .9rem 1.25rem; transition: box-shadow .18s, border-color .18s; }
         .ep-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.08); border-color: rgba(22,125,120,.2); }
         .ep-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
-        .ep-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
+        .ep-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade-ink); }
       `}</style>
 
       <div className="ep-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -182,7 +182,7 @@ export default function EventsPage() {
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>
               {events.length === 0 ? 'Todavía no hay eventos' : 'Sin resultados'}
             </p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB', marginBottom: events.length === 0 ? '1.5rem' : 0 }}>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)', marginBottom: events.length === 0 ? '1.5rem' : 0 }}>
               {events.length === 0 ? 'Crea el primer evento de la plataforma.' : 'Prueba con otros filtros o términos.'}
             </p>
             {events.length === 0 && (
@@ -208,7 +208,7 @@ export default function EventsPage() {
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '.9rem', fontWeight: 700, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.title}</div>
                       <VisibilityBadge visibility={e.visibility} />
                       {e.id === topEventId && (
-                        <span title="El evento con más órdenes completadas" style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '.65rem', fontWeight: 700, color: '#B4720E', background: '#F5E9D3', border: '1px solid #EAD6A8', borderRadius: 8, padding: '2px 7px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                        <span title="El evento con más órdenes completadas" style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '.65rem', fontWeight: 700, color: '#8F5A0B', background: '#F5E9D3', border: '1px solid #EAD6A8', borderRadius: 8, padding: '2px 7px', flexShrink: 0, whiteSpace: 'nowrap' }}>
                           <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.9L22 9.8l-5.5 4.9L18 22l-6-3.6L6 22l1.5-7.3L2 9.8l7.1-.9L12 2z"/></svg>
                           Más vendido
                         </span>

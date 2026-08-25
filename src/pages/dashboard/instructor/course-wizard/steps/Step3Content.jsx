@@ -122,7 +122,7 @@ function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onAddFileRe
         </span>
         <span style={{ fontSize: '.72rem', color: 'var(--text-2)', marginRight: '.3rem' }}>{typeLabel[les.type]}</span>
         {isLessonContentComplete(les) ? (
-          <span title="Contenido listo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: 'var(--jade-soft)', color: 'var(--jade)', flexShrink: 0 }}>{IC.check}</span>
+          <span title="Contenido listo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: 'var(--jade-soft)', color: 'var(--jade-ink)', flexShrink: 0 }}>{IC.check}</span>
         ) : (
           <span title="Falta contenido" style={{ width: 8, height: 8, borderRadius: '50%', background: '#DC2626', flexShrink: 0 }} />
         )}
@@ -172,7 +172,7 @@ function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onAddFileRe
               minHeight={80} onChange={html => onChange({ content_text: html })} />
           </Field>
           <div>
-            <div style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: '#9B9894', marginBottom: '.5rem' }}>
+            <div style={{ display: 'block', fontSize: '.69rem', fontWeight: 600, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '.5rem' }}>
               {IC.link} Recursos de la lección
             </div>
             {(les.links || []).map(lk => (

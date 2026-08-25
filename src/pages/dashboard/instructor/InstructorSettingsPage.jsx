@@ -9,7 +9,7 @@ function Card({ title, desc, children, span }) {
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', gridColumn: span ? '1 / -1' : undefined }}>
       <div style={{ padding: '1.4rem 1.75rem', borderBottom: '1px solid var(--border)' }}>
         <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{title}</h2>
-        {desc && <p style={{ fontSize: '.79rem', color: 'var(--text-2)', margin: '.25rem 0 0', fontWeight: 300, lineHeight: 1.5 }}>{desc}</p>}
+        {desc && <p style={{ fontSize: '.79rem', color: 'var(--text-2)', margin: '.25rem 0 0', fontWeight: 400, lineHeight: 1.5 }}>{desc}</p>}
       </div>
       <div style={{ padding: '0 1.75rem' }}>{children}</div>
     </div>
@@ -66,7 +66,7 @@ export default function InstructorSettingsPage() {
           {/* Cuenta */}
           <Card title="Cuenta" desc="Información de acceso y seguridad de tu cuenta.">
             <Row label="Correo electrónico" desc={user?.email || '—'}>
-              <span style={{ fontSize: '.76rem', color: '#B5B2AB', background: 'var(--cream)', padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>No editable</span>
+              <span style={{ fontSize: '.76rem', color: 'var(--text-3)', background: 'var(--cream)', padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>No editable</span>
             </Row>
             <Row label="Contraseña" desc="Recibe un enlace por correo para restablecer tu contraseña." last>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.3rem' }}>

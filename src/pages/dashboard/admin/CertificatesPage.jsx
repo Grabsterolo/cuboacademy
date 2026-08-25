@@ -139,7 +139,7 @@ export default function CertificatesPage() {
         .cp-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; transition: box-shadow .18s; }
         .cp-card:hover { box-shadow: 0 4px 16px rgba(23,26,28,.07); }
         .cp-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
-        .cp-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
+        .cp-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade-ink); }
         .cp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999; display: flex; align-items: center; justify-content: center; }
         .cp-modal { background: white; border-radius: 16px; padding: 2rem; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
       `}</style>
@@ -187,13 +187,13 @@ export default function CertificatesPage() {
           />
         ) : shown.length === 0 ? (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
-            <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade)' }}>
+            <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem', color: 'var(--jade-ink)' }}>
               {CERT_ICON}
             </div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>
               {tab === 'pending' ? 'Sin certificados pendientes' : 'Sin certificados revisados'}
             </p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB' }}>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)' }}>
               {tab === 'pending'
                 ? 'Los certificados creados por instructores aparecerán aquí para su aprobación.'
                 : 'Los certificados aprobados o rechazados aparecerán aquí.'}

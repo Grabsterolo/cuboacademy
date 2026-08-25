@@ -40,18 +40,18 @@ function sameLocalDay(a, b) {
  */
 export function eventStatus(event, now = new Date()) {
   const startRaw = event?.event_start_at
-  if (!startRaw) return { key: 'upcoming', label: 'Próximo', bg: 'var(--jade-soft)', color: 'var(--jade)' }
+  if (!startRaw) return { key: 'upcoming', label: 'Próximo', bg: 'var(--jade-soft)', color: 'var(--jade-ink)' }
 
   const start = new Date(startRaw)
   const end = event.event_end_at ? new Date(event.event_end_at) : start
 
   if (end.getTime() < now.getTime()) {
-    return { key: 'past', label: 'Finalizado', bg: '#F5F5F0', color: '#9B9894' }
+    return { key: 'past', label: 'Finalizado', bg: '#F5F5F0', color: 'var(--text-3)' }
   }
   if (sameLocalDay(start, now)) {
     return { key: 'today', label: 'Hoy', bg: '#FFFBEB', color: '#B45309' }
   }
-  return { key: 'upcoming', label: 'Próximo', bg: 'var(--jade-soft)', color: 'var(--jade)' }
+  return { key: 'upcoming', label: 'Próximo', bg: 'var(--jade-soft)', color: 'var(--jade-ink)' }
 }
 
 /**

@@ -82,7 +82,7 @@ export default function InstructorEventsPage() {
         .ie-card { background: white; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; gap: 1rem; padding: .9rem 1.25rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
         .ie-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.08); border-color: rgba(22,125,120,.2); }
         .ie-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
-        .ie-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
+        .ie-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade-ink); }
       `}</style>
 
       <div className="ie-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -141,7 +141,7 @@ export default function InstructorEventsPage() {
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>
               {events.length === 0 ? 'Aún no tienes eventos' : 'Sin resultados'}
             </p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB', marginBottom: events.length === 0 ? '1.5rem' : 0 }}>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)', marginBottom: events.length === 0 ? '1.5rem' : 0 }}>
               {events.length === 0 ? 'Crea tu primer evento y compártelo con tus estudiantes.' : 'Prueba con otros filtros o términos.'}
             </p>
             {events.length === 0 && (

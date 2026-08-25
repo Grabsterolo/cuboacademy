@@ -18,7 +18,7 @@ export default function ReportsPage() {
             </svg>
           </div>
           <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>Esta sección está en construcción</h2>
-          <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)', fontWeight: 400 }}>Próximamente disponible</p>
+          <p style={{ fontSize: '.8rem', color: 'var(--text-3)', fontFamily: 'var(--sans)', fontWeight: 400 }}>Próximamente disponible</p>
         </div>
       </div>
     </DashboardLayout>

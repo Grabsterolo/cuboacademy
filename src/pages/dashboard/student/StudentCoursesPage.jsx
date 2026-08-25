@@ -90,7 +90,7 @@ export default function StudentCoursesPage() {
         .sc-card { background: white; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: flex-start; gap: 1rem; padding: .9rem 1.25rem; transition: box-shadow .18s, border-color .18s; cursor: pointer; }
         .sc-card:hover { box-shadow: 0 4px 20px rgba(23,26,28,.08); border-color: rgba(22,125,120,.2); }
         .sc-tab { padding: .35rem .85rem; border-radius: 20px; font-size: .79rem; font-weight: 600; cursor: pointer; font-family: var(--sans); transition: all .15s; border: 1.5px solid var(--border); background: transparent; color: var(--text-2); }
-        .sc-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade); }
+        .sc-tab.active { border-color: rgba(22,125,120,.4); background: var(--jade-soft); color: var(--jade-ink); }
       `}</style>
 
       <div className="sc-pad" style={{ padding: '2.5rem 2.5rem 3rem' }}>
@@ -149,7 +149,7 @@ export default function StudentCoursesPage() {
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>
               {tab === 'active' ? 'Sin cursos en progreso' : 'Sin cursos completados'}
             </p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB', marginBottom: enrollments.length === 0 ? '1.5rem' : 0 }}>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)', marginBottom: enrollments.length === 0 ? '1.5rem' : 0 }}>
               {tab === 'active' ? 'Explora el catálogo y comienza tu aprendizaje.' : 'Sigue avanzando en tus cursos actuales.'}
             </p>
             {enrollments.length === 0 && (
@@ -189,7 +189,7 @@ export default function StudentCoursesPage() {
                     {/* Right */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0, alignSelf: 'center' }}>
                       {done && (
-                        <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' }}>✓ Completado</span>
+                        <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: 'var(--jade-soft)', color: 'var(--jade-ink)', border: '1px solid rgba(22,125,120,.25)' }}>✓ Completado</span>
                       )}
                       <button onClick={e => { e.stopPropagation(); navigate('aprender', { courseId: c.id }) }}
                         style={{ padding: '.4rem .9rem', background: done ? 'var(--jade-soft)' : 'var(--jade)', color: done ? 'var(--jade)' : 'white', border: done ? '1px solid rgba(22,125,120,.25)' : 'none', borderRadius: 7, fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>

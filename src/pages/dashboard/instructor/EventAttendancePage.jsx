@@ -121,7 +121,7 @@ export default function EventAttendancePage() {
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{USERS}</div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.35rem' }}>Sin inscritos aún</p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB' }}>Cuando alguien se inscriba a este evento aparecerá aquí.</p>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)' }}>Cuando alguien se inscriba a este evento aparecerá aquí.</p>
           </div>
         ) : (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>

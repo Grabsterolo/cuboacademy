@@ -176,7 +176,7 @@ export default function Navbar() {
                 </button>
                 {categories.length > 0 && (
                   <div style={{ borderTop: '1px solid var(--border)', padding: '.75rem 1.1rem' }}>
-                    <div style={{ fontSize: '.72rem', color: '#B5B2AB', marginBottom: '.5rem', letterSpacing: '.04em', textTransform: 'uppercase', fontWeight: 600 }}>Áreas disponibles</div>
+                    <div style={{ fontSize: '.72rem', color: 'var(--text-3)', marginBottom: '.5rem', letterSpacing: '.04em', textTransform: 'uppercase', fontWeight: 600 }}>Áreas disponibles</div>
                     {categories.filter(cat => cat.name.toLowerCase().includes(searchQuery.toLowerCase())).map(cat => (
                       <div key={cat.id} onClick={() => { navigate('courses', { categoryId: cat.id }); setSearchOpen(false); setSearchQuery('') }}
                         style={{ padding: '.4rem 0', fontSize: '.83rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer' }}>

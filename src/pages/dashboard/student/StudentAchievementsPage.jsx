@@ -162,7 +162,7 @@ export default function StudentAchievementsPage() {
                     </div>
                   </div>
                   {a.unlocked && (
-                    <span style={{ fontSize: '.66rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--jade)', background: 'var(--jade-soft)', padding: '3px 10px', borderRadius: 20 }}>
+                    <span style={{ fontSize: '.66rem', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase', color: 'var(--jade-ink)', background: 'var(--jade-soft)', padding: '3px 10px', borderRadius: 20 }}>
                       ¡Desbloqueado!
                     </span>
                   )}
@@ -179,9 +179,9 @@ export default function StudentAchievementsPage() {
             <div className="ach-future" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '.85rem' }}>
               {FUTURE.map(f => (
                 <div key={f.title} className="ach-feat">
-                  <div style={{ width: 44, height: 44, background: 'var(--cream)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B5B2AB', flexShrink: 0, border: '1px dashed var(--border)' }}>{f.icon}</div>
+                  <div style={{ width: 44, height: 44, background: 'var(--cream)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', flexShrink: 0, border: '1px dashed var(--border)' }}>{f.icon}</div>
                   <div>
-                    <div style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: '#B5B2AB', marginBottom: '.2rem' }}>{f.title}</div>
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: '.88rem', fontWeight: 700, color: 'var(--text-3)', marginBottom: '.2rem' }}>{f.title}</div>
                     <div style={{ fontSize: '.77rem', color: '#C8C5BE', lineHeight: 1.55, fontWeight: 300 }}>{f.desc}</div>
                   </div>
                 </div>

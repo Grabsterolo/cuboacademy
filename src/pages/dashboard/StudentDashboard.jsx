@@ -19,7 +19,7 @@ function StatCard({ value, label, icon, sub, onClick }) {
       style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '.85rem', transition: 'border-color .2s, box-shadow .2s', cursor: onClick ? 'pointer' : 'default' }}
       onMouseEnter={e => { if (onClick) { e.currentTarget.style.borderColor = 'rgba(22,125,120,.3)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(23,26,28,.07)' } }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}>
-      <div style={{ width: 40, height: 40, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--jade)' }}>{icon}</div>
+      <div style={{ width: 40, height: 40, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--jade-ink)' }}>{icon}</div>
       <div>
         <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{value}</div>
         <div style={{ fontSize: '.72rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 400 }}>{label}</div>
@@ -131,7 +131,7 @@ export default function StudentDashboard() {
         <div style={{ marginBottom: '2rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.3rem' }}>Bienvenido de vuelta</p>
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>Hola, {firstName}</h1>
-          <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginTop: '.35rem', fontWeight: 300 }}>
+          <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginTop: '.35rem', fontWeight: 400 }}>
             {settings.welcome_message || 'Continúa aprendiendo desde donde lo dejaste.'}
           </p>
         </div>
@@ -187,8 +187,8 @@ export default function StudentDashboard() {
                 </div>
               ) : !heroEnrollment ? (
                 <div style={{ padding: '2.5rem 1.5rem', textAlign: 'center' }}>
-                  <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .85rem', color: 'var(--jade)' }}>{BOOK_ICON}</div>
-                  <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1rem', lineHeight: 1.55, fontWeight: 300 }}>
+                  <div style={{ width: 44, height: 44, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .85rem', color: 'var(--jade-ink)' }}>{BOOK_ICON}</div>
+                  <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1rem', lineHeight: 1.55, fontWeight: 400 }}>
                     {settings.welcome_message || 'Explora el catálogo y empieza a aprender.'}
                   </p>
                   <button onClick={() => navigate('tienda')} style={{ fontSize: '.82rem', fontWeight: 600, color: 'white', background: 'var(--jade)', border: 'none', cursor: 'pointer', padding: '.55rem 1.25rem', borderRadius: 7, fontFamily: 'var(--sans)' }}>Explorar catálogo</button>
@@ -304,7 +304,7 @@ export default function StudentDashboard() {
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
                 <div style={{ padding: '1.1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Cursos completados</h2>
-                  <span style={{ fontSize: '.72rem', fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: 'var(--jade-soft)', color: 'var(--jade)', border: '1px solid rgba(22,125,120,.25)' }}>{completed.length}</span>
+                  <span style={{ fontSize: '.72rem', fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: 'var(--jade-soft)', color: 'var(--jade-ink)', border: '1px solid rgba(22,125,120,.25)' }}>{completed.length}</span>
                 </div>
                 <div style={{ padding: '.85rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
                   {completed.map(e => {
@@ -347,8 +347,8 @@ export default function StudentDashboard() {
                 </div>
               ) : announcements.length === 0 ? (
                 <div style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
-                  <div style={{ color: 'var(--jade)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{BELL_ICON}</div>
-                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300 }}>Sin comunicados recientes</p>
+                  <div style={{ color: 'var(--jade-ink)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{BELL_ICON}</div>
+                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 400 }}>Sin comunicados recientes</p>
                 </div>
               ) : (
                 <div style={{ padding: '.75rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
@@ -374,8 +374,8 @@ export default function StudentDashboard() {
                 </div>
               ) : unlockedAchievements.length === 0 ? (
                 <div style={{ padding: '1.5rem 1.25rem', textAlign: 'center' }}>
-                  <div style={{ color: 'var(--jade)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{STAR_ICON}</div>
-                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.5 }}>Completa cursos para desbloquear logros.</p>
+                  <div style={{ color: 'var(--jade-ink)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{STAR_ICON}</div>
+                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 400, lineHeight: 1.5 }}>Completa cursos para desbloquear logros.</p>
                 </div>
               ) : (
                 <div style={{ padding: '1rem 1.25rem' }}>
@@ -422,8 +422,8 @@ export default function StudentDashboard() {
                 </div>
               ) : completed.length === 0 ? (
                 <div style={{ padding: '1.5rem 1.25rem', textAlign: 'center' }}>
-                  <div style={{ color: 'var(--jade)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{CERT_ICON}</div>
-                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 300, lineHeight: 1.5 }}>Completa un curso para obtener tu certificado.</p>
+                  <div style={{ color: 'var(--jade-ink)', margin: '0 auto .6rem', width: 36, height: 36, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{CERT_ICON}</div>
+                  <p style={{ fontSize: '.8rem', color: 'var(--text-2)', fontWeight: 400, lineHeight: 1.5 }}>Completa un curso para obtener tu certificado.</p>
                 </div>
               ) : (
                 <div style={{ padding: '.85rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '.55rem' }}>

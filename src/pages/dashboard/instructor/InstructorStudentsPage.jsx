@@ -142,7 +142,7 @@ export default function InstructorStudentsPage() {
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{USERS}</div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.35rem' }}>Sin estudiantes aún</p>
-            <p style={{ fontSize: '.82rem', color: '#B5B2AB' }}>Cuando alguien se inscriba a tus cursos aparecerá aquí.</p>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)' }}>Cuando alguien se inscriba a tus cursos aparecerá aquí.</p>
           </div>
         ) : (
           <>
@@ -158,10 +158,10 @@ export default function InstructorStudentsPage() {
                     </div>
                     <div style={{ fontSize: '.75rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.courseTitle}</div>
                   </div>
-                  <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, flexShrink: 0, background: r.completed_at ? 'var(--jade-soft)' : '#F5F5F0', color: r.completed_at ? 'var(--jade)' : '#9B9894' }}>
+                  <span style={{ fontSize: '.68rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, flexShrink: 0, background: r.completed_at ? 'var(--jade-soft)' : '#F5F5F0', color: r.completed_at ? 'var(--jade)' : 'var(--text-3)' }}>
                     {r.completed_at ? 'Completado' : 'En curso'}
                   </span>
-                  <div style={{ fontSize: '.72rem', color: '#B5B2AB', flexShrink: 0 }}>
+                  <div style={{ fontSize: '.72rem', color: 'var(--text-3)', flexShrink: 0 }}>
                     {formatDateShort(r.enrolled_at)}
                   </div>
                 </div>

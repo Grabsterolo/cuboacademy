@@ -137,7 +137,7 @@ export default function InstructorAnnouncementsPage() {
               <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '3.5rem 2rem', textAlign: 'center' }}>
                 <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{BELL}</div>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 600, color: 'var(--carbon)', marginBottom: '.3rem' }}>{items.length === 0 ? 'Sin comunicados' : 'Sin resultados'}</p>
-                <p style={{ fontSize: '.8rem', color: '#B5B2AB', fontFamily: 'var(--sans)' }}>{items.length === 0 ? 'No hay comunicados disponibles.' : 'Prueba con otros filtros.'}</p>
+                <p style={{ fontSize: '.8rem', color: 'var(--text-3)', fontFamily: 'var(--sans)' }}>{items.length === 0 ? 'No hay comunicados disponibles.' : 'Prueba con otros filtros.'}</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
@@ -148,7 +148,7 @@ export default function InstructorAnnouncementsPage() {
                         <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>{item.title}</h2>
                         <TypeBadge value={item.type} />
                       </div>
-                      <span style={{ fontSize: '.72rem', color: '#B5B2AB', whiteSpace: 'nowrap', flexShrink: 0, marginTop: '.15rem' }}>
+                      <span style={{ fontSize: '.72rem', color: 'var(--text-3)', whiteSpace: 'nowrap', flexShrink: 0, marginTop: '.15rem' }}>
                         {formatDateShort(item.created_at)}
                       </span>
                     </div>

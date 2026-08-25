@@ -403,7 +403,7 @@ export default function CourseReviewPage() {
 
             {confirm === 'publish' ? (
               <>
-                <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade)', margin: '0 auto 1.25rem' }}>{IC.check}</div>
+                <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade-ink)', margin: '0 auto 1.25rem' }}>{IC.check}</div>
                 <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--carbon)', textAlign: 'center', marginBottom: '.5rem' }}>¿Publicar este curso?</h3>
                 <p style={{ fontSize: '.84rem', color: 'var(--text-2)', textAlign: 'center', lineHeight: 1.6, marginBottom: '1.5rem' }}>
                   El curso quedará visible para todos los estudiantes de la plataforma.

@@ -15,11 +15,11 @@ const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','
 function StatCard({ value, label, icon, sub }) {
   return (
     <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.1rem 1.3rem', display: 'flex', alignItems: 'center', gap: '.9rem' }}>
-      <div style={{ width: 42, height: 42, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade)', flexShrink: 0 }}>{icon}</div>
+      <div style={{ width: 42, height: 42, background: 'var(--jade-soft)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--jade-ink)', flexShrink: 0 }}>{icon}</div>
       <div>
         <div style={{ fontFamily: 'var(--serif)', fontSize: '1.55rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1 }}>{value}</div>
         <div style={{ fontSize: '.71rem', color: 'var(--text-2)', marginTop: '.2rem', fontWeight: 500 }}>{label}</div>
-        {sub != null && <div style={{ fontSize: '.68rem', color: '#B5B2AB', marginTop: '.1rem' }}>{sub}</div>}
+        {sub != null && <div style={{ fontSize: '.68rem', color: 'var(--text-3)', marginTop: '.1rem' }}>{sub}</div>}
       </div>
     </div>
   )
@@ -130,7 +130,7 @@ export default function InstructorReportsPage() {
                 </div>
                 <div style={{ padding: '1.5rem 1.35rem' }}>
                   {monthlyEnr.every(m => m.value === 0) ? (
-                    <p style={{ fontSize: '.82rem', color: '#B5B2AB', textAlign: 'center', padding: '1.5rem 0' }}>Sin inscripciones aún.</p>
+                    <p style={{ fontSize: '.82rem', color: 'var(--text-3)', textAlign: 'center', padding: '1.5rem 0' }}>Sin inscripciones aún.</p>
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '.5rem', height: 120 }}>
                       {monthlyEnr.map(m => (
@@ -151,7 +151,7 @@ export default function InstructorReportsPage() {
                   <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Cursos por estudiantes</h2>
                 </div>
                 {courses.length === 0 ? (
-                  <div style={{ padding: '2.5rem', textAlign: 'center', color: '#B5B2AB', fontSize: '.82rem' }}>Sin cursos aún.</div>
+                  <div style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-3)', fontSize: '.82rem' }}>Sin cursos aún.</div>
                 ) : sorted.map((c, i) => {
                   const st  = STATUS_STYLE[c.status] || STATUS_STYLE.draft
                   const n   = counts[c.id] || 0

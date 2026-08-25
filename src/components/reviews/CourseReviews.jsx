@@ -136,9 +136,9 @@ function ReviewRow({ review, mine }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.2rem' }}>
           <span style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--carbon)' }}>{name}{mine ? ' (tú)' : ''}</span>
           <StarRow rating={review.rating} size={12} />
-          <span style={{ fontSize: '.72rem', color: '#B5B2AB' }}>{date}</span>
+          <span style={{ fontSize: '.72rem', color: 'var(--text-3)' }}>{date}</span>
         </div>
-        {review.comment && <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0, fontWeight: 300 }}>{review.comment}</p>}
+        {review.comment && <p style={{ fontSize: '.84rem', color: 'var(--text-2)', lineHeight: 1.6, margin: 0, fontWeight: 400 }}>{review.comment}</p>}
       </div>
     </div>
   )
