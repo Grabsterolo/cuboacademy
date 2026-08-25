@@ -11,7 +11,7 @@
  * de tener una previsualización que de verdad sirva para revisar el texto.
  */
 
-const JADE = 'var(--jade)'
+const JADE = 'var(--jade-ink)'
 const CARBON = '#17211f'
 const GREY = '#6b6a61'
 const CREAM = '#f6f3ee'
