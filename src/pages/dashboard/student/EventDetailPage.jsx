@@ -45,7 +45,7 @@ export default function EventDetailPage() {
     setLoading(true)
     const { data: eventData } = await runQuery(
       supabase.rpc('course_by_slug', { p_slug: slug })
-      .select('id, slug, title, description, cover_image_url, price, modality, event_start_at, event_end_at, country, city, location, capacity, has_certificate, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
+      .select('id, slug, title, description, cover_image_url, price, modality, event_start_at, event_end_at, country, city, location, capacity, cancelled_at, cancellation_reason, has_certificate, category_id, categories(name), profiles!instructor_id(id, full_name, bio, avatar_url, profession)')
       .eq('type', 'event')
       .maybeSingle(),
       'EventDetailPage: consulta 1',
