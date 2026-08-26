@@ -62,7 +62,7 @@ export default function EventsPage() {
     const [{ data }, { data: topId }] = await Promise.all([
       supabase
         .from('courses')
-        .select('id, title, cover_image_url, price, modality, event_start_at, location, status, visibility, cancelled_at, cancellation_reason, capacity, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
+        .select('id, title, cover_image_url, price, modality, event_start_at, event_end_at, location, status, visibility, cancelled_at, cancellation_reason, capacity, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
         .eq('type', 'event')
         .order('created_at', { ascending: false })
         .limit(500),
@@ -244,7 +244,7 @@ export default function EventsPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap' }}>
                       {e.profiles?.full_name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{e.profiles.full_name}</span>}
                       {e.modality && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{MODALITY_LABEL[e.modality] || e.modality}</span></>}
-                      {e.event_start_at && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatEventDateTime(e.event_start_at)}</span></>}
+                      {e.event_start_at && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatEventDateTime(e.event_start_at, e.event_end_at)}</span></>}
                     </div>
                   </div>
 

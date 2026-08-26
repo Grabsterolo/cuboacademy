@@ -4,7 +4,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useNavigation } from '../../../context/NavigationContext'
 import { Avatar, Toast } from '../../../components/ui'
 import { markEventAttendance } from '../../../lib/markEventAttendance'
-import { formatDateShort, formatEventDateTime } from '../../../lib/formatDate'
+import { formatDateShort, formatEventSchedule } from '../../../lib/formatDate'
 import { formatEventLocation } from '../../../lib/eventLocation'
 
 const USERS = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--jade)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -34,7 +34,7 @@ export default function EventAttendancePage() {
   async function load() {
     setLoading(true)
     const [{ data: eventData }, { data: enr }] = await Promise.all([
-      supabase.from('courses').select('id, title, event_start_at, country, city, location').eq('id', eventId).eq('type', 'event').maybeSingle(),
+      supabase.from('courses').select('id, title, event_start_at, event_end_at, country, city, location').eq('id', eventId).eq('type', 'event').maybeSingle(),
       supabase.from('enrollments')
         .select('id, enrolled_at, completed_at, student_id, profiles!student_id(full_name, email, avatar_url)')
         .eq('course_id', eventId)
@@ -84,11 +84,19 @@ export default function EventAttendancePage() {
         <div style={{ marginBottom: '1.75rem' }}>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Asistencia</p>
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>{event?.title || 'Evento'}</h1>
-          {event?.event_start_at && (
-            <p style={{ fontSize: '.82rem', color: 'var(--text-2)', marginTop: '.4rem' }}>
-              {formatEventDateTime(event.event_start_at)}{formatEventLocation(event) && ` · ${formatEventLocation(event)}`}
-            </p>
-          )}
+          {event?.event_start_at && (() => {
+            const schedule = formatEventSchedule(event.event_start_at, event.event_end_at, event)
+            return (
+              <>
+                <p style={{ fontSize: '.82rem', color: 'var(--text-2)', marginTop: '.4rem' }}>
+                  {schedule.primary}{formatEventLocation(event) && ` · ${formatEventLocation(event)}`}
+                </p>
+                {schedule.secondary && (
+                  <p style={{ fontSize: '.74rem', color: 'var(--text-3)', marginTop: '.1rem' }}>{schedule.secondary}</p>
+                )}
+              </>
+            )
+          })()}
         </div>
 
         {!loading && rows.length > 0 && (

@@ -249,7 +249,7 @@ export default function HomePage() {
   useEffect(() => {
     const eventsQuery = supabase
       .from('courses')
-      .select('id, title, slug, cover_image_url, price, modality, event_start_at, categories(name), profiles!instructor_id(full_name, avatar_url)')
+      .select('id, title, slug, cover_image_url, price, modality, event_start_at, event_end_at, categories(name), profiles!instructor_id(full_name, avatar_url)')
       .eq('type', 'event')
       .eq('status', 'published')
       .eq('visibility', 'public')
@@ -768,7 +768,7 @@ export default function HomePage() {
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, marginBottom: '.65rem', lineHeight: 1.3, color: 'var(--carbon)' }}>{e.title}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                         {e.event_start_at && (
-                          <span style={{ fontSize: '.72rem', color: 'var(--text-3)' }}>{formatEventDateTime(e.event_start_at)}</span>
+                          <span style={{ fontSize: '.72rem', color: 'var(--text-3)' }}>{formatEventDateTime(e.event_start_at, e.event_end_at)}</span>
                         )}
                         {e.modality && (
                           <span style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--jade-ink)', background: 'var(--jade-soft)', border: '1px solid var(--jade-light)', padding: '2px 7px', borderRadius: 10 }}>

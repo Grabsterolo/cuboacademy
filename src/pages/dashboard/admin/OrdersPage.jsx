@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { STATUS_TONE } from '../../../components/ui'
-import { formatDateShort } from '../../../lib/formatDate'
 import { orderReference, PAYMENT_PROVIDER_LABEL, SELECTABLE_PROVIDERS, paymentProviderLabel } from '../../../lib/paymentInfo'
 import { runQuery, runMutation, runFunction, errorMessage } from '../../../lib/db'
 import { ErrorState } from '../../../components/ui/ErrorState'
+import { formatDateShort, formatEventDateTime } from '../../../lib/formatDate'
 
 const STATUS_STYLE = {
   completed: { label: 'Pagado',      ...STATUS_TONE.success },
@@ -48,7 +48,7 @@ export default function OrdersPage() {
     const { data, error } = await runQuery(
       supabase
         .from('orders')
-        .select('id, amount, status, created_at, payment_provider, provider_order_id, student_id, course_id, profiles!student_id(full_name, avatar_url), courses(id, title, cover_image_url)')
+        .select('id, amount, status, created_at, payment_provider, provider_order_id, student_id, course_id, profiles!student_id(full_name, avatar_url), courses(id, title, cover_image_url, type, event_start_at, event_end_at)')
         .order('created_at', { ascending: false })
         .limit(500),
       'OrdersPage: listar órdenes',
@@ -100,11 +100,24 @@ export default function OrdersPage() {
     }
 
     // 3. Best-effort transactional email — never blocks the UI on failure.
+    //
+    // Un evento no da «acceso» a nada: la confirmación tiene que decir cuándo
+    // es, que es justo la parte que este correo no llevaba antes.
+    const isEvent = order.courses?.type === 'event'
+    const schedule = isEvent
+      ? formatEventDateTime(order.courses.event_start_at, order.courses.event_end_at, order.courses)
+      : null
+    const confirmMessage = isEvent
+      ? [
+          `Tu pago para "${order.courses?.title || 'tu evento'}" fue confirmado.`,
+          schedule ? `Te esperamos: ${schedule}.` : 'Ya estás inscrito.',
+        ].join(' ')
+      : `Tu pago para "${order.courses?.title || 'tu curso'}" fue confirmado. Ya tienes acceso al curso en Cubo Campus.`
     runFunction(supabase, 'send-notification-email', {
       recipientId: order.student_id,
       type: 'purchase',
       subject: 'Tu pago fue confirmado',
-      message: `Tu pago para "${order.courses?.title || 'tu curso'}" fue confirmado. Ya tienes acceso al curso en Cubo Campus.`,
+      message: confirmMessage,
     }, 'OrdersPage: correo de pago confirmado')
 
     setOrders(prev => prev.map(o => o.id === order.id

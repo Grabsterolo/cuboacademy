@@ -11,9 +11,9 @@ import { eventStatus, eventAccessLink } from '../../../lib/eventStatus'
 import { CourseReviews } from '../../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../../components/payment/PaymentInstructions'
 import { Avatar } from '../../../components/ui'
-import { formatEventDateTime } from '../../../lib/formatDate'
 import { runQuery } from '../../../lib/db'
 import { fetchSeatsFor } from '../../../lib/eventSeats'
+import { formatEventSchedule } from '../../../lib/formatDate'
 import { seatsLabel, enrollmentBlock } from '../../../lib/eventStatus'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
@@ -99,6 +99,7 @@ export default function EventDetailPage() {
   // dirección; la tarjeta lo muestra como enlace pulsable en vez de como calle.
   const accessLink = event ? eventAccessLink(event) : null
   const status = eventStatus(event)
+  const schedule = event ? formatEventSchedule(event.event_start_at, event.event_end_at, event) : null
   const seatsInfo = seatsLabel(seats)
   const blocked = enrollmentBlock(event, seats)
 
@@ -167,10 +168,15 @@ export default function EventDetailPage() {
                       {modality}
                     </div>
                   )}
-                  {event.event_start_at && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.82rem', color: 'var(--text-2)' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                      {formatEventDateTime(event.event_start_at)}
+                  {schedule?.primary && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.15rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.82rem', color: 'var(--text-2)' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        {schedule.primary}
+                      </div>
+                      {schedule.secondary && (
+                        <span style={{ fontSize: '.72rem', color: 'var(--text-3)', paddingLeft: '1.2rem' }}>{schedule.secondary}</span>
+                      )}
                     </div>
                   )}
                   {locationText && (
@@ -257,10 +263,13 @@ export default function EventDetailPage() {
                           <span style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-2)' }}>Estado</span>
                           <span style={{ fontSize: '.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: status.bg, color: status.color }}>{status.label}</span>
                         </div>
-                        {event.event_start_at && (
+                        {schedule?.primary && (
                           <div>
                             <div style={{ fontSize: '.7rem', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-2)', marginBottom: '.15rem' }}>Cuándo</div>
-                            <div style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 600 }}>{formatEventDateTime(event.event_start_at)}</div>
+                            <div style={{ fontSize: '.84rem', color: 'var(--carbon)', fontWeight: 600 }}>{schedule.primary}</div>
+                            {schedule.secondary && (
+                              <div style={{ fontSize: '.74rem', color: 'var(--text-2)', marginTop: '.1rem' }}>{schedule.secondary}</div>
+                            )}
                           </div>
                         )}
                         {modality && (
@@ -355,7 +364,7 @@ export default function EventDetailPage() {
                       {/* Features list */}
                       <div style={{ marginTop: '1.1rem', display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
                         {[
-                          event.event_start_at && formatEventDateTime(event.event_start_at),
+                          schedule?.primary,
                           modality && `Modalidad ${modality.toLowerCase()}`,
                           event.capacity && `Cupo limitado (${event.capacity} personas)`,
                           event.has_certificate ? 'Certificado de participación' : null,

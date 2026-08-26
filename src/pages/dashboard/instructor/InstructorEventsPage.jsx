@@ -38,7 +38,7 @@ export default function InstructorEventsPage() {
     if (!profile?.id) return
     setLoading(true)
     supabase.from('courses')
-      .select('id, title, cover_image_url, modality, event_start_at, status, admin_notes, categories(name), created_at')
+      .select('id, title, cover_image_url, modality, event_start_at, event_end_at, status, admin_notes, categories(name), created_at')
       .eq('instructor_id', profile.id)
       .eq('type', 'event')
       .order('created_at', { ascending: false })
@@ -168,7 +168,7 @@ export default function InstructorEventsPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap' }}>
                         {e.categories?.name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{e.categories.name}</span>}
                         {e.modality && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{MODALITY_LABEL[e.modality] || e.modality}</span></>}
-                        {e.event_start_at && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatEventDateTime(e.event_start_at)}</span></>}
+                        {e.event_start_at && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatEventDateTime(e.event_start_at, e.event_end_at)}</span></>}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0 }}>

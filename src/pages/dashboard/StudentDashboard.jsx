@@ -288,7 +288,7 @@ export default function StudentDashboard() {
                             <span style={{ fontSize: '.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: 10, background: st.bg, color: st.color, flexShrink: 0 }}>{st.label}</span>
                           </div>
                           <div style={{ fontSize: '.7rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {[c.event_start_at && formatEventDateTime(c.event_start_at), modality, place].filter(Boolean).join(' · ')}
+                            {[c.event_start_at && formatEventDateTime(c.event_start_at, c.event_end_at), modality, place].filter(Boolean).join(' · ')}
                           </div>
                         </div>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>

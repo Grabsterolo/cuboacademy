@@ -66,7 +66,7 @@ function CourseCard({ course, wishlistIds, onToggleWishlist, rating, owned, pend
           {isEvent ? (course.event_start_at && (
             <span style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              {formatEventDateTime(course.event_start_at)}
+              {formatEventDateTime(course.event_start_at, course.event_end_at)}
             </span>
           )) : (course.duration_hours && (
             <span style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
@@ -269,7 +269,7 @@ function EventsTab({ wishlistIds, onToggleWishlist, owned, pending }) {
   useEffect(() => {
     Promise.all([
       supabase.from('courses')
-        .select('id, slug, title, cover_image_url, price, type, modality, event_start_at, category_id, categories(name), profiles!instructor_id(full_name)')
+        .select('id, slug, title, cover_image_url, price, type, modality, event_start_at, event_end_at, category_id, categories(name), profiles!instructor_id(full_name)')
         .eq('type', 'event')
         .eq('status', 'published')
         .eq('visibility', 'public')
@@ -346,7 +346,7 @@ function WishlistTab({ wishlistIds, onToggleWishlist, owned, pending }) {
     setLoading(true)
     runQuery(
       supabase.from('courses')
-        .select('id, slug, title, cover_image_url, price, type, level, duration_hours, modality, event_start_at, categories(name), profiles!instructor_id(full_name)')
+        .select('id, slug, title, cover_image_url, price, type, level, duration_hours, modality, event_start_at, event_end_at, categories(name), profiles!instructor_id(full_name)')
         .in('id', wishlistIds)
         .eq('status', 'published'),
       'StudentStorePage: lista de deseos',

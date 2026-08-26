@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { fetchPaymentSettings, buildPaymentEmail } from './paymentInfo'
+import { formatEventDateTime } from './formatDate'
 import { runFunction } from './db'
 
 /**
@@ -56,6 +57,8 @@ function sendPaymentInstructionsEmail({ userId, course, order }) {
           amount: order.amount,
           currency: order.currency,
           settings,
+          // Solo los eventos tienen fecha; un curso en línea no la necesita.
+          schedule: course.type === 'event' ? formatEventDateTime(course.event_start_at, course.event_end_at, course) : null,
         }),
     }, 'enrollCourse: correo de instrucciones de pago'))
     // Sigue siendo best-effort — el estudiante ya tiene las instrucciones en el

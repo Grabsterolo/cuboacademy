@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { runMutation, runQuery, runFunction, errorMessage } from './db'
+import { formatEventDateTime } from './formatDate'
 
 /**
  * Cancela un evento y avisa a quien se había inscrito.
@@ -46,17 +47,20 @@ export async function cancelEvent({ event, reason }) {
     // asunto y el cuerpo son los que llevan el significado.
     type: 'reminder',
     subject: `Evento cancelado · ${event.title}`,
-    message: buildCancellationEmail({ title: event.title, reason: trimmed }),
+    message: buildCancellationEmail({ title: event.title, reason: trimmed, schedule: formatEventDateTime(event.event_start_at, event.event_end_at, event) }),
   }, 'cancelEvent: aviso de cancelación')))
 
   return { ok: true, notified: ids.length }
 }
 
-function buildCancellationEmail({ title, reason }) {
+function buildCancellationEmail({ title, reason, schedule }) {
   const motivo = reason
     ? `\n\nMotivo: ${reason}`
     : ''
-  return `Lamentamos informarte de que el evento «${title}» ha sido cancelado.${motivo}
+  // La fecha ayuda a ubicar cuál convocatoria se canceló, sobre todo si el
+  // destinatario tiene más de un evento con nosotros a la vez.
+  const cuando = schedule ? ` programado para el ${schedule}` : ''
+  return `Lamentamos informarte de que el evento «${title}»${cuando} ha sido cancelado.${motivo}
 \nSi habías completado el pago, nos pondremos en contacto contigo para gestionar la devolución.
 \nSentimos las molestias.`
 }

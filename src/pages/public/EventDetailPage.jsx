@@ -6,12 +6,12 @@ import { sanitizeHtml } from '../../lib/sanitizeHtml'
 import { enrollCourse } from '../../lib/enrollCourse'
 import { CourseReviews } from '../../components/reviews/CourseReviews'
 import { PaymentInstructions, PaymentInstructionsModal } from '../../components/payment/PaymentInstructions'
-import { formatEventDateTime } from '../../lib/formatDate'
 import { googleCalendarUrl } from '../../lib/googleCalendar'
 import { formatEventLocation } from '../../lib/eventLocation'
 import { runQuery } from '../../lib/db'
 import { ContactBeforeBuy } from '../../components/shared/ContactBeforeBuy'
 import { fetchSeatsFor } from '../../lib/eventSeats'
+import { formatEventSchedule } from '../../lib/formatDate'
 import { eventStatus, seatsLabel, enrollmentBlock } from '../../lib/eventStatus'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
@@ -110,6 +110,7 @@ export default function EventDetailPage() {
   const priceLabel = !event.price || priceNum === 0 ? 'Gratis' : `$${priceNum.toFixed(2)}`
   const isGratis = !event.price || priceNum === 0
   const status = eventStatus(event)
+  const schedule = formatEventSchedule(event.event_start_at, event.event_end_at, event)
   const seatsInfo = seatsLabel(seats)
   const blocked = enrollmentBlock(event, seats)
   const modality = MODALITY_LABEL[event.modality] || event.modality
@@ -152,7 +153,17 @@ export default function EventDetailPage() {
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.8rem,4vw,2.8rem)', fontWeight: 700, color: 'white', lineHeight: 1.15, marginBottom: '1rem', maxWidth: 700 }}>{event.title}</h1>
           <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '.82rem', color: 'rgba(255,255,255,.75)' }}>
             {modality && <span style={{ background: 'rgba(255,255,255,.12)', padding: '3px 10px', borderRadius: 20 }}>{modality}</span>}
-            {event.event_start_at && <span style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>{formatEventDateTime(event.event_start_at)}</span>}
+            {schedule.primary && (
+              <span style={{ display: 'flex', flexDirection: 'column', gap: '.15rem' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  {schedule.primary}
+                </span>
+                {schedule.secondary && (
+                  <span style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.55)', paddingLeft: '1.05rem' }}>{schedule.secondary}</span>
+                )}
+              </span>
+            )}
             {locationText && <span style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{locationText}</span>}
           </div>
         </div>
@@ -281,7 +292,7 @@ export default function EventDetailPage() {
               <div style={{ borderTop: '1px solid var(--border)', padding: '1.1rem 1.5rem' }}>
                 <p style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '.07em', textTransform: 'uppercase', marginBottom: '.75rem' }}>Este evento incluye</p>
                 {[
-                  event.event_start_at && formatEventDateTime(event.event_start_at),
+                  schedule.primary,
                   modality && `Modalidad ${modality.toLowerCase()}`,
                   formatEventLocation(event),
                   event.capacity && `Cupo limitado (${event.capacity} personas)`,

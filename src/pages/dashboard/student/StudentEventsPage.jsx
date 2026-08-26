@@ -28,7 +28,7 @@ export default function StudentEventsPage() {
     if (!user) return
     runQuery(
       supabase.from('enrollments')
-        .select('id, enrolled_at, completed_at, course_id, courses!inner(id, slug, title, cover_image_url, modality, event_start_at, location, categories(name), profiles!instructor_id(full_name))')
+        .select('id, enrolled_at, completed_at, course_id, courses!inner(id, slug, title, cover_image_url, modality, event_start_at, event_end_at, location, categories(name), profiles!instructor_id(full_name))')
         .eq('student_id', user.id)
         .eq('courses.type', 'event')
         .order('enrolled_at', { ascending: false }),
@@ -160,7 +160,7 @@ export default function StudentEventsPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.45rem', flexWrap: 'wrap' }}>
                         {c.categories?.name && <span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{c.categories.name}</span>}
                         {c.modality && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{MODALITY_LABEL[c.modality] || c.modality}</span></>}
-                        {c.event_start_at && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatEventDateTime(c.event_start_at)}</span></>}
+                        {c.event_start_at && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatEventDateTime(c.event_start_at, c.event_end_at)}</span></>}
                       </div>
                     </div>
 

@@ -87,17 +87,23 @@ export function hasPaymentChannels(settings) {
  * Cuerpo en texto plano del correo. La edge function convierte los saltos de
  * línea en <br/>, así que se compone como texto y no como HTML.
  */
-export function buildPaymentEmail({ courseTitle, orderId, amount, currency, settings }) {
+export function buildPaymentEmail({ courseTitle, orderId, amount, currency, settings, schedule }) {
   const ref = orderReference(orderId)
   const to = settings.contact_email
   const lines = [
     `Recibimos tu solicitud de inscripción para "${courseTitle}".`,
+  ]
+  // Solo los eventos tienen una fecha fija que perder de vista. Sin esto, el
+  // correo de un evento de pago no decía cuándo era: la persona sabía que
+  // había pedido algo, pero no qué día presentarse.
+  if (schedule) lines.push('', `Fecha: ${schedule}`)
+  lines.push(
     '',
     `Referencia: ${ref}`,
     `Monto: ${formatAmount(amount, currency)}`,
     '',
     'Para completar tu inscripción, realiza el pago por uno de estos medios:',
-  ]
+  )
   if (settings.sinpe_number) lines.push(`· SINPE Móvil: ${settings.sinpe_number}`)
   if (settings.bank_account) lines.push(`· Cuenta bancaria: ${settings.bank_account}`)
   if (!hasPaymentChannels(settings)) {
