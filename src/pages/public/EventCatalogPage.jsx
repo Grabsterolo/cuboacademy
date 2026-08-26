@@ -8,6 +8,7 @@ import { fetchEventSeats } from '../../lib/eventSeats'
 import { seatsLabel, eventStatus } from '../../lib/eventStatus'
 import { formatEventLocationShort } from '../../lib/eventLocation'
 import { ErrorState } from '../../components/ui/ErrorState'
+import { NotifyAboutArea } from '../../components/shared/NotifyAboutArea'
 
 const MODALITY_OPTS = [
   { value: '', label: 'Todas las modalidades' },
@@ -254,10 +255,16 @@ export default function EventCatalogPage() {
             <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.25rem', fontWeight: 400 }}>
               {showPast ? 'Todavía no hay eventos pasados que mostrar.' : 'Prueba con otros términos o quita algún filtro.'}
             </p>
-            <button onClick={clearFilters}
-              style={{ padding: '.6rem 1.4rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-              Ver todos los eventos
-            </button>
+            <div style={{ display: 'flex', gap: '.6rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={clearFilters}
+                style={{ padding: '.6rem 1.4rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                Ver todos los eventos
+              </button>
+              {/* Igual que en el catálogo de cursos: solo tiene sentido con una
+                  categoría activa, y no tiene sentido en absoluto viendo
+                  pasados — de esos no hay nada que avisar. */}
+              {!showPast && catFilter && <NotifyAboutArea areaName={categories.find(c => c.id === catFilter)?.name} />}
+            </div>
           </div>
         ) : (
           <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>

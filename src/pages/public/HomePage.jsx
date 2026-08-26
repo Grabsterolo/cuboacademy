@@ -204,6 +204,7 @@ export default function HomePage() {
   const [wordIndex, setWordIndex] = useState(0)
   const [wordVisible, setWordVisible] = useState(true)
   const [tracks, setTracks] = useState(null)
+  const [trackCounts, setTrackCounts] = useState({})
   const [courses, setCourses] = useState([])
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [coursesErr, setCoursesErr] = useState(null)
@@ -226,8 +227,28 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    runQuery(supabase.from('categories').select('*').order('name'), 'HomePage: áreas de formación').then(({ data }) => {
-      setTracks(data || [])
+    Promise.all([
+      runQuery(supabase.from('categories').select('*').order('name'), 'HomePage: áreas de formación'),
+      // Un curso o evento por fila, solo lo que ya es público: exactamente lo
+      // que un visitante anónimo vería si entrara al catálogo de esa área. Se
+      // cuenta en el cliente en vez de pedir un conteo por categoría porque son
+      // seis categorías nada más — no vale la pena una función en la base para
+      // esto.
+      runQuery(
+        supabase.from('courses').select('category_id, type')
+          .eq('status', 'published').eq('visibility', 'public').is('cancelled_at', null),
+        'HomePage: conteo por área',
+      ),
+    ]).then(([{ data: cats }, { data: rows }]) => {
+      setTracks(cats || [])
+      const counts = {}
+      for (const r of rows || []) {
+        if (!r.category_id) continue
+        const c = counts[r.category_id] || (counts[r.category_id] = { courses: 0, events: 0 })
+        if (r.type === 'event') c.events++
+        else c.courses++
+      }
+      setTrackCounts(counts)
     })
   }, [])
 
@@ -540,8 +561,24 @@ export default function HomePage() {
           <div ref={tracksScrollRef} className="tracks-scroll">
             {tracks.map((t, i) => {
               const style = TRACK_STYLES[i % TRACK_STYLES.length]
+              const count = trackCounts[t.id] || { courses: 0, events: 0 }
+              const isEmpty = count.courses === 0 && count.events === 0
+              // Si un área solo tiene eventos, «Ver cursos» sería otro enlace a
+              // un catálogo vacío — el mismo problema que se está resolviendo,
+              // solo que un clic más adelante. El botón va a donde de verdad
+              // hay algo que ver.
+              const target = count.courses > 0
+                ? { screen: 'courses', label: 'Ver cursos' }
+                : count.events > 0
+                  ? { screen: 'events', label: 'Ver eventos' }
+                  : null
+              const countLabel = [
+                count.courses > 0 && `${count.courses} curso${count.courses === 1 ? '' : 's'}`,
+                count.events > 0 && `${count.events} evento${count.events === 1 ? '' : 's'}`,
+              ].filter(Boolean).join(' · ')
+
               return (
-                <div key={t.id} className="reveal track-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: style.bg }}>
+                <div key={t.id} className="reveal track-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: style.bg, opacity: isEmpty ? .6 : 1, filter: isEmpty ? 'grayscale(.5)' : 'none' }}>
                   <div className="track-card-icon">
                     <TrackIcon name={style.icon} />
                   </div>
@@ -549,10 +586,21 @@ export default function HomePage() {
                   <div className="track-card-body">
                     <h3 className="track-card-title">{t.name}</h3>
                     {t.description && <p className="track-card-desc">{t.description}</p>}
-                    <button className="track-card-btn" onClick={() => navigate('courses', { categoryId: t.id })}>
-                      Ver cursos
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-                    </button>
+                    {isEmpty ? (
+                      // Sin enlace: nada que vender en esta área todavía, así
+                      // que no hay «Ver cursos» que llevara a un catálogo vacío.
+                      <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: '.72rem', fontWeight: 700, letterSpacing: '.04em', color: 'rgba(255,255,255,.85)', background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.22)', borderRadius: 20, padding: '.4rem .9rem' }}>
+                        Próximamente
+                      </span>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.72)', marginBottom: '.6rem', fontWeight: 500 }}>{countLabel}</div>
+                        <button className="track-card-btn" onClick={() => navigate(target.screen, { categoryId: t.id })}>
+                          {target.label}
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               )

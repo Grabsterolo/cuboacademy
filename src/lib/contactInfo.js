@@ -23,9 +23,12 @@ export function whatsappDisplay(raw) {
   return (raw || '').trim()
 }
 
-export function mailtoUrl(email, subject) {
+export function mailtoUrl(email, subject, body) {
   if (!email) return null
-  return `mailto:${email}${subject ? `?subject=${encodeURIComponent(subject)}` : ''}`
+  const params = []
+  if (subject) params.push(`subject=${encodeURIComponent(subject)}`)
+  if (body) params.push(`body=${encodeURIComponent(body)}`)
+  return `mailto:${email}${params.length ? `?${params.join('&')}` : ''}`
 }
 
 /** ¿Hay algún canal que enseñar? Evita pintar una sección de contacto vacía. */

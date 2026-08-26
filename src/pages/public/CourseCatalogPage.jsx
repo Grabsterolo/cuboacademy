@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 import { useCourseRatingSummaries, RatingBadge } from '../../components/reviews/CourseReviews'
+import { NotifyAboutArea } from '../../components/shared/NotifyAboutArea'
 
 const LEVEL_OPTS = [
   { value: '', label: 'Todos los niveles' },
@@ -186,10 +187,16 @@ export default function CourseCatalogPage() {
             </div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>No encontramos cursos</h3>
             <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.25rem', fontWeight: 400 }}>Prueba con otros términos o quita algún filtro.</p>
-            <button onClick={clearFilters}
-              style={{ padding: '.6rem 1.4rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-              Ver todos los cursos
-            </button>
+            <div style={{ display: 'flex', gap: '.6rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={clearFilters}
+                style={{ padding: '.6rem 1.4rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                Ver todos los cursos
+              </button>
+              {/* Solo tiene sentido «esta área» cuando hay una categoría activa
+                  en el filtro — con una búsqueda de texto sin resultados no hay
+                  «área» de la que avisar. */}
+              {catFilter && <NotifyAboutArea areaName={categories.find(c => c.id === catFilter)?.name} />}
+            </div>
           </div>
         ) : (
           <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
