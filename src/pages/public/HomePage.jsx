@@ -65,6 +65,27 @@ function TrackIcon({ name }) {
   }
 }
 
+// Lo que la plataforma entrega. Son afirmaciones sobre el producto, no medidas
+// de resultados: no dependen de cuánta gente haya y no caducan si la cifra baja.
+// Sustituyen al panel de porcentajes inventados que ocupaba este hueco.
+const DELIVERABLES = [
+  {
+    title: 'Certificado digital avalado',
+    desc: 'Emitido por Grupo Cubo 130 al completar el curso, con verificación en línea.',
+    icon: <><circle cx="12" cy="8" r="6" /><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" /></>,
+  },
+  {
+    title: 'Instructores en ejercicio',
+    desc: 'Consultores que aplican estos métodos con clientes, no docentes a tiempo completo.',
+    icon: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>,
+  },
+  {
+    title: 'Acceso sin caducidad',
+    desc: 'El material queda disponible después del curso, incluidas las actualizaciones.',
+    icon: <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>,
+  },
+]
+
 const DIFF_ITEMS = [
   {
     title: 'Diseñado por consultores activos',
@@ -189,7 +210,7 @@ export default function HomePage() {
   const [eventsLoading, setEventsLoading] = useState(true)
   const [eventsErr, setEventsErr] = useState(null)
   const [instructors, setInstructors] = useState(null)
-  const [stats, setStats] = useState({ courses: null, students: null, instructors: null })
+  const [stats, setStats] = useState({ courses: null, students: null, instructors: null, events: null })
   const heroMedia = useHeroMedia(settings)
 
   const tracksScrollRef = useRef(null)
@@ -262,7 +283,7 @@ export default function HomePage() {
   useEffect(() => {
     runQuery(supabase.rpc('public_platform_stats'), 'HomePage: métricas públicas').then(({ data }) => {
       const s = data?.[0]
-      setStats({ courses: s?.courses ?? 0, students: s?.students ?? 0, instructors: s?.instructors ?? 0 })
+      setStats({ courses: s?.courses ?? 0, students: s?.students ?? 0, instructors: s?.instructors ?? 0, events: s?.events ?? 0 })
     })
   }, [])
 
@@ -283,16 +304,6 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    setTimeout(() => {
-      document.querySelectorAll('.progress-fill').forEach(bar => {
-        const w = bar.style.width
-        bar.style.width = '0'
-        setTimeout(() => { bar.style.width = w }, 100)
-      })
-    }, 600)
-  }, [])
-
   return (
     <>
       <style>{`
@@ -302,7 +313,6 @@ export default function HomePage() {
         @media (prefers-reduced-motion: reduce) {
           .reveal.will-animate { transition: none; opacity: 1; transform: none; }
         }
-        .progress-fill { transition: width .8s ease; }
         .tracks-scroll { display: flex; gap: 1.5rem; overflow-x: auto; scroll-snap-type: x mandatory; padding: .5rem 5% 1.25rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         .tracks-scroll::-webkit-scrollbar { display: none; }
         .track-card {
@@ -450,11 +460,20 @@ export default function HomePage() {
             </div>
           </div>
           <div className="hero-metrics" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* Solo cifras reales, y solo si hay algo que contar. Un contador en
+                cero no informa de nada: dice que la plataforma está vacía, en el
+                primer pantallazo. Mientras cargan valen null y tampoco se pintan,
+                que es mejor que enseñar un guion y luego cambiarlo.
+
+                Se quitó «Estudiantes» de esta franja: con la matrícula actual, el
+                número que saldría contradice el «profesionales activos en la
+                región» que lo acompañaba. Los eventos programados sí son una cifra
+                que sostiene el mensaje sin forzarlo. */}
             {[
-              { val: formatCount(stats.courses), accent: true, label: 'Cursos activos', desc: 'En tres áreas de especialización' },
-              { val: formatCount(stats.students), accent: false, label: 'Estudiantes', desc: 'Profesionales activos en la región' },
-              { val: formatCount(stats.instructors), accent: true, label: 'Instructores', desc: 'Consultores activos en el campo' },
-            ].map((m) => (
+              { n: stats.courses, accent: true, label: 'Cursos publicados', desc: 'Formación consultiva en línea' },
+              { n: stats.events, accent: false, label: 'Eventos programados', desc: 'Sesiones presenciales y virtuales' },
+              { n: stats.instructors, accent: true, label: 'Instructores', desc: 'Consultores activos en el campo' },
+            ].filter(m => m.n > 0).map((m) => ({ ...m, val: formatCount(m.n) })).map((m) => (
               <div key={m.label} className="metric-card" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 12, padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', backdropFilter: 'blur(6px)' }}>
                 <div style={{ fontFamily: 'var(--serif)', fontSize: '2.4rem', fontWeight: 700, lineHeight: 1, color: m.accent ? 'var(--terra-light)' : 'white', minWidth: 70 }}>{m.val}</div>
                 <div style={{ width: 1, height: 40, background: 'rgba(255,255,255,.12)', flexShrink: 0 }} />
@@ -551,42 +570,29 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="reveal" style={{ transitionDelay: '140ms', background: 'var(--jade-dark)', borderRadius: 16, padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', overflow: 'hidden' }}>
+          {/* Aquí había un panel de métricas inventadas —94% de compleción, 4.8 de
+              calificación, 72% de progreso, 89% de satisfacción— con barras
+              animadas y la coartada «Ejemplo ilustrativo» en 0.66rem al 40% de
+              opacidad. Con un estudiante y una reseña reales, eso no es una
+              ilustración: es una cifra que el visitante lee como un dato.
+
+              Se sustituye por lo único que se puede afirmar sin inventar nada, y
+              que además no es un número: qué entrega la plataforma. */}
+          <div className="reveal" style={{ transitionDelay: '140ms', background: 'var(--jade-dark)', borderRadius: 16, padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', overflow: 'hidden', justifyContent: 'center' }}>
             <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(22,125,120,.18)' }} />
-            <div style={{ fontSize: '.66rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(248,246,241,.7)' }}>Ejemplo ilustrativo</div>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              {[{ val: '94%', label: 'Tasa de compleción', accent: false }, { val: '4.8', label: 'Calificación promedio', accent: true }].map((s) => (
-                <div key={s.label} style={{ flex: 1, background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10, padding: '1.1rem 1.2rem' }}>
-                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.9rem', fontWeight: 700, color: s.accent ? 'var(--terra-light)' : 'white', lineHeight: 1 }}>{s.val}</div>
-                  <div style={{ fontSize: '.7rem', color: 'rgba(248,246,241,.7)', letterSpacing: '.05em', textTransform: 'uppercase', marginTop: '.25rem' }}>{s.label}</div>
+            {DELIVERABLES.map(d => (
+              <div key={d.title} style={{ position: 'relative', display: 'flex', gap: '.9rem', alignItems: 'flex-start' }}>
+                <div style={{ width: 36, height: 36, minWidth: 36, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--jade-light)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    {d.icon}
+                  </svg>
                 </div>
-              ))}
-            </div>
-            {[
-              { label: 'Progreso promedio de estudiantes activos', pct: '72%', meta: ['Módulo 5 de 7', '72% completado'] },
-              { label: 'Satisfacción con aplicabilidad práctica', pct: '89%', meta: ['Encuesta post-curso', '89% satisfecho'] },
-            ].map((p) => (
-              <div key={p.label} style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10, padding: '1.1rem 1.2rem' }}>
-                <div style={{ fontSize: '.78rem', color: 'rgba(248,246,241,.7)', marginBottom: '.65rem', fontWeight: 500 }}>{p.label}</div>
-                <div style={{ height: 6, background: 'rgba(255,255,255,.1)', borderRadius: 3, overflow: 'hidden', marginBottom: '.5rem' }}>
-                  <div className="progress-fill" style={{ height: '100%', borderRadius: 3, background: 'var(--jade)', width: p.pct }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.7rem', color: 'rgba(248,246,241,.7)' }}>
-                  <span>{p.meta[0]}</span><span>{p.meta[1]}</span>
+                <div>
+                  <strong style={{ fontSize: '.86rem', fontWeight: 600, color: 'white', display: 'block', marginBottom: '.15rem' }}>{d.title}</strong>
+                  <span style={{ fontSize: '.8rem', color: 'rgba(248,246,241,.75)', lineHeight: 1.55 }}>{d.desc}</span>
                 </div>
               </div>
             ))}
-            <div style={{ background: 'rgba(201,110,75,.12)', border: '1px solid rgba(201,110,75,.28)', borderRadius: 10, padding: '1rem 1.2rem', display: 'flex', alignItems: 'center', gap: '.85rem' }}>
-              <div style={{ width: 36, height: 36, minWidth: 36, background: 'rgba(201,110,75,.15)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--terra)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="8" r="6" /><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-                </svg>
-              </div>
-              <div>
-                <strong style={{ fontSize: '.82rem', fontWeight: 600, color: 'var(--terra-light)', display: 'block', marginBottom: '.1rem' }}>Certificado digital avalado</strong>
-                <span style={{ fontSize: '.75rem', color: 'rgba(248,246,241,.7)' }}>Grupo Cubo 130 · Válido para perfil profesional</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
