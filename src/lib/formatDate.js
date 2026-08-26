@@ -96,6 +96,64 @@ function sameInstant(date, tzA, tzB) {
 }
 
 /**
+ * Puente entre <input type="datetime-local"> y la zona de un evento.
+ *
+ * El navegador interpreta ese input siempre en SU propia hora local — no hay
+ * forma de decirle "esto es hora de Costa Rica" desde el HTML. Por eso el
+ * asistente de eventos guardaba una hora distinta según en qué país estuviera
+ * el instructor al llenar el formulario: escribir "9:00 a. m." en Madrid y en
+ * San José producía instantes UTC distintos, aunque el evento ocurre siempre
+ * en el mismo sitio. Estas dos funciones hacen la conversión a mano, tratando
+ * el valor del input como hora de pared en `timeZone` (Costa Rica por
+ * defecto) en vez de como hora de pared del navegador.
+ */
+
+function partsInZone(date, timeZone) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).formatToParts(date)
+  const get = t => Number(parts.find(p => p.type === t)?.value)
+  return { y: get('year'), mo: get('month'), d: get('day'), h: get('hour'), mi: get('minute') }
+}
+
+/** UTC ISO -> "YYYY-MM-DDTHH:mm" tal como se ve el reloj en `timeZone`. */
+export function isoToZonedInputValue(iso, timeZone = EVENT_DEFAULT_TIMEZONE) {
+  if (!iso) return ''
+  const { y, mo, d, h, mi } = partsInZone(new Date(iso), timeZone)
+  const pad = n => String(n).padStart(2, '0')
+  return `${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}`
+}
+
+/**
+ * "YYYY-MM-DDTHH:mm" leído como hora de pared en `timeZone` -> UTC ISO.
+ *
+ * No hay fórmula cerrada para esto (el desplazamiento de una zona puede
+ * cambiar por horario de verano), así que se resuelve por aproximación: se
+ * asume el valor como si fuera UTC, se mira qué hora de pared produciría eso
+ * en `timeZone`, y se corrige la diferencia. Costa Rica no tiene horario de
+ * verano y converge en la primera vuelta; el bucle queda por si `timeZone`
+ * algún día es otra que sí lo tenga.
+ */
+export function zonedInputValueToIso(value, timeZone = EVENT_DEFAULT_TIMEZONE) {
+  if (!value) return null
+  const [datePart, timePart] = value.split('T')
+  const [y, mo, d] = datePart.split('-').map(Number)
+  const [h, mi] = (timePart || '00:00').split(':').map(Number)
+  const wantUTC = Date.UTC(y, mo - 1, d, h, mi)
+
+  let guess = wantUTC
+  for (let i = 0; i < 2; i++) {
+    const seen = partsInZone(new Date(guess), timeZone)
+    const seenUTC = Date.UTC(seen.y, seen.mo - 1, seen.d, seen.h, seen.mi)
+    const diff = wantUTC - seenUTC
+    if (diff === 0) break
+    guess += diff
+  }
+  return new Date(guess).toISOString()
+}
+
+/**
  * "27 ago 2026, 9:00 a. m. – 5:00 p. m. GMT-6" — fecha y hora completas de un
  * evento, en la zona del evento (no en la del navegador que lo renderiza).
  *

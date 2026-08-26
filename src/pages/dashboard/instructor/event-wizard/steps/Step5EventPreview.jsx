@@ -1,6 +1,6 @@
 import { StepHeader } from '../../course-wizard/components/StepHeader'
 import { IC, stripHtml } from '../../course-wizard/components/shared'
-import { formatEventDateTime } from '../../../../../lib/formatDate'
+import { formatEventDateTime, zonedInputValueToIso } from '../../../../../lib/formatDate'
 import { formatEventLocation } from '../../../../../lib/eventLocation'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
@@ -80,7 +80,7 @@ export function Step5EventPreview({ info, eventDetails, cert, pricing, legacyLoc
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem' }}>
             <p style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: '.9rem', color: 'var(--carbon)', margin: '0 0 .85rem' }}>Resumen</p>
             {[
-              { label: 'Fecha', value: eventDetails.startAt ? formatEventDateTime(new Date(eventDetails.startAt).toISOString(), eventDetails.endAt ? new Date(eventDetails.endAt).toISOString() : null) : 'Sin definir' },
+              { label: 'Fecha', value: eventDetails.startAt ? formatEventDateTime(zonedInputValueToIso(eventDetails.startAt), zonedInputValueToIso(eventDetails.endAt)) : 'Sin definir' },
               { label: 'Modalidad', value: MODALITY_LABEL[eventDetails.modality] || '—' },
               { label: 'Ubicación', value: formatEventLocation(eventDetails) || '—' },
               { label: 'Cupo', value: eventDetails.capacity || 'Sin límite' },

@@ -7,16 +7,9 @@ import { validateImageFile, resizeImage } from '../../../../lib/imageProcessing'
 import { withUniqueSlug } from '../../../../lib/withUniqueSlug'
 import { stripHtml } from '../course-wizard/components/shared'
 import { runQuery } from '../../../../lib/db'
+import { zonedInputValueToIso, isoToZonedInputValue } from '../../../../lib/formatDate'
 
 const TOTAL_STEPS = 6
-
-// A stored timestamp is UTC ISO; a <input type="datetime-local"> needs
-// "YYYY-MM-DDTHH:mm" in the browser's local time, or editing an existing
-// event silently shifts its hour by the timezone offset.
-function toDatetimeLocal(iso) {
-  const d = new Date(iso)
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
-}
 
 export function useEventWizard() {
   const { params, navigate } = useNavigation()
@@ -91,8 +84,11 @@ export function useEventWizard() {
       if (event) {
         setInfo({ title: event.title || '', categoryId: event.category_id || '', description: event.description || '', coverUrl: event.cover_image_url || '', instructorId: event.instructor_id || '' })
         setEventDetails({
-          startAt: event.event_start_at ? toDatetimeLocal(event.event_start_at) : '',
-          endAt: event.event_end_at ? toDatetimeLocal(event.event_end_at) : '',
+          // Se muestra en hora de Costa Rica, no en la del navegador de quien
+          // edita: el evento ocurre en Costa Rica sin importar desde dónde se
+          // administre.
+          startAt: event.event_start_at ? isoToZonedInputValue(event.event_start_at) : '',
+          endAt: event.event_end_at ? isoToZonedInputValue(event.event_end_at) : '',
           modality: event.modality || 'presencial',
           country: event.country || '',
           city: event.city || '',
@@ -209,8 +205,11 @@ export function useEventWizard() {
   async function saveStep2(eId) {
     const isVirtual = eventDetails.modality === 'virtual'
     const { error } = await supabase.from('courses').update({
-      event_start_at: eventDetails.startAt ? new Date(eventDetails.startAt).toISOString() : null,
-      event_end_at: eventDetails.endAt ? new Date(eventDetails.endAt).toISOString() : null,
+      // Lo que se escribe en el formulario es hora de Costa Rica, no la del
+      // navegador de quien lo llena: el evento pasa allá sin importar quién ni
+      // desde dónde lo esté creando.
+      event_start_at: zonedInputValueToIso(eventDetails.startAt),
+      event_end_at: zonedInputValueToIso(eventDetails.endAt),
       modality: eventDetails.modality,
       country: isVirtual ? null : (eventDetails.country || null),
       city: isVirtual ? null : (eventDetails.city.trim() || null),
