@@ -6,6 +6,7 @@ import { formatEventDateTime } from '../../lib/formatDate'
 import { runQuery } from '../../lib/db'
 import { fetchEventSeats } from '../../lib/eventSeats'
 import { seatsLabel, eventStatus } from '../../lib/eventStatus'
+import { formatEventLocationShort } from '../../lib/eventLocation'
 import { ErrorState } from '../../components/ui/ErrorState'
 
 const MODALITY_OPTS = [
@@ -25,6 +26,7 @@ function EventCard({ event, rating, seats }) {
   const instructor = event.profiles?.full_name || '—'
   const category = event.categories?.name || ''
   const modality = MODALITY_LABEL[event.modality] || ''
+  const locationShort = formatEventLocationShort(event)
 
   return (
     <div className="pub-card" onClick={() => navigate('event-detail', { slug: event.slug })}
@@ -52,6 +54,12 @@ function EventCard({ event, rating, seats }) {
             </span>
           )}
         </div>
+        {locationShort && (
+          <div style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem', marginBottom: '.5rem' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{locationShort}</span>
+          </div>
+        )}
         {category && <div style={{ fontSize: '.66rem', fontWeight: 700, color: 'var(--jade)', marginBottom: '.3rem', letterSpacing: '.06em', textTransform: 'uppercase' }}>{category}</div>}
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.35, flex: 1, marginBottom: '.6rem' }}>{event.title}</h3>
         {rating?.count > 0 && <div style={{ marginBottom: '.4rem' }}><RatingBadge avg={rating.avg} count={rating.count} /></div>}
@@ -115,7 +123,7 @@ export default function EventCatalogPage() {
     // más cercano primero— y los pasados, cuando se piden, en orden inverso:
     // interesa el último que se hizo, no el más antiguo.
     let q = supabase.from('courses')
-      .select('id, slug, title, cover_image_url, price, modality, capacity, event_start_at, event_end_at, cancelled_at, category_id, categories(name), profiles!instructor_id(full_name)')
+      .select('id, slug, title, cover_image_url, price, modality, capacity, event_start_at, event_end_at, cancelled_at, category_id, categories(name), profiles!instructor_id(full_name), city, country, location')
       .eq('type', 'event')
       .eq('status', 'published')
       .eq('visibility', 'public')

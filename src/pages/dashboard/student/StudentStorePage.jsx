@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase'
 import { useCourseRatingSummaries, RatingBadge } from '../../../components/reviews/CourseReviews'
 import { STATUS_TONE } from '../../../components/ui'
 import { formatDateLong, formatEventDateTime } from '../../../lib/formatDate'
+import { formatEventLocationShort } from '../../../lib/eventLocation'
 import { PaymentInstructions } from '../../../components/payment/PaymentInstructions'
 import { orderReference, paymentProviderLabel } from '../../../lib/paymentInfo'
 import { runQuery } from '../../../lib/db'
@@ -37,6 +38,7 @@ function CourseCard({ course, wishlistIds, onToggleWishlist, rating, owned, pend
   const instructor = course.profiles?.full_name || '—'
   const category = course.categories?.name || ''
   const level = isEvent ? (MODALITY_LABEL[course.modality] || '') : (LEVEL_LABEL[course.level] || '')
+  const locationShort = isEvent ? formatEventLocationShort(course) : null
   const inWishlist = wishlistIds.includes(course.id)
 
   const goToDetail = () => navigate(isEvent ? 'evento-detalle' : 'curso-detalle', { slug: course.slug })
@@ -75,6 +77,12 @@ function CourseCard({ course, wishlistIds, onToggleWishlist, rating, owned, pend
             </span>
           ))}
         </div>
+        {locationShort && (
+          <div style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem', marginBottom: '.4rem' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{locationShort}</span>
+          </div>
+        )}
         {category && <div style={{ fontSize: '.66rem', fontWeight: 700, color: 'var(--jade)', marginBottom: '.3rem', letterSpacing: '.06em', textTransform: 'uppercase' }}>{category}</div>}
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.93rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.35, flex: 1, marginBottom: '.5rem' }}>{course.title}</h3>
         {rating?.count > 0 && <div style={{ marginBottom: '.35rem' }}><RatingBadge avg={rating.avg} count={rating.count} /></div>}
@@ -269,7 +277,7 @@ function EventsTab({ wishlistIds, onToggleWishlist, owned, pending }) {
   useEffect(() => {
     Promise.all([
       supabase.from('courses')
-        .select('id, slug, title, cover_image_url, price, type, modality, event_start_at, event_end_at, category_id, categories(name), profiles!instructor_id(full_name)')
+        .select('id, slug, title, cover_image_url, price, type, modality, event_start_at, event_end_at, city, country, location, category_id, categories(name), profiles!instructor_id(full_name)')
         .eq('type', 'event')
         .eq('status', 'published')
         .eq('visibility', 'public')
@@ -346,7 +354,7 @@ function WishlistTab({ wishlistIds, onToggleWishlist, owned, pending }) {
     setLoading(true)
     runQuery(
       supabase.from('courses')
-        .select('id, slug, title, cover_image_url, price, type, level, duration_hours, modality, event_start_at, event_end_at, categories(name), profiles!instructor_id(full_name)')
+        .select('id, slug, title, cover_image_url, price, type, level, duration_hours, modality, event_start_at, event_end_at, city, country, location, categories(name), profiles!instructor_id(full_name)')
         .in('id', wishlistIds)
         .eq('status', 'published'),
       'StudentStorePage: lista de deseos',

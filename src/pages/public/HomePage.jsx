@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../context/SettingsContext'
 import { useNavigation } from '../../context/NavigationContext'
 import { formatEventDateTime } from '../../lib/formatDate'
+import { formatEventLocationShort } from '../../lib/eventLocation'
 import { runQuery } from '../../lib/db'
 import { ErrorState } from '../../components/ui/ErrorState'
 import { HeroVideo } from '../../components/shared/HeroVideo'
@@ -249,7 +250,7 @@ export default function HomePage() {
   useEffect(() => {
     const eventsQuery = supabase
       .from('courses')
-      .select('id, title, slug, cover_image_url, price, modality, event_start_at, event_end_at, categories(name), profiles!instructor_id(full_name, avatar_url)')
+      .select('id, title, slug, cover_image_url, price, modality, event_start_at, event_end_at, city, country, location, categories(name), profiles!instructor_id(full_name, avatar_url)')
       .eq('type', 'event')
       .eq('status', 'published')
       .eq('visibility', 'public')
@@ -740,6 +741,7 @@ export default function HomePage() {
             ) : (
               events.map((e, i) => {
                 const initials = (e.profiles?.full_name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+                const locationShort = formatEventLocationShort(e)
                 return (
                   <div key={e.id} className="reveal course-card" style={{ transitionDelay: `${(i % 3) * 90}ms`, background: 'white', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
                     <div style={{ aspectRatio: '1 / 1', position: 'relative', background: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)', overflow: 'hidden' }}>
@@ -766,7 +768,7 @@ export default function HomePage() {
                     </div>
                     <div style={{ padding: '1.35rem 1.4rem 1.4rem' }}>
                       <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, marginBottom: '.65rem', lineHeight: 1.3, color: 'var(--carbon)' }}>{e.title}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.5rem', flexWrap: 'wrap' }}>
                         {e.event_start_at && (
                           <span style={{ fontSize: '.72rem', color: 'var(--text-3)' }}>{formatEventDateTime(e.event_start_at, e.event_end_at)}</span>
                         )}
@@ -776,6 +778,12 @@ export default function HomePage() {
                           </span>
                         )}
                       </div>
+                      {locationShort && (
+                        <div style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem', marginBottom: '1rem' }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{locationShort}</span>
+                        </div>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '.9rem', borderTop: '1px solid var(--border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', color: 'var(--text-2)', minWidth: 0 }}>
                           {e.profiles?.avatar_url ? (

@@ -16,3 +16,23 @@ export function formatEventLocation(event) {
   }
   return parts.filter(Boolean).join(', ')
 }
+
+/**
+ * Versión compacta para tarjetas: ciudad y país cuando existen, o si no, el
+ * nombre corto de la sede tal como está en `location` — nunca la dirección
+ * completa que arma `formatEventLocation`, pensada para la ficha, no para una
+ * tarjeta de catálogo.
+ *
+ * Un evento virtual no tiene sede que anunciar: se etiqueta «En línea» y
+ * `location` no se muestra nunca en ese caso, porque ahí guarda el enlace de
+ * acceso a la sesión, no un lugar.
+ */
+export function formatEventLocationShort(event) {
+  if (event.modality === 'virtual') return 'En línea'
+  const city = (event.city || '').trim()
+  const country = (event.country || '').trim()
+  if (city && country) return `${city}, ${country}`
+  if (city) return city
+  if (country) return country
+  return (event.location || '').trim() || null
+}
