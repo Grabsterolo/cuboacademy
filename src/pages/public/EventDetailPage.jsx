@@ -11,6 +11,8 @@ import { googleCalendarUrl } from '../../lib/googleCalendar'
 import { formatEventLocation } from '../../lib/eventLocation'
 import { runQuery } from '../../lib/db'
 import { ContactBeforeBuy } from '../../components/shared/ContactBeforeBuy'
+import { fetchSeatsFor } from '../../lib/eventSeats'
+import { eventStatus, seatsLabel, enrollmentBlock } from '../../lib/eventStatus'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
@@ -28,6 +30,7 @@ export default function EventDetailPage() {
   const [pendingOrder, setPendingOrder] = useState(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [enrolling, setEnrolling] = useState(false)
+  const [seats, setSeats] = useState(null)
   const [enrollError, setEnrollError] = useState('')
 
   useEffect(() => {
@@ -45,6 +48,9 @@ export default function EventDetailPage() {
 
       if (error || !e) { setNotFound(true); setLoading(false); return }
       setEvent(e)
+      // Las plazas las cuenta el servidor: desde el navegador no se pueden leer
+      // las matrículas ni las órdenes de otras personas, ni debería poderse.
+      if (e.capacity != null) setSeats(await fetchSeatsFor(e.id))
 
       if (user) {
         const { data: enr } = await runQuery(
@@ -103,6 +109,9 @@ export default function EventDetailPage() {
   const priceNum = Number(event.price)
   const priceLabel = !event.price || priceNum === 0 ? 'Gratis' : `$${priceNum.toFixed(2)}`
   const isGratis = !event.price || priceNum === 0
+  const status = eventStatus(event)
+  const seatsInfo = seatsLabel(seats)
+  const blocked = enrollmentBlock(event, seats)
   const modality = MODALITY_LABEL[event.modality] || event.modality
   const locationText = formatEventLocation(event)
   const instructor = event.profiles
@@ -155,6 +164,26 @@ export default function EventDetailPage() {
 
           {/* Left column */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+            {/* Estado del evento. La cancelación lleva su propio aviso, con el
+                motivo si el admin lo escribió; «hoy» y «finalizado» van como
+                etiqueta, que es información útil pero no una advertencia. */}
+            {event.cancelled_at ? (
+              <div role="alert" style={{ background: '#FEEEEE', border: '1px solid #F5C6C6', borderRadius: 12, padding: '1.1rem 1.35rem' }}>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: '#C81E1E', margin: '0 0 .35rem' }}>
+                  Este evento fue cancelado
+                </p>
+                <p style={{ fontSize: '.86rem', color: 'var(--carbon)', lineHeight: 1.65, margin: 0, fontWeight: 400 }}>
+                  {event.cancellation_reason
+                    ? event.cancellation_reason
+                    : 'Ya no admite inscripciones. Si te habías inscrito, nos pondremos en contacto contigo.'}
+                </p>
+              </div>
+            ) : status.key !== 'upcoming' ? (
+              <div style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: '.4rem', background: status.bg, color: status.color, borderRadius: 20, padding: '.35rem .9rem', fontSize: '.76rem', fontWeight: 700 }}>
+                {status.key === 'today' ? 'Es hoy' : 'Evento finalizado'}
+              </div>
+            ) : null}
 
             {/* Description */}
             {event.description && (
@@ -210,7 +239,17 @@ export default function EventDetailPage() {
                   </div>
                 ) : pendingOrder ? (
                   <PaymentInstructions order={pendingOrder} compact />
+                ) : blocked ? (
+                  // Botón inerte en vez de oculto: si desaparece, quien vuelve
+                  // a la ficha no entiende por qué ya no puede inscribirse.
+                  <button className="buy-btn" disabled aria-disabled="true"
+                    style={{ background: 'var(--border)', color: 'var(--text-3)', cursor: 'not-allowed' }}>
+                    {blocked.label}
+                  </button>
                 ) : !user ? (
+                  // El bloqueo se comprueba ANTES que la sesión: mandar a alguien
+                  // a iniciar sesión para que descubra después que el evento está
+                  // agotado o finalizado es hacerle perder el viaje.
                   <button className="buy-btn" onClick={() => navigate('login')}
                     style={{ background: 'var(--jade)', color: 'white' }}>
                     {isGratis ? 'Inscribirme gratis' : 'Solicitar inscripción'}
@@ -224,7 +263,18 @@ export default function EventDetailPage() {
                     </button>
                   </>
                 )}
-                {!enrolled && <ContactBeforeBuy subject={event.title} />}
+                {seatsInfo && (
+                  <p style={{
+                    fontSize: '.78rem', marginTop: '.7rem', textAlign: 'center', fontWeight: seatsInfo.tone === 'ok' ? 500 : 700,
+                    color: seatsInfo.tone === 'full' ? '#C81E1E' : seatsInfo.tone === 'few' ? '#9C480C' : 'var(--text-2)',
+                  }}>
+                    {seatsInfo.text}
+                    {seatsInfo.tone !== 'full' && seats?.capacity != null && (
+                      <span style={{ color: 'var(--text-3)', fontWeight: 400 }}> de {seats.capacity}</span>
+                    )}
+                  </p>
+                )}
+                {!enrolled && !blocked && <ContactBeforeBuy subject={event.title} />}
               </div>
 
               {/* Details list */}

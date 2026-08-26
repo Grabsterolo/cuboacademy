@@ -3,6 +3,10 @@ import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
 import { useCourseRatingSummaries, RatingBadge } from '../../components/reviews/CourseReviews'
 import { formatEventDateTime } from '../../lib/formatDate'
+import { runQuery } from '../../lib/db'
+import { fetchEventSeats } from '../../lib/eventSeats'
+import { seatsLabel, eventStatus } from '../../lib/eventStatus'
+import { ErrorState } from '../../components/ui/ErrorState'
 
 const MODALITY_OPTS = [
   { value: '', label: 'Todas las modalidades' },
@@ -12,7 +16,7 @@ const MODALITY_OPTS = [
 ]
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
-function EventCard({ event, rating }) {
+function EventCard({ event, rating, seats }) {
   const { navigate } = useNavigation()
   const cover = event.cover_image_url
   const priceNum = Number(event.price)
@@ -32,6 +36,15 @@ function EventCard({ event, rating }) {
       <div style={{ padding: '1rem 1.1rem 1.2rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexWrap: 'wrap', marginBottom: '.5rem' }}>
           {modality && <span style={{ fontSize: '.64rem', fontWeight: 700, color: 'var(--jade-ink)', background: 'var(--jade-soft)', padding: '3px 8px', borderRadius: 20, letterSpacing: '.03em' }}>{modality}</span>}
+          {(() => {
+            const st = eventStatus(event)
+            if (st.key === 'upcoming') return null
+            return (
+              <span style={{ fontSize: '.62rem', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 20, background: st.bg, color: st.color }}>
+                {st.label}
+              </span>
+            )
+          })()}
           {event.event_start_at && (
             <span style={{ fontSize: '.72rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem' }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -42,6 +55,16 @@ function EventCard({ event, rating }) {
         {category && <div style={{ fontSize: '.66rem', fontWeight: 700, color: 'var(--jade)', marginBottom: '.3rem', letterSpacing: '.06em', textTransform: 'uppercase' }}>{category}</div>}
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.35, flex: 1, marginBottom: '.6rem' }}>{event.title}</h3>
         {rating?.count > 0 && <div style={{ marginBottom: '.4rem' }}><RatingBadge avg={rating.avg} count={rating.count} /></div>}
+        {(() => {
+          const s = seatsLabel(seats)
+          if (!s) return null
+          const tone = s.tone === 'full' ? { color: '#C81E1E' } : s.tone === 'few' ? { color: '#9C480C' } : { color: 'var(--text-2)' }
+          return (
+            <div style={{ fontSize: '.72rem', fontWeight: s.tone === 'ok' ? 500 : 700, marginBottom: '.5rem', ...tone }}>
+              {s.text}
+            </div>
+          )
+        })()}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.5rem' }}>
           <div style={{ fontSize: '.75rem', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '.3rem', minWidth: 0 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -76,24 +99,47 @@ export default function EventCatalogPage() {
   const [search, setSearch] = useState(params.search || '')
   const [catFilter, setCatFilter] = useState(params.categoryId || '')
   const [modalityFilter, setModalityFilter] = useState('')
+  const [showPast, setShowPast] = useState(false)
+  const [seats, setSeats] = useState({})
+  const [loadErr, setLoadErr] = useState(null)
+  const [reload, setReload] = useState(0)
   const ratings = useCourseRatingSummaries(events.map(e => e.id))
 
   useEffect(() => {
-    Promise.all([
-      supabase.from('courses')
-        .select('id, slug, title, cover_image_url, price, modality, event_start_at, category_id, categories(name), profiles!instructor_id(full_name)')
-        .eq('type', 'event')
-        .eq('status', 'published')
+    setLoading(true)
+    const now = new Date().toISOString()
+
+    // Antes no se filtraba por fecha y se ordenaba siempre ascendente, así que
+    // en cuanto pasaran las fechas de los eventos actuales, el catálogo iba a
+    // abrir con los caducados. Ahora los próximos van por fecha ascendente —el
+    // más cercano primero— y los pasados, cuando se piden, en orden inverso:
+    // interesa el último que se hizo, no el más antiguo.
+    let q = supabase.from('courses')
+      .select('id, slug, title, cover_image_url, price, modality, capacity, event_start_at, event_end_at, cancelled_at, category_id, categories(name), profiles!instructor_id(full_name)')
+      .eq('type', 'event')
+      .eq('status', 'published')
       .eq('visibility', 'public')
-        .order('event_start_at', { ascending: true })
-        .limit(500),
-      supabase.from('categories').select('id, name').order('name'),
-    ]).then(([{ data: e }, { data: cats }]) => {
-      setEvents(e || [])
+      .is('cancelled_at', null)
+      .limit(500)
+
+    q = showPast
+      ? q.lt('event_start_at', now).order('event_start_at', { ascending: false })
+      : q.gte('event_start_at', now).order('event_start_at', { ascending: true })
+
+    Promise.all([
+      runQuery(q, 'EventCatalogPage: eventos'),
+      runQuery(supabase.from('categories').select('id, name').order('name'), 'EventCatalogPage: categorías'),
+    ]).then(async ([{ data: e, error: eErr }, { data: cats }]) => {
+      const list = e || []
+      setEvents(list)
+      setLoadErr(eErr || null)
       setCategories(cats || [])
       setLoading(false)
+      // Las plazas van en una segunda consulta para no retrasar el listado: la
+      // tarjeta se pinta y la línea de cupos aparece en cuanto llega.
+      setSeats(await fetchEventSeats(list.filter(x => x.capacity != null).map(x => x.id)))
     })
-  }, [])
+  }, [showPast, reload])
 
   const filtered = events.filter(e => {
     const q = search.toLowerCase()
@@ -157,6 +203,15 @@ export default function EventCatalogPage() {
               onClick={() => setModalityFilter(modalityFilter === opt.value ? '' : opt.value)}>{opt.label}</button>
           ))}
 
+          <span style={{ width: 1, height: 22, background: 'var(--border)', margin: '0 .25rem', flexShrink: 0 }} />
+          {/* El conmutador va aquí, entre los filtros, y no como casilla suelta:
+              es un filtro más, y así se ve de un vistazo cuál está activo. */}
+          <button className={`cat-pill ${showPast ? 'active' : ''}`}
+            aria-pressed={showPast}
+            onClick={() => setShowPast(v => !v)}>
+            {showPast ? 'Viendo eventos pasados' : 'Ver eventos pasados'}
+          </button>
+
           {hasFilters && (
             <button onClick={clearFilters}
               style={{ marginLeft: '.5rem', background: 'none', border: 'none', fontSize: '.78rem', color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'var(--sans)', padding: '.35rem .5rem', borderRadius: 6, whiteSpace: 'nowrap' }}>
@@ -176,7 +231,9 @@ export default function EventCatalogPage() {
           </p>
         )}
 
-        {loading ? (
+        {loadErr ? (
+          <ErrorState title="No pudimos cargar los eventos" error={loadErr} onRetry={() => setReload(n => n + 1)} />
+        ) : loading ? (
           <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
             {[1,2,3,4,5,6].map(i => <SkeletonCard key={i} />)}
           </div>
@@ -186,7 +243,9 @@ export default function EventCatalogPage() {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.4rem' }}>No encontramos eventos</h3>
-            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.25rem', fontWeight: 400 }}>Prueba con otros términos o quita algún filtro.</p>
+            <p style={{ fontSize: '.84rem', color: 'var(--text-2)', marginBottom: '1.25rem', fontWeight: 400 }}>
+              {showPast ? 'Todavía no hay eventos pasados que mostrar.' : 'Prueba con otros términos o quita algún filtro.'}
+            </p>
             <button onClick={clearFilters}
               style={{ padding: '.6rem 1.4rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
               Ver todos los eventos
@@ -194,7 +253,7 @@ export default function EventCatalogPage() {
           </div>
         ) : (
           <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
-            {filtered.map(e => <EventCard key={e.id} event={e} rating={ratings[e.id]} />)}
+            {filtered.map(e => <EventCard key={e.id} event={e} rating={ratings[e.id]} seats={seats[e.id]} />)}
           </div>
         )}
       </div>

@@ -39,6 +39,12 @@ function sameLocalDay(a, b) {
  * decirle «finalizado» a alguien que pagó sería peor que no decir nada.
  */
 export function eventStatus(event, now = new Date()) {
+  // La cancelación gana a todo lo demás: a quien compró le importa más saber
+  // que no se hace que saber si era hoy o mañana.
+  if (event?.cancelled_at) {
+    return { key: 'cancelled', label: 'Cancelado', bg: '#FEEEEE', color: '#C81E1E' }
+  }
+
   const startRaw = event?.event_start_at
   if (!startRaw) return { key: 'upcoming', label: 'Próximo', bg: 'var(--jade-soft)', color: 'var(--jade-ink)' }
 
@@ -75,4 +81,38 @@ export function sortEventsByRelevance(enrollments, now = new Date()) {
     const bt = b.courses?.event_start_at ? new Date(b.courses.event_start_at).getTime() : Infinity
     return aPast ? bt - at : at - bt
   })
+}
+
+/**
+ * Texto de plazas para tarjeta y ficha.
+ *
+ * `seats` viene de la función event_seats del servidor, que es la única que
+ * sabe contar: mezcla matrículas y órdenes pendientes de estudiantes distintos.
+ * Aquí solo se le pone nombre al número.
+ *
+ * Sin cupo declarado no se dice nada. «Cupo ilimitado» sonaría a promesa, y lo
+ * que hay en realidad es un evento al que nadie le puso límite.
+ */
+export function seatsLabel(seats) {
+  if (!seats || seats.capacity == null) return null
+  if (seats.is_full) return { key: 'full', text: 'Agotado', tone: 'full' }
+  const left = seats.remaining
+  if (left <= 3) return { key: 'few', text: left === 1 ? 'Queda 1 cupo' : `Quedan ${left} cupos`, tone: 'few' }
+  return { key: 'ok', text: `Quedan ${left} cupos`, tone: 'ok' }
+}
+
+/**
+ * ¿Se puede pedir plaza? Reúne en un solo sitio los motivos por los que no,
+ * para que la ficha pública y la del portal no discrepen.
+ *
+ * Es una cortesía de interfaz: la comprobación que manda vive en el trigger
+ * enforce_event_capacity, porque la API REST está abierta.
+ */
+export function enrollmentBlock(event, seats, now = new Date()) {
+  if (event?.cancelled_at) return { reason: 'cancelled', label: 'Evento cancelado' }
+  if (seats?.is_full) return { reason: 'full', label: 'Agotado' }
+  if (isEvent(event) && eventStatus(event, now).key === 'past') {
+    return { reason: 'past', label: 'Evento finalizado' }
+  }
+  return null
 }

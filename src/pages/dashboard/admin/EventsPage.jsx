@@ -5,6 +5,7 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { IconBtn, Toast } from '../../../components/ui'
 import { formatEventDateTime } from '../../../lib/formatDate'
 import { VisibilityBadge } from '../../../components/dashboard/VisibilityBadge'
+import { cancelEvent, uncancelEvent } from '../../../lib/cancelEvent'
 
 const STATUS_LABEL = {
   draft: 'Borrador', pending: 'En revisión', published: 'Publicado', archived: 'Archivado',
@@ -43,6 +44,9 @@ export default function EventsPage() {
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [toast,         setToast]         = useState('')
   const [topEventId,    setTopEventId]    = useState(null)
+  const [cancelTarget,  setCancelTarget]  = useState(null)
+  const [cancelReason,  setCancelReason]  = useState('')
+  const [acting,        setActing]        = useState(null)
 
   useEffect(() => { load() }, [])
   useEffect(() => {
@@ -58,7 +62,7 @@ export default function EventsPage() {
     const [{ data }, { data: topId }] = await Promise.all([
       supabase
         .from('courses')
-        .select('id, title, cover_image_url, price, modality, event_start_at, location, status, visibility, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
+        .select('id, title, cover_image_url, price, modality, event_start_at, location, status, visibility, cancelled_at, cancellation_reason, capacity, created_at, profiles!instructor_id(full_name), categories!category_id(name)')
         .eq('type', 'event')
         .order('created_at', { ascending: false })
         .limit(500),
@@ -78,6 +82,29 @@ export default function EventsPage() {
     setEvents(es => es.map(e => e.id === id ? { ...e, status: newStatus } : e))
     const { error } = await supabase.from('courses').update({ status: newStatus }).eq('id', id)
     if (error) setEvents(es => es.map(e => e.id === id ? prev : e))
+  }
+
+  async function handleCancel(event, reason) {
+    setCancelTarget(null)
+    setActing(event.id)
+    const res = await cancelEvent({ event, reason })
+    setActing(null)
+    if (res.error) { showToast('No se pudo cancelar: ' + res.error); return }
+    setEvents(es => es.map(e => e.id === event.id
+      ? { ...e, cancelled_at: new Date().toISOString(), cancellation_reason: reason?.trim() || null }
+      : e))
+    showToast(res.notified
+      ? `Evento cancelado. Se avisó a ${res.notified} ${res.notified === 1 ? 'persona' : 'personas'}.`
+      : 'Evento cancelado. No había nadie inscrito a quien avisar.')
+  }
+
+  async function handleUncancel(event) {
+    setActing(event.id)
+    const res = await uncancelEvent(event)
+    setActing(null)
+    if (res.error) { showToast('No se pudo reactivar: ' + res.error); return }
+    setEvents(es => es.map(e => e.id === event.id ? { ...e, cancelled_at: null, cancellation_reason: null } : e))
+    showToast('Evento reactivado. Vuelve a admitir inscripciones.')
   }
 
   function showToast(msg) {
@@ -236,6 +263,20 @@ export default function EventsPage() {
                       </svg>
                     </IconBtn>
 
+                    {e.cancelled_at ? (
+                      <button onClick={() => handleUncancel(e)} disabled={acting === e.id}
+                        title="Vuelve a admitir inscripciones"
+                        style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--jade-ink)', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '.25rem .55rem', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                        {acting === e.id ? '…' : 'Reactivar'}
+                      </button>
+                    ) : (
+                      <button onClick={() => { setCancelTarget(e); setCancelReason('') }} disabled={acting === e.id}
+                        title="Cancelar el evento y avisar a los inscritos"
+                        style={{ fontSize: '.72rem', fontWeight: 600, color: '#9C480C', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '.25rem .55rem', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                        Cancelar
+                      </button>
+                    )}
+
                     {confirmDelete === e.id ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <button onClick={() => handleDelete(e.id)} style={{ fontSize: '.72rem', fontWeight: 700, color: '#C81E1E', background: 'rgba(239,68,68,.09)', border: 'none', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sí</button>
@@ -259,6 +300,38 @@ export default function EventsPage() {
           </>
         )}
       </div>
+
+      {cancelTarget && (
+        <div role="dialog" aria-modal="true" aria-label="Cancelar evento"
+          style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(11,52,54,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div style={{ background: 'white', borderRadius: 14, padding: '1.6rem 1.75rem', width: '100%', maxWidth: 460, border: '1px solid var(--border)' }}>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--carbon)', margin: '0 0 .5rem' }}>
+              Cancelar «{cancelTarget.title}»
+            </h3>
+            <p style={{ fontSize: '.85rem', color: 'var(--text-2)', lineHeight: 1.6, margin: '0 0 1rem' }}>
+              El evento dejará de admitir inscripciones y saldrá del catálogo. Quien
+              ya se inscribió lo seguirá viendo, con el aviso. Se enviará un correo a
+              los inscritos y a quien tenga una solicitud pendiente.
+            </p>
+            <label htmlFor="motivo-cancelacion" style={{ display: 'block', fontSize: '.75rem', fontWeight: 600, color: 'var(--text-2)', marginBottom: '.35rem' }}>
+              Motivo (opcional, se incluye en el aviso)
+            </label>
+            <textarea id="motivo-cancelacion" value={cancelReason} onChange={ev => setCancelReason(ev.target.value)}
+              placeholder="Por ejemplo: se pospone por falta de cupo mínimo."
+              style={{ width: '100%', minHeight: 78, padding: '.65rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.85rem', fontFamily: 'var(--sans)', resize: 'vertical', color: 'var(--carbon)' }} />
+            <div style={{ display: 'flex', gap: '.6rem', justifyContent: 'flex-end', marginTop: '1.1rem' }}>
+              <button onClick={() => setCancelTarget(null)}
+                style={{ padding: '.55rem 1.1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.83rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', color: 'var(--carbon)' }}>
+                Volver
+              </button>
+              <button onClick={() => handleCancel(cancelTarget, cancelReason)}
+                style={{ padding: '.55rem 1.1rem', background: '#C81E1E', color: 'white', border: 'none', borderRadius: 8, fontSize: '.83rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                Cancelar evento
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toast message={toast} />
     </DashboardLayout>

@@ -1,0 +1,67 @@
+import { supabase } from './supabase'
+import { runMutation, runQuery, runFunction, errorMessage } from './db'
+
+/**
+ * Cancela un evento y avisa a quien se había inscrito.
+ *
+ * El orden importa: primero se marca la cancelación, después se notifica. Si
+ * fuera al revés y el guardado fallara, habríamos avisado de una cancelación
+ * que no ocurrió.
+ *
+ * El aviso es best-effort, como el resto de correos de la plataforma. Un fallo
+ * de correo no debe dejar el evento a medio cancelar —abierto a inscripciones—
+ * que es lo peor de los dos mundos.
+ */
+export async function cancelEvent({ event, reason }) {
+  const trimmed = (reason || '').trim()
+
+  const { ok, error } = await runMutation(
+    supabase.from('courses')
+      .update({ cancelled_at: new Date().toISOString(), cancellation_reason: trimmed || null })
+      .eq('id', event.id),
+    'cancelEvent: marcar cancelado',
+  )
+  if (!ok) return { error: errorMessage(error) }
+
+  const { data: enrolled } = await runQuery(
+    supabase.from('enrollments').select('student_id').eq('course_id', event.id),
+    'cancelEvent: matriculados a avisar',
+  )
+  // También quien tiene una solicitud pendiente: pagó o estaba por pagar, y es
+  // justo a quien peor le sentaría enterarse por su cuenta.
+  const { data: pending } = await runQuery(
+    supabase.from('orders').select('student_id').eq('course_id', event.id).eq('status', 'pending'),
+    'cancelEvent: solicitudes pendientes a avisar',
+  )
+
+  const ids = [...new Set([...(enrolled || []), ...(pending || [])].map(r => r.student_id))]
+
+  await Promise.allSettled(ids.map(id => runFunction(supabase, 'send-notification-email', {
+    recipientId: id,
+    type: 'event_cancelled',
+    subject: `Evento cancelado · ${event.title}`,
+    message: buildCancellationEmail({ title: event.title, reason: trimmed }),
+  }, 'cancelEvent: aviso de cancelación')))
+
+  return { ok: true, notified: ids.length }
+}
+
+function buildCancellationEmail({ title, reason }) {
+  const motivo = reason
+    ? `\n\nMotivo: ${reason}`
+    : ''
+  return `Lamentamos informarte de que el evento «${title}» ha sido cancelado.${motivo}
+\nSi habías completado el pago, nos pondremos en contacto contigo para gestionar la devolución.
+\nSentimos las molestias.`
+}
+
+/** Deshace la cancelación. No notifica: se avisa cuando se vuelva a publicar. */
+export async function uncancelEvent(event) {
+  const { ok, error } = await runMutation(
+    supabase.from('courses')
+      .update({ cancelled_at: null, cancellation_reason: null })
+      .eq('id', event.id),
+    'cancelEvent: reactivar',
+  )
+  return ok ? { ok: true } : { error: errorMessage(error) }
+}

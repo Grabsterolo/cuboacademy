@@ -13,6 +13,8 @@ import { PaymentInstructions, PaymentInstructionsModal } from '../../../componen
 import { Avatar } from '../../../components/ui'
 import { formatEventDateTime } from '../../../lib/formatDate'
 import { runQuery } from '../../../lib/db'
+import { fetchSeatsFor } from '../../../lib/eventSeats'
+import { seatsLabel, enrollmentBlock } from '../../../lib/eventStatus'
 
 const MODALITY_LABEL = { presencial: 'Presencial', virtual: 'Virtual', hibrido: 'Híbrido' }
 
@@ -29,6 +31,7 @@ export default function EventDetailPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState(false)
+  const [seats, setSeats] = useState(null)
   const [enrollError, setEnrollError] = useState('')
 
   useEffect(() => { if (!slug) navigate('tienda', { tab: 'events' }) }, [slug])
@@ -50,6 +53,7 @@ export default function EventDetailPage() {
 
     if (!eventData) { setLoading(false); return }
     setEvent(eventData)
+    if (eventData.capacity != null) setSeats(await fetchSeatsFor(eventData.id))
 
     const { data: enrData } = await runQuery(
       supabase.from('enrollments')
@@ -95,6 +99,8 @@ export default function EventDetailPage() {
   // dirección; la tarjeta lo muestra como enlace pulsable en vez de como calle.
   const accessLink = event ? eventAccessLink(event) : null
   const status = eventStatus(event)
+  const seatsInfo = seatsLabel(seats)
+  const blocked = enrollmentBlock(event, seats)
 
   if (!slug) return null
 
@@ -226,6 +232,19 @@ export default function EventDetailPage() {
                   {/* State: enrolled */}
                   {isEnrolled ? (
                     <div>
+                      {/* El matriculado es quien más necesita ver esto, y por eso
+                          el estado cancelado es una columna y no un valor de
+                          course_status: con el enum, este evento habría dejado de
+                          cumplir status = 'published' y habría desaparecido de sus
+                          pantallas justo cuando hay algo que contarle. */}
+                      {event.cancelled_at && (
+                        <div role="alert" style={{ background: '#FEEEEE', border: '1px solid #F5C6C6', borderRadius: 10, padding: '.85rem 1rem', marginBottom: '.85rem' }}>
+                          <p style={{ fontSize: '.86rem', fontWeight: 700, color: '#C81E1E', margin: '0 0 .3rem' }}>Este evento fue cancelado</p>
+                          <p style={{ fontSize: '.8rem', color: 'var(--carbon)', lineHeight: 1.6, margin: 0, fontWeight: 400 }}>
+                            {event.cancellation_reason || 'Nos pondremos en contacto contigo para resolver tu inscripción.'}
+                          </p>
+                        </div>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.7rem 1rem', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 9, marginBottom: '1rem' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         <span style={{ fontSize: '.84rem', fontWeight: 600, color: '#166534' }}>Ya estás inscrito en este evento</span>
@@ -307,12 +326,31 @@ export default function EventDetailPage() {
                           {enrollError}
                         </div>
                       )}
+                      {blocked ? (
+                        // Inerte, no oculto: quien vuelve a la ficha tiene que
+                        // ver por qué ya no puede inscribirse.
+                        <button disabled aria-disabled="true"
+                          style={{ width: '100%', padding: '.85rem', background: 'var(--border)', color: 'var(--text-3)', border: 'none', borderRadius: 9, fontSize: '.9rem', fontWeight: 700, fontFamily: 'var(--sans)', cursor: 'not-allowed' }}>
+                          {blocked.label}
+                        </button>
+                      ) : (
                       <button onClick={handleEnroll} disabled={enrolling}
                         style={{ width: '100%', padding: '.85rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 10, fontSize: '.95rem', fontWeight: 700, cursor: enrolling ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: enrolling ? .7 : 1, transition: 'background .2s' }}
                         onMouseEnter={e => !enrolling && (e.currentTarget.style.background = 'var(--jade-dark,#0d4a46)')}
                         onMouseLeave={e => !enrolling && (e.currentTarget.style.background = 'var(--jade)')}>
                         {enrolling ? 'Procesando…' : isFree ? 'Inscribirse gratis' : `Solicitar inscripción — ${priceDisplay}`}
                       </button>
+                      )}
+                      {seatsInfo && (
+                        <p style={{ fontSize: '.78rem', marginTop: '.65rem', textAlign: 'center',
+                          fontWeight: seatsInfo.tone === 'ok' ? 500 : 700,
+                          color: seatsInfo.tone === 'full' ? '#C81E1E' : seatsInfo.tone === 'few' ? '#9C480C' : 'var(--text-2)' }}>
+                          {seatsInfo.text}
+                          {seatsInfo.tone !== 'full' && seats?.capacity != null && (
+                            <span style={{ color: 'var(--text-3)', fontWeight: 400 }}> de {seats.capacity}</span>
+                          )}
+                        </p>
+                      )}
 
                       {/* Features list */}
                       <div style={{ marginTop: '1.1rem', display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
