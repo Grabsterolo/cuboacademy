@@ -444,8 +444,20 @@ export default function HomePage() {
               {settings.hero_title ? settings.hero_title : <>El conocimiento que<br />transforma</>}{' '}
               <em style={{ fontStyle: 'normal', color: 'var(--jade-light)' }}>
                 <span className="rotating-word">
-                  <span className="rotating-word-ghost">organizaciones</span>
-                  <span className={`rotating-word-visible ${wordVisible ? 'in' : 'out'}`}>
+                  {/* Reserva el ancho de la palabra más larga para que el resto
+                      del H1 no salte al rotar. visibility:hidden ya la oculta a
+                      la vista, pero el nombre accesible del H1 se calculaba
+                      recorriendo el texto del DOM sin respetar eso, así que un
+                      lector de pantalla leía «...organizacionesorganizaciones»:
+                      el fantasma y la palabra visible, uno detrás del otro.
+                      aria-hidden la saca del árbol de accesibilidad de verdad,
+                      en vez de depender de que el cálculo del nombre respete la
+                      visibilidad visual. */}
+                  <span className="rotating-word-ghost" aria-hidden="true">organizaciones</span>
+                  {/* aria-live="polite" anuncia la palabra nueva cada vez que
+                      rota, en vez de quedar en silencio después de la primera
+                      lectura del H1. */}
+                  <span className={`rotating-word-visible ${wordVisible ? 'in' : 'out'}`} aria-live="polite">
                     {ROTATING_WORDS[wordIndex]}
                   </span>
                 </span>
