@@ -4,6 +4,27 @@ import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useSettings } from '../../../context/SettingsContext'
 import { runQuery } from '../../../lib/db'
 import { evaluateAccent, formatRatio, AA_MIN } from '../../../lib/contrast'
+import { posterFromVideo } from '../../../lib/videoPoster'
+
+// 10 MB, no 50. Con 50 MB permitidos, un vídeo de portada puede tardar más en
+// descargarse que toda la sesión de un visitante. El de ahora ronda los 600 KB
+// recomprimido a AV1, así que 10 MB deja margen de sobra para reemplazarlo.
+const HERO_VIDEO_MAX = 10 * 1024 * 1024
+const MIME_EXT = { 'video/mp4': 'mp4', 'video/webm': 'webm' }
+// Un año. Es seguro porque cada subida estrena nombre de archivo, así que un
+// asset cacheado nunca queda obsoleto: al cambiar el vídeo cambia la URL.
+//
+// Sin `immutable`, y no por olvido: Supabase antepone «max-age=» a lo que se le
+// pase aquí, así que mandar la directiva completa produce el disparate
+// «max-age=public, max-age=31536000, immutable». Se comprobó contra el servidor.
+// Con un año de frescura el navegador no revalida igualmente, así que lo que
+// aporta `immutable` de más es marginal.
+const HERO_CACHE = '31536000'
+
+function formatMB(bytes) {
+  const mb = bytes / (1024 * 1024)
+  return mb >= 10 ? `${Math.round(mb)} MB` : `${mb.toFixed(1).replace('.', ',')} MB`
+}
 
 const DEFAULTS = {
   platform_name: 'Cubo Campus',
@@ -16,6 +37,8 @@ const DEFAULTS = {
   hero_title: '',
   hero_subtitle: '',
   hero_video_url: '',
+  hero_video_webm_url: '',
+  hero_poster_url: '',
   contact_email: '',
   social_instagram: '',
   social_linkedin: '',
@@ -144,6 +167,8 @@ export default function SettingsPage() {
   const [heroVideoUploading, setHeroVideoUploading] = useState(false)
   const [heroVideoErr, setHeroVideoErr] = useState('')
   const [pendingHeroVideoPath, setPendingHeroVideoPath] = useState('')
+  const [pendingHeroVideoSize, setPendingHeroVideoSize] = useState(0)
+  const [pendingHeroPosterPath, setPendingHeroPosterPath] = useState('')
   const [pendingHeroVideoUrl, setPendingHeroVideoUrl] = useState('')
   const heroVideoInputRef = useRef()
 
@@ -192,31 +217,57 @@ export default function SettingsPage() {
     if (settings.platform_name) document.title = settings.platform_name
   }
 
-  // Uploads go to a temp object first, not the live hero.mp4 -- so picking a
-  // file only affects the live site once "Guardar cambios" actually moves it
-  // into place. Fixed temp path + upsert keeps the bucket from accumulating
+  // Uploads go to a temp object first, not the live file -- so picking a file
+  // only affects the live site once "Guardar cambios" actually moves it into
+  // place. Fixed temp path + upsert keeps the bucket from accumulating
   // abandoned uploads across repeated selections before saving.
   async function handleHeroVideoUpload(file) {
     if (!file) return
-    if (file.type !== 'video/mp4') { setHeroVideoErr('Solo se acepta formato MP4.'); return }
-    if (file.size > 50 * 1024 * 1024) { setHeroVideoErr('Máximo 50 MB.'); return }
+    const ext = MIME_EXT[file.type]
+    if (!ext) { setHeroVideoErr('Solo se aceptan MP4 y WebM.'); return }
+    if (file.size > HERO_VIDEO_MAX) {
+      setHeroVideoErr(`Este archivo pesa ${formatMB(file.size)}. El máximo es ${formatMB(HERO_VIDEO_MAX)}: por encima de eso la portada tarda demasiado en cargar.`)
+      return
+    }
     setHeroVideoErr(''); setHeroVideoUploading(true)
-    const tempPath = 'pending-hero.mp4'
+    const tempPath = `pending-hero.${ext}`
     const { error: upErr } = await supabase.storage.from('hero-video')
-      .upload(tempPath, file, { upsert: true, contentType: 'video/mp4' })
+      .upload(tempPath, file, { upsert: true, contentType: file.type, cacheControl: HERO_CACHE })
     if (upErr) { setHeroVideoErr(upErr.message); setHeroVideoUploading(false); return }
     const { data: { publicUrl } } = supabase.storage.from('hero-video').getPublicUrl(tempPath)
+
+    // El póster se saca del propio archivo y se sube en el mismo paso, para que
+    // el admin no tenga que acordarse de una segunda subida. Si falla, el vídeo
+    // se queda igualmente: sin póster la portada carga peor, pero funciona.
+    let posterPath = ''
+    try {
+      const blob = await posterFromVideo(file)
+      posterPath = 'pending-hero-poster.webp'
+      const { error: pErr } = await supabase.storage.from('hero-video')
+        .upload(posterPath, blob, { upsert: true, contentType: 'image/webp', cacheControl: HERO_CACHE })
+      if (pErr) posterPath = ''
+    } catch {
+      posterPath = ''
+    }
+
     setPendingHeroVideoPath(tempPath)
+    setPendingHeroPosterPath(posterPath)
+    setPendingHeroVideoSize(file.size)
     setPendingHeroVideoUrl(`${publicUrl}?v=${Date.now()}`)
     setHeroVideoUploading(false)
   }
 
   function handleRemoveHeroVideo() {
     set('hero_video_url', '')
-    if (pendingHeroVideoPath) {
-      supabase.storage.from('hero-video').remove([pendingHeroVideoPath])
+    set('hero_video_webm_url', '')
+    set('hero_poster_url', '')
+    const temp = [pendingHeroVideoPath, pendingHeroPosterPath].filter(Boolean)
+    if (temp.length) {
+      supabase.storage.from('hero-video').remove(temp)
       setPendingHeroVideoPath('')
+      setPendingHeroPosterPath('')
       setPendingHeroVideoUrl('')
+      setPendingHeroVideoSize(0)
     }
   }
 
@@ -224,15 +275,56 @@ export default function SettingsPage() {
     e.preventDefault()
     if (pendingHeroVideoPath) {
       setS2({ saving: true, ok: false, err: '' })
-      const { error: moveErr } = await supabase.storage.from('hero-video').move(pendingHeroVideoPath, 'hero.mp4')
+      // Nombre con marca de tiempo, no 'hero.mp4' fijo. El asset se sirve con
+      // caché de un año e immutable, así que reutilizar el nombre dejaría el
+      // vídeo viejo clavado en el navegador de quien ya lo tuviera. Con nombre
+      // nuevo, la URL cambia y el cambio se ve al instante.
+      const ext = pendingHeroVideoPath.split('.').pop()
+      const finalPath = `hero-${Date.now()}.${ext}`
+      const { error: moveErr } = await supabase.storage.from('hero-video').move(pendingHeroVideoPath, finalPath)
       if (moveErr) { setS2({ saving: false, ok: false, err: 'No se pudo aplicar el nuevo video: ' + moveErr.message }); return }
-      const { data: { publicUrl } } = supabase.storage.from('hero-video').getPublicUrl('hero.mp4')
+      const { data: { publicUrl } } = supabase.storage.from('hero-video').getPublicUrl(finalPath)
+
+      let posterUrl = settings.hero_poster_url
+      if (pendingHeroPosterPath) {
+        const finalPoster = `hero-poster-${Date.now()}.webp`
+        const { error: pMoveErr } = await supabase.storage.from('hero-video').move(pendingHeroPosterPath, finalPoster)
+        if (!pMoveErr) {
+          posterUrl = supabase.storage.from('hero-video').getPublicUrl(finalPoster).data.publicUrl
+        }
+      }
+
+      // El WebM se guarda solo si el archivo subido lo era; si el admin sube un
+      // MP4 no se inventa una variante que no existe.
+      const isWebm = ext === 'webm'
+      const previousVideo = settings.hero_video_url
+      const previousWebm = settings.hero_video_webm_url
+      const previousPoster = settings.hero_poster_url
+
       setPendingHeroVideoPath('')
+      setPendingHeroPosterPath('')
       setPendingHeroVideoUrl('')
-      await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email', 'contact_whatsapp'], setS2, { hero_video_url: `${publicUrl}?v=${Date.now()}` })
+      setPendingHeroVideoSize(0)
+
+      await saveKeys(
+        ['hero_title', 'hero_subtitle', 'hero_video_url', 'hero_video_webm_url', 'hero_poster_url', 'contact_email', 'contact_whatsapp'],
+        setS2,
+        {
+          hero_video_url: isWebm ? '' : publicUrl,
+          hero_video_webm_url: isWebm ? publicUrl : '',
+          hero_poster_url: posterUrl || '',
+        },
+      )
+
+      // Lo anterior se borra después de guardar, no antes: si el guardado
+      // falla, el sitio sigue teniendo qué servir.
+      const stale = [previousVideo, previousWebm, previousPoster]
+        .map(u => u?.split('/hero-video/')[1]?.split('?')[0])
+        .filter(n => n && n !== finalPath)
+      if (stale.length) supabase.storage.from('hero-video').remove(stale)
       return
     }
-    await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'contact_email', 'contact_whatsapp'], setS2)
+    await saveKeys(['hero_title', 'hero_subtitle', 'hero_video_url', 'hero_video_webm_url', 'hero_poster_url', 'contact_email', 'contact_whatsapp'], setS2)
   }
 
   async function handleSaveSocial(e) {
@@ -370,11 +462,29 @@ export default function SettingsPage() {
                     onChange={e => set('hero_subtitle', e.target.value)}
                     placeholder="Cubo Campus convierte experiencia consultiva real en cursos de alto impacto…" />
                 </Field>
-                <Field label="Video de fondo del hero" hint="MP4 · máx. 50 MB · se reproduce en loop, sin sonido · deja vacío para usar el fondo por defecto" id="setting-hero-video">
-                  <input id="setting-hero-video" ref={heroVideoInputRef} type="file" accept="video/mp4" style={{ display: 'none' }}
+                <Field label="Video de fondo del hero" hint="MP4 o WebM · máx. 10 MB · se reproduce en loop, sin sonido · deja vacío para usar el fondo por defecto" id="setting-hero-video">
+                  <input id="setting-hero-video" ref={heroVideoInputRef} type="file" accept="video/mp4,video/webm" style={{ display: 'none' }}
                     onChange={e => { handleHeroVideoUpload(e.target.files[0]); e.target.value = '' }} />
                   {pendingHeroVideoUrl && (
-                    <p style={{ fontSize: '.75rem', color: '#A16207', margin: '0 0 .5rem' }}>Video nuevo listo — se aplica al sitio cuando guardes los cambios.</p>
+                    <p style={{ fontSize: '.75rem', color: '#A16207', margin: '0 0 .5rem' }}>
+                      Video nuevo listo{pendingHeroVideoSize ? ` (${formatMB(pendingHeroVideoSize)})` : ''} — se aplica al sitio cuando guardes los cambios.
+                    </p>
+                  )}
+                  {/* Quien lo configura debería saber que no todo el mundo lo
+                      verá, para no dar por hecho que el mensaje llega por ahí. */}
+                  <p style={{ fontSize: '.73rem', color: 'var(--text-3)', margin: '0 0 .6rem', lineHeight: 1.5 }}>
+                    El vídeo no se reproduce para quien tenga activado el ahorro de datos
+                    o la reducción de movimiento en su sistema: a esas personas se les
+                    muestra la imagen fija. Solo aparece en la portada.
+                  </p>
+                  {/* El peso se dice antes de guardar, no después: es el momento
+                      en el que todavía se puede elegir otro archivo. */}
+                  {pendingHeroVideoSize > 2 * 1024 * 1024 && (
+                    <p style={{ fontSize: '.75rem', color: '#9C480C', margin: '0 0 .5rem', lineHeight: 1.5 }}>
+                      Pesa {formatMB(pendingHeroVideoSize)}. Cada visitante lo descarga entero
+                      para ver el fondo de la portada; por debajo de 1 MB la página abre de
+                      inmediato. Conviene recomprimirlo antes de publicarlo.
+                    </p>
                   )}
                   {(pendingHeroVideoUrl || settings.hero_video_url) ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>

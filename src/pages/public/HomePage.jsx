@@ -5,6 +5,8 @@ import { useNavigation } from '../../context/NavigationContext'
 import { formatEventDateTime } from '../../lib/formatDate'
 import { runQuery } from '../../lib/db'
 import { ErrorState } from '../../components/ui/ErrorState'
+import { HeroVideo } from '../../components/shared/HeroVideo'
+import { useHeroMedia } from '../../hooks/useHeroMedia'
 
 const TRACK_STYLES = [
   { bg: 'linear-gradient(150deg, #0B3436 0%, #167D78 130%)', icon: 'layers' },
@@ -187,13 +189,9 @@ export default function HomePage() {
   const [eventsLoading, setEventsLoading] = useState(true)
   const [eventsErr, setEventsErr] = useState(null)
   const [instructors, setInstructors] = useState(null)
-  const [saveData, setSaveData] = useState(false)
   const [stats, setStats] = useState({ courses: null, students: null, instructors: null })
+  const heroMedia = useHeroMedia(settings)
 
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-data: reduce)')
-    setSaveData(mq.matches || navigator.connection?.saveData || false)
-  }, [])
   const tracksScrollRef = useRef(null)
   useReveal([coursesLoading, eventsLoading, tracks, instructors])
 
@@ -410,12 +408,8 @@ export default function HomePage() {
 
       {/* ── HERO ── */}
       <section className="hero-section" style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden', padding: '8rem 5% 5rem' }}>
-        {settings.hero_video_url && !saveData ? (
-          <>
-            <video src={settings.hero_video_url} autoPlay muted loop playsInline preload="metadata"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
-            <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(140deg, rgba(8,26,30,.82), rgba(13,56,52,.75))' }} />
-          </>
+        {heroMedia.hasVideo || heroMedia.poster ? (
+          <HeroVideo settings={settings} />
         ) : (
           <>
             <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)', backgroundSize: '48px 48px', zIndex: 0 }} />

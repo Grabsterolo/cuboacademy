@@ -12,16 +12,11 @@ export default function LoginScreen() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [saveData, setSaveData] = useState(false)
 
   useEffect(() => {
     if (!authLoading && user) enterPortal('panel')
   }, [user, authLoading, enterPortal])
 
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-data: reduce)')
-    setSaveData(mq.matches || navigator.connection?.saveData || false)
-  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -39,9 +34,13 @@ export default function LoginScreen() {
 
   return (
     <div className="on-dark" style={{ minHeight: '100vh', background: 'var(--jade-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
-      {settings.hero_video_url && !saveData ? (
+      {/* Aquí NO va el vídeo. Quien llega a esta pantalla viene a escribir su
+          correo y su contraseña, no a mirar un fondo: 600 KB y un bucle en
+          movimiento detrás de un formulario solo estorban. Se deja el póster
+          fijo, que ya está en caché de la portada y no cuesta nada. */}
+      {settings.hero_poster_url ? (
         <>
-          <video src={settings.hero_video_url} autoPlay muted loop playsInline preload="metadata"
+          <img src={settings.hero_poster_url} alt="" aria-hidden="true"
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
           <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(140deg, rgba(8,26,30,.82), rgba(13,56,52,.75))' }} />
         </>
