@@ -273,6 +273,11 @@ function EventsTab({ wishlistIds, onToggleWishlist, owned, pending }) {
         .eq('type', 'event')
         .eq('status', 'published')
         .eq('visibility', 'public')
+        // La tienda arrastraba el mismo fallo que el catálogo: sin filtro de
+        // fecha y ordenando ascendente, los eventos caducados la encabezarían.
+        // Y no tiene sentido ofrecer en venta algo que ya pasó o se canceló.
+        .is('cancelled_at', null)
+        .gte('event_start_at', new Date().toISOString())
         .order('event_start_at', { ascending: true })
         .limit(500),
       supabase.from('categories').select('id, name').order('name'),

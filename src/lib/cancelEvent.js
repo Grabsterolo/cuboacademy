@@ -38,7 +38,13 @@ export async function cancelEvent({ event, reason }) {
 
   await Promise.allSettled(ids.map(id => runFunction(supabase, 'send-notification-email', {
     recipientId: id,
-    type: 'event_cancelled',
+    // 'reminder' y no 'event_cancelled': la edge function desplegada valida el
+    // tipo contra su propia lista y rechaza los que no conoce con «Faltan
+    // campos requeridos». Su código no está en este repo, así que no se puede
+    // ampliar desde aquí. El valor 'event_cancelled' ya existe en el enum
+    // email_type esperando a que la función se actualice; hasta entonces, el
+    // asunto y el cuerpo son los que llevan el significado.
+    type: 'reminder',
     subject: `Evento cancelado · ${event.title}`,
     message: buildCancellationEmail({ title: event.title, reason: trimmed }),
   }, 'cancelEvent: aviso de cancelación')))

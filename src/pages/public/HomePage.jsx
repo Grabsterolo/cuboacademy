@@ -232,6 +232,9 @@ export default function HomePage() {
       .eq('type', 'event')
       .eq('status', 'published')
       .eq('visibility', 'public')
+      // Un evento cancelado no se promociona. Ya filtraba por fecha, pero la
+      // cancelación es nueva y esto se quedaba fuera.
+      .is('cancelled_at', null)
       .gte('event_start_at', new Date().toISOString())
       .order('event_start_at', { ascending: true })
       .limit(6)

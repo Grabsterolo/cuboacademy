@@ -341,7 +341,7 @@ export default function EventDetailPage() {
                         {enrolling ? 'Procesando…' : isFree ? 'Inscribirse gratis' : `Solicitar inscripción — ${priceDisplay}`}
                       </button>
                       )}
-                      {seatsInfo && (
+                      {seatsInfo && seatsInfo.tone !== 'full' && (
                         <p style={{ fontSize: '.78rem', marginTop: '.65rem', textAlign: 'center',
                           fontWeight: seatsInfo.tone === 'ok' ? 500 : 700,
                           color: seatsInfo.tone === 'full' ? '#C81E1E' : seatsInfo.tone === 'few' ? '#9C480C' : 'var(--text-2)' }}>

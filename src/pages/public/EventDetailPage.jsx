@@ -263,7 +263,7 @@ export default function EventDetailPage() {
                     </button>
                   </>
                 )}
-                {seatsInfo && (
+                {seatsInfo && seatsInfo.tone !== 'full' && (
                   <p style={{
                     fontSize: '.78rem', marginTop: '.7rem', textAlign: 'center', fontWeight: seatsInfo.tone === 'ok' ? 500 : 700,
                     color: seatsInfo.tone === 'full' ? '#C81E1E' : seatsInfo.tone === 'few' ? '#9C480C' : 'var(--text-2)',
