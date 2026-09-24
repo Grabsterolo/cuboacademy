@@ -3,7 +3,7 @@ import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
-import { STATUS_TONE, IconBtn } from '../../../components/ui'
+import { STATUS_TONE, IconBtn, Toast } from '../../../components/ui'
 import { formatEventDateTime } from '../../../lib/formatDate'
 import { runQuery } from '../../../lib/db'
 
@@ -29,10 +29,14 @@ export default function InstructorEventsPage() {
   const { navigate } = useNavigation()
   const [events, setEvents] = useState([])
   const [counts, setCounts] = useState({})
+  const [orderCounts, setOrderCounts] = useState({})
   const [totalStudents, setTotalStudents] = useState(0)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState(null)
   const [search, setSearch] = useState('')
+  const [acting, setActing] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(null)
+  const [toast, setToast] = useState('')
 
   useEffect(() => {
     if (!profile?.id) return
@@ -55,10 +59,64 @@ export default function InstructorEventsPage() {
           ;(enr || []).forEach(r => { map[r.course_id] = (map[r.course_id] || 0) + 1 })
           setCounts(map)
           setTotalStudents(new Set((enr || []).map(r => r.student_id)).size)
+
+          // Las órdenes son lo que decide si un evento se puede borrar: su clave
+          // ajena es RESTRICT, así que la base rechaza el DELETE mientras quede
+          // alguna. Las inscripciones, en cambio, caen en cascada sin avisar.
+          const { data: ord } = await runQuery(
+            supabase.from('orders').select('course_id').in('course_id', ids),
+            'InstructorEventsPage: consulta 2',
+          )
+          const omap = {}
+          ;(ord || []).forEach(r => { omap[r.course_id] = (omap[r.course_id] || 0) + 1 })
+          setOrderCounts(omap)
         }
         setLoading(false)
       })
   }, [profile?.id])
+
+  useEffect(() => {
+    if (!confirmDelete) return
+    function onKey(ev) { if (ev.key === 'Escape') setConfirmDelete(null) }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [confirmDelete])
+
+  function showToast(msg) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 4000)
+  }
+
+  async function handleStatus(event, status) {
+    setActing(event.id)
+    const { error } = await supabase.from('courses').update({ status }).eq('id', event.id)
+    setActing(null)
+    if (error) { showToast('No se pudo guardar: ' + (error.message || 'inténtalo de nuevo.')); return }
+    setEvents(es => es.map(e => e.id === event.id ? { ...e, status } : e))
+    if (status !== 'archived') {
+      showToast('Restaurado como borrador. Envíalo a revisión para publicarlo.')
+      return
+    }
+    const n = counts[event.id] || 0
+    showToast(n > 0
+      ? `Archivado. ${n === 1 ? 'El inscrito lo conserva' : `Los ${n} inscritos lo conservan`}; no se les avisó.`
+      : 'Evento archivado. Ya no aparece en el catálogo.')
+  }
+
+  async function handleDelete(event) {
+    setConfirmDelete(null)
+    setActing(event.id)
+    const { error } = await supabase.from('courses').delete().eq('id', event.id)
+    setActing(null)
+    if (error) {
+      showToast(error.code === '23503'
+        ? 'No se pudo eliminar: tiene órdenes de compra. Archívalo mejor.'
+        : 'Error al eliminar: ' + (error.message || 'inténtalo de nuevo.'))
+      return
+    }
+    setEvents(es => es.filter(e => e.id !== event.id))
+    showToast('Evento eliminado.')
+  }
 
   const filtered = events.filter(e => {
     const q = search.toLowerCase()
@@ -157,6 +215,12 @@ export default function InstructorEventsPage() {
               {filtered.map(e => {
                 const st = STATUS[e.status] || STATUS.draft
                 const n  = counts[e.id] || 0
+                const o  = orderCounts[e.id] || 0
+                // Borrar arrastra en cascada las inscripciones, así que solo se
+                // ofrece cuando el evento no le pertenece todavía a nadie.
+                const blocker = n > 0 ? `tiene ${n} inscrito${n === 1 ? '' : 's'}`
+                  : o > 0 ? `tiene ${o} orden${o === 1 ? '' : 'es'} de compra`
+                  : null
                 return (
                   <div key={e.id} style={{ display: 'flex', flexDirection: 'column' }}>
                   <div className="ie-card" onClick={() => navigate('evento-wizard', { eventId: e.id })}>
@@ -171,7 +235,7 @@ export default function InstructorEventsPage() {
                         {e.event_start_at && <><span aria-hidden="true" style={{ color: 'var(--border)', fontSize: '.71rem' }}>·</span><span style={{ fontSize: '.71rem', color: 'var(--text-2)' }}>{formatEventDateTime(e.event_start_at, e.event_end_at)}</span></>}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', flexShrink: 0 }}>
                       {n > 0 && (
                         <IconBtn title="Ver asistencia" onClick={ev => { ev.stopPropagation(); navigate('evento-asistencia', { eventId: e.id }) }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '.3rem', fontSize: '.78rem', color: 'var(--text-2)' }}>
@@ -181,6 +245,42 @@ export default function InstructorEventsPage() {
                         </IconBtn>
                       )}
                       <span style={{ fontSize: '.7rem', fontWeight: 600, padding: '3px 9px', borderRadius: 10, background: st.bg, color: st.color, border: st.border }}>{st.label}</span>
+
+                      {e.status === 'archived' ? (
+                        <button onClick={ev => { ev.stopPropagation(); handleStatus(e, 'draft') }} disabled={acting === e.id}
+                          title="Devolverlo a borrador para volver a trabajarlo"
+                          style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--jade-ink)', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '.25rem .55rem', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
+                          {acting === e.id ? '…' : 'Restaurar'}
+                        </button>
+                      ) : (
+                        <IconBtn title="Archivar: deja de verse en el catálogo, no se pierde nada"
+                          onClick={ev => { ev.stopPropagation(); handleStatus(e, 'archived') }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+                        </IconBtn>
+                      )}
+
+                      {confirmDelete === e.id ? (
+                        <div onClick={ev => ev.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <button onClick={() => handleDelete(e)}
+                            style={{ fontSize: '.72rem', fontWeight: 700, color: '#C81E1E', background: 'rgba(239,68,68,.09)', border: 'none', borderRadius: 5, padding: '3px 7px', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sí</button>
+                          <button onClick={() => setConfirmDelete(null)}
+                            style={{ fontSize: '.72rem', color: 'var(--text-2)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' }}>No</button>
+                        </div>
+                      ) : (
+                        <IconBtn danger={!blocker}
+                          title={blocker ? `No se puede eliminar: ${blocker}` : 'Eliminar evento'}
+                          onClick={ev => {
+                            ev.stopPropagation()
+                            if (blocker) showToast(`No se puede eliminar: ${blocker}. Archívalo mejor.`)
+                            else setConfirmDelete(e.id)
+                          }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                            <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                          </svg>
+                        </IconBtn>
+                      )}
+
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
                   </div>
@@ -199,6 +299,8 @@ export default function InstructorEventsPage() {
           </>
         )}
       </div>
+
+      <Toast message={toast} />
     </DashboardLayout>
   )
 }
