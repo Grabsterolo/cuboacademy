@@ -1,15 +1,16 @@
 # Registro de cambios — auditoría del 2026-09-25
 
-Todo lo de aquí está sin commitear en `main` y **sin desplegar**. Las
-migraciones están escritas pero **no aplicadas** a producción: ver
-«Migraciones pendientes de aplicar» al final.
+Commiteado en la rama `auditoria/2026-09-25` (11 commits, uno por hallazgo).
+Las 7 migraciones están **aplicadas y verificadas en producción** el 2026-09-26:
+ver «Aplicación y verificación» al final. El frontend está corregido en la rama
+pero **aún no desplegado**.
 
 Comprobaciones tras cada grupo de cambios: `npm run lint` (0 avisos, antes 8) y
 `npm run build` (pasa). No hay `typecheck` ni `test` en este proyecto.
 
 ---
 
-## Base de datos — migraciones escritas (SIN aplicar)
+## Base de datos — migraciones aplicadas
 
 ### `20260925000000_fix_quiz_score_denominator.sql` — QUIZ-001, CRITICAL
 
@@ -39,8 +40,8 @@ preguntas, así que su nota no cambia. Cambia solo para quien manda un cuerpo
 parcial. En producción no hay ningún quiz todavía (0 quizzes, 0 preguntas, 0
 intentos), así que no hay datos que reparar ni notas que recalcular.
 
-**Probado.** Revisión del diff frente a la definición actual. No ejecutable
-contra la base: la aplicación quedó bloqueada (ver el final).
+**Probado.** Aplicada y comprobada contra la base: la función ya no usa la
+lista de preguntas del cliente y recorre las del quiz.
 
 ---
 
@@ -260,34 +261,85 @@ Se revisó cada uno antes de tocarlo; todos eran residuo real:
 
 ---
 
-## Migraciones pendientes de aplicar
+### `20260925000600_revoke_trigger_fn_execute_from_public.sql` — SEC-LOW-001 (corrección)
 
-Las 6 migraciones están escritas y comentadas, pero **no se aplicaron**: el
-clasificador de seguridad de esta sesión bloqueó la escritura contra la base de
-producción por tratarse de un despliegue. Hasta que se apliquen, **QUIZ-001,
-EVENT-001, EVENT-002, RLS-001, RLS-002, CERT-001, STORAGE-001 y DB-001 siguen
-abiertos en producción**; lo que está corregido en la base de código no protege
-nada por sí solo.
+**Qué pasaba.** La migración `...000300` se aplicó sin error y no revocó nada:
+las 14 funciones seguían expuestas. `anon` no tenía el EXECUTE a su nombre, lo
+heredaba de `PUBLIC`, así que revocárselo a él era una operación válida sin
+efecto.
 
-Orden (los nombres de archivo ya lo imponen):
+**Qué se hizo.** Revocar a `public` además de a `anon` y `authenticated`. Se
+mantiene el revoke explícito a los dos roles por si alguna función llevara
+también un grant directo, que quitar solo `PUBLIC` no cubriría.
 
-```
-20260925000000_fix_quiz_score_denominator.sql
-20260925000100_event_capacity_past_and_race.sql
-20260925000200_rls_lessons_scope_and_instructor_pii.sql
-20260925000300_harden_grants_and_drop_unused_view.sql
-20260925000400_instructor_documents_upload_limits.sql
-20260925000500_revoke_certificate_on_attendance_revert.sql
-```
+**Impacto.** 0 funciones de trigger expuestas (antes 14). Los triggers siguen
+disparándose: Postgres comprueba ese permiso al crear el trigger, no al
+ejecutarlo.
 
-Con la CLI de Supabase, desde la raíz del proyecto:
+---
 
-```bash
-supabase db push
-```
+## Aplicación y verificación
 
-Después conviene volver a pasar el linter de seguridad (el ERROR de
-`lessons_syllabus_preview` y los avisos de las 14 funciones de trigger deberían
-desaparecer) y comprobar en el sitio que el catálogo público, la portada y el
-bloque «Nuestro equipo» siguen pintando el nombre y el avatar de los
-instructores — es lo único que la migración `...000200` podría afectar.
+Las 7 migraciones se aplicaron una a una el 2026-09-26, comprobando el
+resultado contra la base después de cada una.
+
+| Comprobación | Resultado |
+| --- | --- |
+| `submit_quiz_attempt` ya no usa la lista del cliente | sí |
+| `submit_quiz_attempt` recorre todas las preguntas | sí |
+| `enforce_event_capacity` comprueba la fecha | sí |
+| `enforce_event_capacity` toma el bloqueo por evento | sí |
+| `anon` ve `profiles.email` / `phone` | **no** (antes sí) |
+| `anon` ve `full_name`, `avatar_url`, `bio`, `profession`, `specialty` | sí |
+| `authenticated` ve `profiles.email` (lo necesita el panel) | sí |
+| política de `lessons` sin la cláusula de instructor | sí |
+| vista `lessons_syllabus_preview` | eliminada |
+| funciones de trigger expuestas a `anon` | **0** (antes 14) |
+| trigger de revocar certificado conectado | sí |
+| bucket `instructor-documents` | 8 MB / `application/pdf` |
+| ERROR del linter de seguridad de Supabase | **desaparecido** |
+| avisos `anon` SECURITY DEFINER | 18 (antes 31) |
+
+### El revoke que no revocaba nada
+
+`...000300` se aplicó sin error y **no cambió nada**. Al comprobarlo, las 14
+funciones seguían expuestas: `anon` no tenía el EXECUTE a su nombre, lo
+heredaba de `PUBLIC`. En el ACL se ve como la entrada sin beneficiario
+(`=X/postgres`), que estaba presente en las expuestas y ausente en las 10 ya
+endurecidas antes de esta sesión.
+
+Se añadió `...000600_revoke_trigger_fn_execute_from_public.sql`, que revoca a
+`public, anon, authenticated`. Resultado: 0 expuestas. No se editó `...000300`
+porque ya estaba registrada como aplicada y editarla no la volvería a ejecutar;
+en un entorno nuevo las dos se aplican en orden con el mismo resultado.
+
+### Que los triggers sigan disparándose
+
+Quitar EXECUTE a `PUBLIC` no impide que un trigger existente se dispare:
+Postgres comprueba ese permiso **al crear** el trigger, no al ejecutarlo. La
+prueba está en esta misma base: `enroll_on_order_complete`, `update_updated_at`
+y `prevent_role_escalation` ya tenían `PUBLIC` revocado desde antes de esta
+sesión, y sus triggers funcionan en producción. Se confirmó además que las 25
+funciones conservan sus triggers conectados y el acceso de `service_role`.
+
+(La prueba directa —insertar una matrícula en una transacción revertida— la
+bloqueó el clasificador de seguridad por contener escrituras contra
+producción.)
+
+### Sitio público tras el cambio de permisos
+
+Revisado `https://www.cubocampus.com` después de aplicar todo, porque el cambio
+de privilegios por columna sobre `profiles` era lo único capaz de romper algo
+visible:
+
+- «El equipo docente» pinta los 3 instructores con nombre, profesión y bio;
+- la franja de datos muestra 1 curso y 3 instructores;
+- la ficha de curso carga instructor, temario, reseñas y precio;
+- sin errores de consola.
+
+### Lo que queda sin desplegar
+
+Los arreglos de frontend (cupos en eventos finalizados, estado de error del
+catálogo de cursos, condición del certificado en el asistente, limpieza de
+código muerto) están commiteados en `auditoria/2026-09-25` pero **no
+desplegados**: producción sigue sirviendo el frontend anterior.
