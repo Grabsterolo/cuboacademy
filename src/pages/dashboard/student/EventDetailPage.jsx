@@ -100,7 +100,7 @@ export default function EventDetailPage() {
   const accessLink = event ? eventAccessLink(event) : null
   const status = eventStatus(event)
   const schedule = event ? formatEventSchedule(event.event_start_at, event.event_end_at, event) : null
-  const seatsInfo = seatsLabel(seats)
+  const seatsInfo = seatsLabel(seats, event)
   const blocked = enrollmentBlock(event, seats)
 
   if (!slug) return null
