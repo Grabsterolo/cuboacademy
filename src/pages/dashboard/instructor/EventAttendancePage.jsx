@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
 import { useNavigation } from '../../../context/NavigationContext'
-import { Avatar, Toast } from '../../../components/ui'
+import { useAuth } from '../../../context/AuthContext'
+import { Avatar, Toast, ModalOverlay } from '../../../components/ui'
 import { markEventAttendance } from '../../../lib/markEventAttendance'
 import { formatDateShort, formatEventSchedule } from '../../../lib/formatDate'
 import { formatEventLocation } from '../../../lib/eventLocation'
@@ -11,6 +12,7 @@ const USERS = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke
 
 export default function EventAttendancePage() {
   const { params, navigate } = useNavigation()
+  const { profile } = useAuth()
   const eventId = params?.eventId
   const [event, setEvent] = useState(null)
   const [rows, setRows] = useState([])
@@ -18,6 +20,17 @@ export default function EventAttendancePage() {
   const [search, setSearch] = useState('')
   const [processing, setProcessing] = useState(null)
   const [toast, setToast] = useState('')
+
+  // Inscribir a mano es cosa de admin: las políticas de `enrollments` solo
+  // dejan insertar al propio estudiante (con curso gratis u orden pagada) o al
+  // admin. Un instructor tampoco puede buscar en `profiles` fuera de sus
+  // propios estudiantes, así que el buscador no le serviría de nada.
+  const isAdmin = profile?.role === 'admin'
+  const [addOpen, setAddOpen] = useState(false)
+  const [addSearch, setAddSearch] = useState('')
+  const [addResults, setAddResults] = useState([])
+  const [addSearching, setAddSearching] = useState(false)
+  const [adding, setAdding] = useState(null)
 
   function showToast(msg) {
     setToast(msg)
@@ -43,6 +56,47 @@ export default function EventAttendancePage() {
     setEvent(eventData)
     setRows(enr || [])
     setLoading(false)
+  }
+
+  // PostgREST parte el filtro `or` por comas y paréntesis: si van dentro del
+  // término de búsqueda, la consulta se rompe en vez de no encontrar nada.
+  const cleanTerm = addSearch.trim().replace(/[,()*]/g, '')
+
+  useEffect(() => {
+    if (!addOpen || cleanTerm.length < 2) { setAddResults([]); return }
+    let cancelled = false
+    setAddSearching(true)
+    const t = setTimeout(async () => {
+      const { data } = await supabase.from('profiles')
+        .select('id, full_name, email, avatar_url')
+        .eq('role', 'student')
+        .or(`full_name.ilike.%${cleanTerm}%,email.ilike.%${cleanTerm}%`)
+        .limit(8)
+      if (cancelled) return
+      setAddResults(data || [])
+      setAddSearching(false)
+    }, 250)
+    return () => { cancelled = true; clearTimeout(t) }
+  }, [addOpen, cleanTerm])
+
+  async function handleAdd(student) {
+    if (adding) return
+    setAdding(student.id)
+    const { data, error } = await supabase.from('enrollments')
+      .insert({ student_id: student.id, course_id: eventId, enrolled_at: new Date().toISOString() })
+      .select('id, enrolled_at, completed_at, student_id, profiles!student_id(full_name, email, avatar_url)')
+      .single()
+    setAdding(null)
+    if (error) {
+      showToast(error.code === '23505'
+        ? 'Esa persona ya está inscrita en este evento.'
+        : 'No se pudo inscribir: ' + (error.message || 'inténtalo de nuevo.'))
+      return
+    }
+    setRows(prev => [data, ...prev])
+    setAddSearch('')
+    setAddResults([])
+    showToast(`${student.full_name || student.email} quedó inscrito. Marca su asistencia para generarle el certificado.`)
   }
 
   async function toggleAttendance(row) {
@@ -81,7 +135,8 @@ export default function EventAttendancePage() {
           Volver a eventos
         </button>
 
-        <div style={{ marginBottom: '1.75rem' }}>
+        <div style={{ marginBottom: '1.75rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+          <div>
           <p style={{ fontSize: '.75rem', fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--jade)', marginBottom: '.35rem' }}>Asistencia</p>
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.15, margin: 0 }}>{event?.title || 'Evento'}</h1>
           {event?.event_start_at && (() => {
@@ -97,6 +152,15 @@ export default function EventAttendancePage() {
               </>
             )
           })()}
+          </div>
+
+          {isAdmin && (
+            <button onClick={() => setAddOpen(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '.45rem', padding: '.6rem 1.2rem', background: 'var(--jade)', color: 'white', border: 'none', borderRadius: 9, fontSize: '.865rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', flexShrink: 0 }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Inscribir manualmente
+            </button>
+          )}
         </div>
 
         {!loading && rows.length > 0 && (
@@ -129,7 +193,11 @@ export default function EventAttendancePage() {
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
             <div style={{ width: 52, height: 52, background: 'var(--jade-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.1rem' }}>{USERS}</div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--carbon)', marginBottom: '.35rem' }}>Sin inscritos aún</p>
-            <p style={{ fontSize: '.82rem', color: 'var(--text-3)' }}>Cuando alguien se inscriba a este evento aparecerá aquí.</p>
+            <p style={{ fontSize: '.82rem', color: 'var(--text-3)' }}>
+              {isAdmin
+                ? 'Cuando alguien se inscriba aparecerá aquí. Si el evento fue presencial, usa «Inscribir manualmente».'
+                : 'Cuando alguien se inscriba a este evento aparecerá aquí.'}
+            </p>
           </div>
         ) : (
           <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
@@ -161,6 +229,50 @@ export default function EventAttendancePage() {
           </div>
         )}
       </div>
+
+      {addOpen && (
+        <ModalOverlay onClose={() => { setAddOpen(false); setAddSearch(''); setAddResults([]) }}>
+          <div style={{ background: 'white', borderRadius: 14, padding: '1.5rem', width: '100%', maxWidth: 440, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--carbon)', margin: 0 }}>Inscribir manualmente</h2>
+            <p style={{ fontSize: '.79rem', color: 'var(--text-2)', margin: '.45rem 0 1rem', lineHeight: 1.5 }}>
+              Para quien asistió o pagó fuera de la plataforma. <strong>No se crea ninguna orden de compra</strong>, así que el evento no suma a las ventas. La persona necesita cuenta: si no la tiene, créala antes en Usuarios.
+            </p>
+
+            <input type="text" autoFocus placeholder="Buscar por nombre o correo…" value={addSearch} onChange={ev => setAddSearch(ev.target.value)}
+              style={{ width: '100%', padding: '.6rem .85rem', background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.875rem', color: 'var(--carbon)', fontFamily: 'var(--sans)', boxSizing: 'border-box' }} />
+
+            <div style={{ flex: 1, overflowY: 'auto', marginTop: '.85rem', minHeight: 0 }}>
+              {cleanTerm.length < 2 ? (
+                <p style={{ fontSize: '.78rem', color: 'var(--text-3)', textAlign: 'center', padding: '1.5rem 0' }}>Escribe al menos dos letras.</p>
+              ) : addSearching ? (
+                <p style={{ fontSize: '.78rem', color: 'var(--text-3)', textAlign: 'center', padding: '1.5rem 0' }}>Buscando…</p>
+              ) : (() => {
+                const enrolled = new Set(rows.map(r => r.student_id))
+                const libres = addResults.filter(u => !enrolled.has(u.id))
+                if (addResults.length === 0) return <p style={{ fontSize: '.78rem', color: 'var(--text-3)', textAlign: 'center', padding: '1.5rem 0' }}>Nadie con ese nombre o correo tiene cuenta todavía.</p>
+                if (libres.length === 0) return <p style={{ fontSize: '.78rem', color: 'var(--text-3)', textAlign: 'center', padding: '1.5rem 0' }}>Ya están inscritos en este evento.</p>
+                return libres.map(u => (
+                  <button key={u.id} onClick={() => handleAdd(u)} disabled={adding === u.id}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '.7rem', padding: '.55rem .6rem', background: 'none', border: 'none', borderRadius: 8, cursor: adding === u.id ? 'wait' : 'pointer', textAlign: 'left', fontFamily: 'var(--sans)', opacity: adding === u.id ? .6 : 1 }}
+                    onMouseEnter={ev => ev.currentTarget.style.background = 'var(--cream)'}
+                    onMouseLeave={ev => ev.currentTarget.style.background = 'none'}>
+                    <Avatar name={u.full_name || u.email} url={u.avatar_url} size={32} gradient={false} fontScale={0.3} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '.84rem', fontWeight: 600, color: 'var(--carbon)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.full_name || u.email}</div>
+                      {u.full_name && <div style={{ fontSize: '.73rem', color: 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>}
+                    </div>
+                  </button>
+                ))
+              })()}
+            </div>
+
+            <button onClick={() => { setAddOpen(false); setAddSearch(''); setAddResults([]) }}
+              style={{ marginTop: '1rem', padding: '.55rem 1rem', background: 'none', border: '1px solid var(--border)', borderRadius: 8, fontSize: '.84rem', fontWeight: 600, color: 'var(--text-2)', cursor: 'pointer', fontFamily: 'var(--sans)', alignSelf: 'flex-end' }}>
+              Cerrar
+            </button>
+          </div>
+        </ModalOverlay>
+      )}
 
       <Toast message={toast} />
     </DashboardLayout>
