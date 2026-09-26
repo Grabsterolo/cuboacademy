@@ -6,6 +6,7 @@ import { IconBtn, Toast } from '../../../components/ui'
 import { formatEventDateTime } from '../../../lib/formatDate'
 import { VisibilityBadge } from '../../../components/dashboard/VisibilityBadge'
 import { cancelEvent, uncancelEvent } from '../../../lib/cancelEvent'
+import { eventStatus } from '../../../lib/eventStatus'
 
 const STATUS_LABEL = {
   draft: 'Borrador', pending: 'En revisión', published: 'Publicado', archived: 'Archivado',
@@ -141,6 +142,11 @@ export default function EventsPage() {
     { label: 'En revisión',   value: events.filter(e => e.status === 'pending').length },
     { label: 'Publicados',    value: events.filter(e => e.status === 'published').length },
     { label: 'Borradores',    value: events.filter(e => e.status === 'draft').length },
+    // Los archivados entraban en «Total eventos» pero no tenían casilla, así
+    // que las cifras no cuadraban: con 2 eventos y uno archivado se leía
+    // «Total 2» sobre casillas que sumaban 1. El filtro de archivados ya
+    // existía; lo que faltaba era contarlos a la vista.
+    { label: 'Archivados',    value: events.filter(e => e.status === 'archived').length },
   ]
 
   return (
@@ -269,7 +275,11 @@ export default function EventsPage() {
                         style={{ fontSize: '.72rem', fontWeight: 600, color: 'var(--jade-ink)', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '.25rem .55rem', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
                         {acting === e.id ? '…' : 'Reactivar'}
                       </button>
-                    ) : (
+                    ) : eventStatus(e).key === 'past' ? null : (
+                      // Cancelar solo tiene sentido antes de que ocurra. En un
+                      // evento ya celebrado el botón no era inofensivo: cancelar
+                      // manda un correo a TODOS los inscritos diciéndoles que el
+                      // evento queda cancelado — a gente que ya asistió.
                       <button onClick={() => { setCancelTarget(e); setCancelReason('') }} disabled={acting === e.id}
                         title="Cancelar el evento y avisar a los inscritos"
                         style={{ fontSize: '.72rem', fontWeight: 600, color: '#9C480C', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '.25rem .55rem', cursor: 'pointer', fontFamily: 'var(--sans)' }}>
