@@ -24,7 +24,7 @@ Fecha: 2026-09-25 · Rama: `main` · Base: `sshfhlaqlqgdkwaecvpx` (producción)
 | Funciones servidor | 2 edge functions en repo (`approve-certificate`, `provision-instructor`) + `send-notification-email` desplegada **fuera** del repo | `supabase/functions/` |
 | Estado cliente | 4 Context providers, sin librería de estado | `src/context/` |
 | Datos remotos | `useQuery` propio + envoltorio `runQuery`/`runMutation`/`runFunction` | `src/lib/useQuery.js`, `src/lib/db.js` |
-| Tests | **Ninguno** | no hay runner ni archivos de test |
+| Tests | Ninguno al empezar. Vitest añadido en la auditoría: 57 pruebas | `npm test` — ver TEST-001 |
 | Lint | oxlint | `npm run lint` |
 | Correo | Resend, vía edge function | `email_logs` |
 
@@ -37,7 +37,7 @@ Fecha: 2026-09-25 · Rama: `main` · Base: `sshfhlaqlqgdkwaecvpx` (producción)
 | `npm run lint` | pasa, 8 avisos (LINT-001) |
 | `npm run build` | pasa en 1,4 s |
 | `npm run typecheck` | **no existe** (el proyecto no usa TypeScript) |
-| `npm test` | **no existe** |
+| `npm test` | **no existía**. Ahora sí: 57 pruebas en 3 archivos, todas pasan |
 
 ---
 
@@ -130,6 +130,7 @@ arquitectura, rendimiento) · LOW (limpieza, deuda menor).
 | ARCH-001 | Arquitectura / UX | MEDIUM | No existe enrutado por URL. Toda la aplicación vive en `/`. Recargar pierde el contexto, atrás/adelante no funcionan, no hay enlaces profundos ni URL por curso o evento. | `NavigationContext` guarda la pantalla en `useState`, sin tocar `history`. | Cambio estructural. Ver «Decisiones pendientes». | PENDING DECISION |
 | SEC-LOW-001 | Endurecimiento | LOW | 14 funciones de trigger están expuestas como endpoints RPC a `anon`. No son explotables (Postgres rechaza llamar una función de trigger fuera de un trigger), pero no deberían estar en la superficie pública. | `GRANT EXECUTE` por defecto a `anon`/`authenticated` en el esquema `public`. | Revocar EXECUTE en las funciones de trigger. **Al primer intento no revocó nada**: `anon` no tenía el permiso a su nombre, lo heredaba de `PUBLIC`. Corregido con una segunda migración. | **Corregido y aplicado** (0 expuestas, antes 14) |
 | LINT-001 | Calidad | LOW | 8 avisos de oxlint: variables y parámetros sin usar, dos expresiones sin usar. | Restos de refactorizaciones anteriores. | Limpiar los que son residuo real. | **Corregido** (0 avisos) |
+| TEST-001 | Calidad / riesgo de regresión | MEDIUM | El proyecto no tenía **ningún** test, ni runner. Nada impedía que un cambio futuro reintrodujera cualquiera de los fallos de esta auditoría. | Nunca se montó. Este hallazgo se me pasó en la primera pasada: lo detecté al revisar qué faltaba, no auditando. | Vitest + 57 pruebas sobre la lógica de dominio (`eventStatus`, `db`, `progress`), incluidas las regresiones concretas que se corrigieron. Verificado que fallan si se deshace el arreglo. | **Corregido en parte** — ver abajo |
 | PERF-001 | Rendimiento | LOW | `citiesByCountry.js` pesa 333 KB (108 KB gzip) y se carga en el paso 2 del asistente de eventos. | Dataset de ciudades embebido en el bundle. | Aceptable: está en un chunk aparte y solo lo cargan instructores y admins. Documentado, no se cambia. | Aceptado |
 | DEBT-001 | Base de datos | LOW | Los estados mezclan dos convenciones: unos son `enum`, otros `text` + CHECK. | Crecimiento incremental del esquema. | No se toca: cambiar el tipo de una columna en producción no compensa la mejora cosmética. | Aceptado |
 | DEBT-002 | Arquitectura | LOW | La cadena del examen final se identifica por el **título** del módulo (`'Evaluación Final'`), en 4 funciones SQL y 6 archivos del frontend. | Convención en vez de columna. | Mitigado: el asistente reserva ese nombre y no deja usarlo en un módulo normal (`useCourseWizard.js:199`). Se documenta como deuda. | Aceptado |
@@ -211,6 +212,34 @@ inicial desde la URL al arrancar). Se puede hacer de forma aditiva y sin
 reescribir la aplicación, pero no es una corrección puntual y cambia el
 comportamiento de navegación en todas las pantallas. No lo emprendo dentro de
 esta auditoría sin luz verde.
+
+### Qué cubren los 57 tests, y qué no (TEST-001)
+
+`npm test` · Vitest · 3 archivos:
+
+| Archivo | Qué fija |
+| --- | --- |
+| `src/lib/eventStatus.test.js` (30) | `eventStatus`, `seatsLabel`, `enrollmentBlock`, `splitEnrollments`, `sortEventsByRelevance`, `eventAccessLink`. Incluye la regresión de los cupos anunciados en eventos finalizados. |
+| `src/lib/db.test.js` (17) | El invariante del que depende todo el manejo de errores: en fallo `data` es `null`, **nunca `[]`**. Más el registro en consola, la extracción del motivo real de una edge function y las traducciones de `errorMessage`. |
+| `src/utils/progress.test.js` (10) | Aritmética del porcentaje de progreso: curso vacío → 0 y no `NaN`, cursos sin mezclarse, redondeo, y el fallo de consulta que no revienta la pantalla. |
+
+Las pruebas se validaron deshaciendo el arreglo de `seatsLabel`: fallaron las
+dos de esa regresión y solo esas. Una prueba que no falla cuando el fallo
+vuelve no protege nada, así que ese paso importa tanto como escribirla.
+
+**Lo que NO cubren**, y conviene tenerlo claro:
+
+- **La corrección crítica (QUIZ-001) no tiene prueba ejecutada.** Vive en
+  PL/pgSQL, fuera del alcance de Vitest. Se le escribió una prueba SQL en
+  `supabase/tests/submit_quiz_attempt.test.sql` —con el caso exacto: 1 acertada
+  de 4 enviando solo esa debe dar 25, no 100— pero **no se ha corrido nunca**:
+  la única base disponible era producción, y la prueba crea usuarios, cursos e
+  intentos. Hay que correrla contra un stack local o una rama.
+- **Ningún componente de React.** No hay pruebas de renderizado ni de
+  interacción; lo verificado en pantalla se hizo a mano en el navegador.
+- **Ninguna política RLS.** Comprobar que un instructor no lee las lecciones de
+  otro exige dos sesiones reales; se verificó leyendo las políticas y los
+  privilegios, no ejecutando.
 
 ### Nota de método — verificar no es opcional
 
