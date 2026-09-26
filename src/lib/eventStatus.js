@@ -92,9 +92,24 @@ export function sortEventsByRelevance(enrollments, now = new Date()) {
  *
  * Sin cupo declarado no se dice nada. «Cupo ilimitado» sonaría a promesa, y lo
  * que hay en realidad es un evento al que nadie le puso límite.
+ *
+ * En un evento cancelado o ya finalizado tampoco se dice nada: quedan plazas en
+ * el sentido aritmético, pero no hay nada a lo que apuntarse. La ficha del
+ * evento del 22 de julio llegó a mostrar «Evento finalizado» y justo debajo
+ * «Quedan 12 cupos de 12», que es la misma tarjeta contradiciéndose. La regla
+ * vive aquí y no en cada pantalla para que la tarjeta del catálogo, la ficha
+ * pública y la del portal no vuelvan a discrepar.
+ *
+ * @param {object} seats  Resultado de event_seats para este evento.
+ * @param {object} [event] El evento. Omitirlo mantiene el comportamiento
+ *                         anterior (solo mira el número).
  */
-export function seatsLabel(seats) {
+export function seatsLabel(seats, event = null, now = new Date()) {
   if (!seats || seats.capacity == null) return null
+  if (event) {
+    const key = eventStatus(event, now).key
+    if (key === 'cancelled' || key === 'past') return null
+  }
   if (seats.is_full) return { key: 'full', text: 'Agotado', tone: 'full' }
   const left = seats.remaining
   if (left <= 3) return { key: 'few', text: left === 1 ? 'Queda 1 cupo' : `Quedan ${left} cupos`, tone: 'few' }

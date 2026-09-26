@@ -111,7 +111,7 @@ export default function EventDetailPage() {
   const isGratis = !event.price || priceNum === 0
   const status = eventStatus(event)
   const schedule = formatEventSchedule(event.event_start_at, event.event_end_at, event)
-  const seatsInfo = seatsLabel(seats)
+  const seatsInfo = seatsLabel(seats, event)
   const blocked = enrollmentBlock(event, seats)
   const modality = MODALITY_LABEL[event.modality] || event.modality
   const locationText = formatEventLocation(event)

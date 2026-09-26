@@ -71,7 +71,7 @@ function Placeholder({ label }) {
   )
 }
 
-function renderSection(section, role, params) {
+function renderSection(section, role) {
   if (role === 'admin') {
     switch (section) {
       case 'panel':         return <GeneralPage />

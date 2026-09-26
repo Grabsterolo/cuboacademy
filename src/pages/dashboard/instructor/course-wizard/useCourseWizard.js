@@ -523,14 +523,43 @@ export function useCourseWizard() {
     }))
   }
 
+  /**
+   * ¿Este curso tiene examen final de verdad?
+   *
+   * No basta con el interruptor: `saveStep4` deshace toda la estructura de
+   * evaluación cuando no hay preguntas, así que «con evaluación» significa
+   * interruptor puesto Y al menos una pregunta.
+   */
+  const hasFinalExam = evalData.hasEval && evalData.questions.length > 0
+
   // ── save step 5 (certificate) ─────────────────────────────────────────────
   async function saveStep5(cId) {
+    // Con examen final, la condición del certificado es «aprobar la
+    // evaluación», la elija el instructor o no.
+    //
+    // No es una preferencia nuestra, es lo que hace el servidor:
+    // `toggle_lesson_progress` se niega a completar la matrícula si el curso
+    // tiene el módulo «Evaluación Final» («a course with a final exam module
+    // must be completed via exam approval»), así que guardar 'complete' dejaba
+    // en la base una promesa que el propio servidor incumple. Quien acababa las
+    // lecciones no completaba el curso y no entendía por qué.
+    //
+    // Se normaliza aquí además de en la interfaz porque este es el punto por el
+    // que pasa cualquier camino de guardado, incluido el de un curso que ya
+    // tenía 'complete' guardado de antes y al que se le añade la evaluación
+    // después.
+    const condition = hasFinalExam ? 'pass' : cert.certCondition
+
     const { error } = await supabase.from('courses').update({
       has_certificate: cert.hasCert,
       certificate_name: cert.hasCert ? (cert.certName.trim() || null) : null,
-      certificate_condition: cert.certCondition,
+      certificate_condition: condition,
     }).eq('id', cId)
     if (error) throw error
+
+    // Que el formulario refleje lo guardado; si no, la pantalla seguiría
+    // diciendo «Completar 100 %» sobre un curso que en la base pide aprobar.
+    if (condition !== cert.certCondition) setCert(c => ({ ...c, certCondition: condition }))
   }
 
   // ── save step 6 (price) ───────────────────────────────────────────────────
@@ -619,7 +648,7 @@ export function useCourseWizard() {
     profile,
     categories, instructors, isAdmin, enrolledCount,
     modules, setModules,
-    evalData, setEvalData,
+    evalData, setEvalData, hasFinalExam,
     cert, setCert, pricing, setPricing,
     pubStatus, setPubStatus, pubError,
     visibility, setVisibility,

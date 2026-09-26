@@ -65,7 +65,7 @@ function EventCard({ event, rating, seats }) {
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '.97rem', fontWeight: 700, color: 'var(--carbon)', lineHeight: 1.35, flex: 1, marginBottom: '.6rem' }}>{event.title}</h3>
         {rating?.count > 0 && <div style={{ marginBottom: '.4rem' }}><RatingBadge avg={rating.avg} count={rating.count} /></div>}
         {(() => {
-          const s = seatsLabel(seats)
+          const s = seatsLabel(seats, event)
           if (!s) return null
           const tone = s.tone === 'full' ? { color: '#C81E1E' } : s.tone === 'few' ? { color: '#9C480C' } : { color: 'var(--text-2)' }
           return (

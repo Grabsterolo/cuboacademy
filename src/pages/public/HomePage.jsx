@@ -106,47 +106,6 @@ const DIFF_ITEMS = [
   },
 ]
 
-const COURSES = [
-  {
-    title: 'Power BI para Decisiones Ejecutivas',
-    desc: 'Dashboards que cuentan historias y generan acción. Desde modelo de datos hasta storytelling visual.',
-    track: 'Datos',
-    hours: '16 horas',
-    level: 'Intermedio',
-    modules: '8 módulos',
-    instructor: 'María Rojas',
-    initials: 'MR',
-    color: 'var(--jade)',
-    featured: false,
-    bg: 'linear-gradient(140deg,#0d3840 0%,#082830 100%)',
-  },
-  {
-    title: 'Modelado BPMN 2.0 Aplicado',
-    desc: 'Documenta y optimiza procesos con el estándar internacional. Casos reales de banca, salud y manufactura.',
-    track: 'Destacado',
-    hours: '12 horas',
-    level: 'Básico',
-    modules: '6 módulos',
-    instructor: 'Carlos Arias',
-    initials: 'CA',
-    color: '#C96E4B',
-    featured: true,
-    bg: 'linear-gradient(140deg,#0d3035 0%,#082028 100%)',
-  },
-  {
-    title: 'Gestión del Cambio Organizacional',
-    desc: 'Metodología ADKAR y enfoques prácticos para liderar transformaciones sin fracasar en el intento.',
-    track: 'Liderazgo',
-    hours: '20 horas',
-    level: 'Avanzado',
-    modules: '10 módulos',
-    instructor: 'Sofía Mendoza',
-    initials: 'LV',
-    color: 'var(--jade-dark)',
-    featured: false,
-    bg: 'linear-gradient(140deg,#0d2a32 0%,#081a22 100%)',
-  },
-]
 
 const HOW_STEPS = [
   { num: '1', title: 'Crea tu cuenta', desc: 'Regístrate como estudiante o instructor. En 2 minutos ya estás adentro.' },
@@ -200,7 +159,6 @@ function formatCount(n) {
 export default function HomePage() {
   const { navigate } = useNavigation()
   const { settings } = useSettings()
-  const [scrolled, setScrolled] = useState(false)
   const [wordIndex, setWordIndex] = useState(0)
   const [wordVisible, setWordVisible] = useState(true)
   const [tracks, setTracks] = useState(null)
@@ -307,12 +265,6 @@ export default function HomePage() {
       const s = data?.[0]
       setStats({ courses: s?.courses ?? 0, students: s?.students ?? 0, instructors: s?.instructors ?? 0, events: s?.events ?? 0 })
     })
-  }, [])
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   useEffect(() => {

@@ -71,7 +71,7 @@ export function Step3Content({ modules, setModules }) {
   )
 }
 
-function LessonContentEditor({ les, mIdx, lIdx, onChange, onAddLink, onAddFileResource, onUpdateLink, onRemoveLink }) {
+function LessonContentEditor({ les, lIdx, onChange, onAddLink, onAddFileResource, onUpdateLink, onRemoveLink }) {
   const [open, setOpen] = useState(false)
   const [docUploading, setDocUploading] = useState(false)
   const [docErr, setDocErr] = useState('')

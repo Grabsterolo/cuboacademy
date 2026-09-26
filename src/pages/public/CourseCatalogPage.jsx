@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigation } from '../../context/NavigationContext'
 import { supabase } from '../../lib/supabase'
+import { runQuery } from '../../lib/db'
+import { ErrorState } from '../../components/ui/ErrorState'
 import { useCourseRatingSummaries, RatingBadge } from '../../components/reviews/CourseReviews'
 import { NotifyAboutArea } from '../../components/shared/NotifyAboutArea'
 
@@ -76,24 +78,36 @@ export default function CourseCatalogPage() {
   const [search, setSearch] = useState(params.search || '')
   const [catFilter, setCatFilter] = useState(params.categoryId || '')
   const [levelFilter, setLevelFilter] = useState('')
+  const [loadErr, setLoadErr] = useState(null)
+  const [reload, setReload] = useState(0)
   const ratings = useCourseRatingSummaries(courses.map(c => c.id))
 
+  // El catálogo de eventos ya cargaba así; este seguía con el patrón que
+  // `lib/db.js` existe para erradicar (`.then(({ data }) => setX(data || []))`),
+  // donde un fallo de la consulta acaba pintando «No encontramos cursos». En la
+  // página que vende los cursos, un error disfrazado de catálogo vacío es lo
+  // peor que puede pasar: el visitante se va creyendo que no hay nada.
   useEffect(() => {
+    setLoading(true)
     Promise.all([
-      supabase.from('courses')
-        .select('id, slug, title, cover_image_url, price, level, duration_hours, category_id, categories(name), profiles!instructor_id(full_name)')
-        .eq('type', 'course')
-        .eq('status', 'published')
-      .eq('visibility', 'public')
-        .order('created_at', { ascending: false })
-        .limit(500),
-      supabase.from('categories').select('id, name').order('name'),
-    ]).then(([{ data: c }, { data: cats }]) => {
+      runQuery(
+        supabase.from('courses')
+          .select('id, slug, title, cover_image_url, price, level, duration_hours, category_id, categories(name), profiles!instructor_id(full_name)')
+          .eq('type', 'course')
+          .eq('status', 'published')
+          .eq('visibility', 'public')
+          .order('created_at', { ascending: false })
+          .limit(500),
+        'CourseCatalogPage: cursos',
+      ),
+      runQuery(supabase.from('categories').select('id, name').order('name'), 'CourseCatalogPage: categorías'),
+    ]).then(([{ data: c, error: cErr }, { data: cats }]) => {
       setCourses(c || [])
       setCategories(cats || [])
+      setLoadErr(cErr || null)
       setLoading(false)
     })
-  }, [])
+  }, [reload])
 
   const filtered = courses.filter(c => {
     const q = search.toLowerCase()
@@ -176,7 +190,9 @@ export default function CourseCatalogPage() {
           </p>
         )}
 
-        {loading ? (
+        {loadErr ? (
+          <ErrorState title="No pudimos cargar los cursos" error={loadErr} onRetry={() => setReload(n => n + 1)} />
+        ) : loading ? (
           <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
             {[1,2,3,4,5,6].map(i => <SkeletonCard key={i} />)}
           </div>
