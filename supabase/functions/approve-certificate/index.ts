@@ -53,9 +53,9 @@ Deno.serve(async (req) => {
   const { data: cert, error: certErr } = await adminClient
     .from('certificates')
     .select(`
-      id, unique_code, status, student_id, course_id, admin_notes,
+      id, unique_code, status, student_id, course_id, admin_notes, issued_at,
       profiles!student_id(full_name),
-      courses!course_id(title, certificate_name, type, profiles!instructor_id(full_name))
+      courses!course_id(title, certificate_name, type, event_start_at, profiles!instructor_id(full_name))
     `)
     .eq('id', certificateId)
     .single();
@@ -72,6 +72,15 @@ Deno.serve(async (req) => {
   const courseName = cert.courses?.certificate_name || cert.courses?.title || (isEvent ? 'Evento' : 'Curso');
   const instructorName = cert.courses?.profiles?.full_name || 'Cubo Campus';
   const now = new Date();
+
+  // La fecha impresa es la del hecho que el certificado acredita, no la del
+  // trámite. Antes se imprimía `now`, así que un evento de julio aprobado en
+  // septiembre salía fechado en septiembre, y cada regeneración volvía a
+  // moverla. Para un evento manda la fecha en que se impartió; para un curso,
+  // la de emisión del certificado, que es cuando se completó.
+  const certDate = (isEvent && cert.courses?.event_start_at)
+    ? new Date(cert.courses.event_start_at)
+    : (cert.issued_at ? new Date(cert.issued_at) : now);
 
   // ---- generate the PDF ----
   const pdfDoc = await PDFDocument.create();
@@ -133,7 +142,12 @@ Deno.serve(async (req) => {
   centerTextAt(instructorName, col1, footerValueY, serif, 12, carbon);
 
   centerTextAt('FECHA', col2, footerLabelY, sansBold, 8, grey);
-  const dateStr = now.toLocaleDateString('es-CR', { day: 'numeric', month: 'long', year: 'numeric' });
+  // La zona horaria va explícita: el locale 'es-CR' solo fija el formato, y sin
+  // esto la fecha se calcularía en la del servidor (UTC), donde un evento que
+  // empieza a las 6 p. m. en Costa Rica ya cae en el día siguiente.
+  const dateStr = certDate.toLocaleDateString('es-CR', {
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Costa_Rica',
+  });
   centerTextAt(dateStr, col2, footerValueY, serif, 12, carbon);
 
   centerTextAt('CÓDIGO DE VERIFICACIÓN', col3, footerLabelY, sansBold, 8, grey);
