@@ -61,12 +61,16 @@ function AppShell() {
   // on a fresh page load should land on the public site, not jump straight
   // into the dashboard. Explicit logins still enter the portal via their own
   // effect in LoginScreen.jsx (fires only while that screen is mounted).
+  // `screen` entra en las dependencias porque ahora el botón «atrás» puede
+  // reponer una vista del portal sin que cambien `user` ni `loading`: sin él
+  // el efecto no se volvería a evaluar y quedaría el panel a la vista de
+  // alguien que ya cerró sesión.
   useEffect(() => {
     if (loading) return
     if (!user && screen === 'portal') {
       exitPortal()
     }
-  }, [user, loading]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, loading, screen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Landing back from a "reset password" email link opens a temporary
   // recovery session — route straight to the set-new-password screen
