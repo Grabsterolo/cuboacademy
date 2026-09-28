@@ -1,8 +1,7 @@
-import { useState } from 'react'
 import DashboardLayout from '../../../components/dashboard/DashboardLayout'
+import ChangePasswordRow from '../../../components/dashboard/ChangePasswordRow'
 import { useAuth } from '../../../context/AuthContext'
 import { useNavigation } from '../../../context/NavigationContext'
-import { supabase } from '../../../lib/supabase'
 
 function Card({ title, desc, children, span }) {
   return (
@@ -32,20 +31,6 @@ export default function StudentSettingsPage() {
   const { user } = useAuth()
   const { navigate } = useNavigation()
 
-  const [pwLoading, setPwLoading] = useState(false)
-  const [pwMsg,     setPwMsg]     = useState('')
-
-  async function sendPasswordReset() {
-    if (!user?.email) return
-    setPwLoading(true)
-    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: window.location.origin,
-    })
-    setPwLoading(false)
-    setPwMsg(error ? 'Error al enviar el correo.' : `Correo enviado a ${user.email}`)
-    setTimeout(() => setPwMsg(''), 5000)
-  }
-
   return (
     <DashboardLayout>
       <style>{`
@@ -68,15 +53,7 @@ export default function StudentSettingsPage() {
             <Row label="Correo electrónico" desc={user?.email || '—'}>
               <span style={{ fontSize: '.76rem', color: 'var(--text-3)', background: 'var(--cream)', padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>No editable</span>
             </Row>
-            <Row label="Contraseña" desc="Recibe un enlace por correo para restablecer tu contraseña." last>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.3rem' }}>
-                <button onClick={sendPasswordReset} disabled={pwLoading}
-                  style={{ padding: '.45rem 1rem', background: 'white', border: '1px solid var(--border)', borderRadius: 7, fontSize: '.8rem', fontWeight: 600, color: 'var(--carbon)', cursor: pwLoading ? 'not-allowed' : 'pointer', fontFamily: 'var(--sans)', opacity: pwLoading ? .6 : 1 }}>
-                  {pwLoading ? 'Enviando…' : 'Restablecer contraseña'}
-                </button>
-                {pwMsg && <span style={{ fontSize: '.72rem', color: pwMsg.includes('Error') ? '#dc2626' : 'var(--jade)' }}>{pwMsg}</span>}
-              </div>
-            </Row>
+            <ChangePasswordRow />
           </Card>
 
           {/* Perfil */}
